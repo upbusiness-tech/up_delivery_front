@@ -10,11 +10,11 @@ export default function ReactRouter() {
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES_ENUM.LOGIN} element={<Login />} />
-        <Route element={<Layout />}>
-          <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
-          <Route path={ROUTES_ENUM.ORDERS} element={<Orders />} />
-          <Route path={ROUTES_ENUM.ENTERPRISE} element={<EnterprisePage />} />
-        </Route>
+          <Route element={<Layout />}>
+            <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
+            <Route path={ROUTES_ENUM.ORDERS} element={<Orders />} />
+            <Route path={ROUTES_ENUM.ENTERPRISE} element={<EnterprisePage />} />
+          </Route>
       </Routes>
     </BrowserRouter>
   )

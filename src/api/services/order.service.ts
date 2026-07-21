@@ -4,7 +4,7 @@ import { api } from "../axios"
 export const OrderService = {
   async listOrders(){
     try{
-      const { data } = await api.get(`/order`);
+      const { data } = await api.get(`/order/list-orders-restaurant`)
       return data
     }catch (error) {
       if (axios.isAxiosError(error)) {

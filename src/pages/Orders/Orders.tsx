@@ -1,84 +1,69 @@
 import {
-  Box, Paper, Stack, TextField, MenuItem, Select,
-  Table, TableHead, TableBody, TableRow, TableCell, InputAdornment,
-  IconButton, Chip, CircularProgress, Typography,
+  Box, Paper, Stack,
+  Table, TableHead, TableBody, TableRow, TableCell,
+  IconButton, Chip, CircularProgress, Typography, Divider,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 import PrintIcon from "@mui/icons-material/PrintOutlined";
 import UseOrdersController from "./UseOrdersController";
+import OrderDetail from "../../components/OrdersComponents/OrderDetails/OrderDetails";
+import PrintOrder from "../../utils/orderPrint";
 
 export default function Orders() {
 
-  const { filter, isDesktop, query, setFilter, setQuery, setType, type, orders, loading } = UseOrdersController()
-
-  const filteredOrders = orders.filter((order) => {
-    const matchesQuery = query
-      ? order.code?.toString().includes(query) ||
-        order.costumerName?.toLowerCase().includes(query.toLowerCase()) ||
-        order.costumerPhone?.includes(query)
-      : true;
-
-    const matchesType = type === "Todos os tipos" || order.type === type.toLowerCase();
-
-    return matchesQuery && matchesType;
-  });
+  const {
+    isDesktop, orders, loading,
+    selectedOrder, openOrderDetail, closeOrderDetail,
+    orderToPrint
+  } = UseOrdersController()
 
   return (
     <Stack spacing={2}>
-      <Paper sx={{ p: 2 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2} sx={{ alignItems: { md: "center" } }}>
-          <TextField
-            size="small"
-            placeholder="Buscar por código, cliente ou telefone"
-            fullWidth
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment> } }}
-          />
-          <Select size="small" value={filter} onChange={(e) => setFilter(e.target.value)} sx={{ minWidth: 200 }}>
-            {["Todos"].map((s) => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-          </Select>
-          <Select size="small" value={type} onChange={(e) => setType(e.target.value)} sx={{ minWidth: 170 }}>
-            <MenuItem value="Todos os tipos">Todos os tipos</MenuItem>
-            <MenuItem value="delivery">Delivery</MenuItem>
-            <MenuItem value="retirada">Retirada</MenuItem>
-          </Select>
-        </Stack>
-      </Paper>
-
       {loading ? (
-        <Stack>
+        <Stack direction="row" sx={{ justifyContent: "center", alignItems: "center", py: 6 }}>
           <CircularProgress />
         </Stack>
-      ) : filteredOrders.length === 0 ? (
+      ) : orders?.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography color="text.secondary">Nenhum pedido encontrado.</Typography>
         </Paper>
       ) : isDesktop ? (
         <Paper sx={{ overflow: "hidden" }}>
           <Box sx={{ overflowX: "auto" }}>
-            <Table size="medium">
+            <Table
+              size="medium"
+              sx={{
+                "& th": { fontWeight: 700, whiteSpace: "nowrap", color: "text.secondary" },
+                "& td, & th": { verticalAlign: "middle" },
+              }}
+            >
               <TableHead>
                 <TableRow>
-                  <TableCell width={64}>Imprimir</TableCell>
-                  <TableCell>Código</TableCell>
-                  <TableCell>Tipo</TableCell>
+                  <TableCell align="center" width={64}>Imprimir</TableCell>
+                  <TableCell width={90}>Código</TableCell>
+                  <TableCell width={110}>Tipo</TableCell>
                   <TableCell>Cliente</TableCell>
-                  <TableCell>Telefone</TableCell>
-                  <TableCell align="right">Total</TableCell>
-                  <TableCell>Pagamento</TableCell>
-                  <TableCell>Troco</TableCell>
+                  <TableCell width={150}>Telefone</TableCell>
+                  <TableCell align="right" width={110}>Total</TableCell>
+                  <TableCell width={130}>Pagamento</TableCell>
+                  <TableCell align="right" width={100}>Troco</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id} hover sx={{ cursor: "pointer" }}>
-                    <TableCell>
+                {orders?.map((order) => (
+                  <TableRow
+                    key={order.id}
+                    hover
+                    onClick={() => openOrderDetail(order)}
+                    sx={{ cursor: "pointer" }}
+                  >
+                    <TableCell align="center">
                       <IconButton size="small" onClick={(e) => { e.stopPropagation(); /* imprimir */ }}>
                         <PrintIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
-                    <TableCell>{order.code}</TableCell>
+
+                    <TableCell sx={{ fontWeight: 600 }}>#{order.code}</TableCell>
+
                     <TableCell>
                       <Chip
                         size="small"
@@ -87,17 +72,23 @@ export default function Orders() {
                         variant="outlined"
                       />
                     </TableCell>
+
                     <TableCell>{order.costumerName}</TableCell>
                     <TableCell>{order.costumerPhone}</TableCell>
-                    <TableCell align="right">
+
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>
                       {Number(order.orderTotal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </TableCell>
+
                     <TableCell>{order.paymentMethod}</TableCell>
-                    <TableCell>
+
+                    <TableCell align="right">
                       {order.changeFor
                         ? Number(order.changeFor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
                         : "—"}
                     </TableCell>
+
+                    
                   </TableRow>
                 ))}
               </TableBody>
@@ -106,9 +97,13 @@ export default function Orders() {
         </Paper>
       ) : (
         <Stack spacing={1.5}>
-          {filteredOrders.map((order) => (
-            <Paper key={order.id} sx={{ p: 2 }}>
-              <Stack>
+          {orders?.map((order) => (
+            <Paper
+              key={order.id}
+              sx={{ p: 2, cursor: "pointer" }}
+              onClick={() => openOrderDetail(order)}
+            >
+              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
                 <Typography sx={{ fontWeight: 700 }}>#{order.code}</Typography>
                 <Chip
                   size="small"
@@ -117,18 +112,29 @@ export default function Orders() {
                   variant="outlined"
                 />
               </Stack>
-              <Typography variant="body2">{order.costumerName}</Typography>
-              <Typography variant="body2" color="text.secondary">{order.costumerPhone}</Typography>
-              <Stack>
-                <Typography variant="body2">{order.paymentMethod}</Typography>
+
+              <Stack sx={{ mt: 1 }}>
+                <Typography variant="body2">{order.costumerName}</Typography>
+                <Typography variant="body2" color="text.secondary">{order.costumerPhone}</Typography>
+              </Stack>
+
+              <Divider sx={{ my: 1.5 }} />
+
+              <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body2" color="text.secondary">{order.paymentMethod}</Typography>
                 <Typography sx={{ fontWeight: 700 }}>
                   {Number(order.orderTotal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                 </Typography>
               </Stack>
+
+            
             </Paper>
           ))}
         </Stack>
       )}
+
+      <OrderDetail order={selectedOrder} onClose={closeOrderDetail} />
+      <PrintOrder order={orderToPrint} />
     </Stack>
   );
 }

@@ -2,3 +2,26 @@ body {
   margin: 0;
   padding: 0;
 }
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #print-order,
+  #print-order * {
+    visibility: visible;
+  }
+
+  #print-order {
+    display: block !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+}
