@@ -3,7 +3,7 @@ import ReactRouter from './routes/routes'
 function App() {
 
   return (
-      <ReactRouter/>
+    <ReactRouter/>
   )
 }
 

@@ -1,10 +1,13 @@
 import { Outlet } from "react-router-dom";
 import AppShell from "../components/Sidbar/AppShell";
+import { RestaurantProvider } from "../context/RestaurantContext";
 
-export default function ProtectedLayout() {
+export default function Layout() {
   return (
-    <AppShell>
-      <Outlet />
-    </AppShell>
+    <RestaurantProvider>
+      <AppShell>
+        <Outlet />
+      </AppShell>
+    </RestaurantProvider>
   );
 }
