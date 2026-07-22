@@ -2,19 +2,23 @@ import {
   Box, Paper, Stack,
   Table, TableHead, TableBody, TableRow, TableCell,
   IconButton, Chip, CircularProgress, Typography, Divider,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import PrintIcon from "@mui/icons-material/PrintOutlined";
 import UseOrdersController from "./UseOrdersController";
 import OrderDetail from "../../components/OrdersComponents/OrderDetails/OrderDetails";
 import PrintOrder from "../../utils/orderPrint";
+import STATUS_COLOR, { STATUS, STATUS_LABEL } from "../../utils/status.enum";
 
 export default function Orders() {
 
   const {
     isDesktop, orders, loading,
     selectedOrder, openOrderDetail, closeOrderDetail,
-    orderToPrint
+    orderToPrint, updateStatusOrder
   } = UseOrdersController()
+
 
   return (
     <Stack spacing={2}>
@@ -27,12 +31,12 @@ export default function Orders() {
           <Typography color="text.secondary">Nenhum pedido encontrado.</Typography>
         </Paper>
       ) : isDesktop ? (
-        <Paper sx={{ overflow: "hidden" }}>
+        <Paper elevation={0} sx={{ overflow: "hidden" }}>
           <Box sx={{ overflowX: "auto" }}>
             <Table
               size="medium"
               sx={{
-                "& th": { fontWeight: 700, whiteSpace: "nowrap", color: "text.secondary" },
+                "& th": { fontWeight: 700, blackSpace: "nowrap", color: "text.secondary" },
                 "& td, & th": { verticalAlign: "middle" },
               }}
             >
@@ -46,49 +50,70 @@ export default function Orders() {
                   <TableCell align="right" width={110}>Total</TableCell>
                   <TableCell width={130}>Pagamento</TableCell>
                   <TableCell align="right" width={100}>Troco</TableCell>
+                  <TableCell align="right" width={100}>Status</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {orders?.map((order) => (
                   <TableRow
                     key={order.id}
-                    hover
                     onClick={() => openOrderDetail(order)}
-                    sx={{ cursor: "pointer" }}
+                    // sx={{ cursor: "pointer", backgroundColor: STATUS_COLOR(order.status)}}
+                    sx={{ cursor: "pointer", backgroundColor: order.status == STATUS.CANCELADO ? "#ffabab" : '#f0f9ff'}}
                   >
                     <TableCell align="center">
-                      <IconButton size="small" onClick={(e) => { e.stopPropagation(); /* imprimir */ }}>
-                        <PrintIcon fontSize="small" />
+                      <IconButton size="small">
+                        <PrintIcon sx={{color: 'black', fontSize: '1.5rem'}} fontSize="small" />
                       </IconButton>
                     </TableCell>
 
-                    <TableCell sx={{ fontWeight: 600 }}>#{order.code}</TableCell>
-
-                    <TableCell>
-                      <Chip
-                        size="small"
-                        label={order.type === "delivery" ? "Delivery" : "Retirada"}
-                        color={order.type === "delivery" ? "primary" : "default"}
-                        variant="outlined"
-                      />
-                    </TableCell>
-
-                    <TableCell>{order.costumerName}</TableCell>
-                    <TableCell>{order.costumerPhone}</TableCell>
-
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>
+                    <TableCell sx={{color: 'black', fontSize: '1rem'}}>#{order.code}</TableCell>
+                    <TableCell sx={{color: 'black', fontSize: '1rem', fontWeight: 600}}>{(order.type)}</TableCell>
+                    <TableCell sx={{color: 'black', fontSize: '1rem'}}>{order.costumerName}</TableCell>
+                    <TableCell sx={{color: 'black', fontSize: '1rem'}}>{order.costumerPhone}</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600, color: 'black', fontSize: '1rem' }}>
                       {Number(order.orderTotal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </TableCell>
-
-                    <TableCell>{order.paymentMethod}</TableCell>
-
-                    <TableCell align="right">
+                    <TableCell sx={{color: 'black'}}>{order.paymentMethod}</TableCell>
+                    <TableCell align="right" sx={{color: 'black', fontSize: '1rem'}}>
                       {order.changeFor
                         ? Number(order.changeFor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
                         : "—"}
                     </TableCell>
-
-                    
+                    {order.status == STATUS.CANCELADO ? (
+                      <TableCell align="right"/>
+                    ) : (
+                      <TableCell align="right">
+                        <Select
+                          value={order.status}
+                          size="small"
+                          onChange={(e) => updateStatusOrder(e.target.value, order.id)}
+                          onClick={(e) => e.stopPropagation()}
+                          sx={{
+                            color: 'white',
+                            backgroundColor: STATUS_COLOR(order.status),
+                            '& .MuiSelect-icon': {
+                              color: 'white',
+                            },
+                            '& .MuiOutlinedInput-notchedOutline': {
+                              border: 'none',
+                            },
+                            
+                            '&:hover .MuiOutlinedInput-notchedOutline': {
+                              border: 'none',
+                            },
+                          }}
+                        >
+                          {Object.values(STATUS)
+                          .filter((status) => status !== STATUS.CANCELADO)
+                          .map((status) => (
+                            <MenuItem key={status} value={status}>
+                              {STATUS_LABEL[status]}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
