@@ -45,6 +45,7 @@ export interface Order {
   paymentMethod: string,
   changeFor: number,
   isPaid: boolean,
+  status: string,
   discount: number,
   observation: string,
   costumerName: string,

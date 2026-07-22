@@ -26,6 +26,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
     const token = localStorage.getItem("token");
     if(!token) return;
     loadRestaurant();
+    // fetchOrders();
   }, []);
   
   const loadRestaurant = async () => {
@@ -35,6 +36,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   
   async function fetchOrders() {
     if (hasFetched) return; // já tem os dados, não busca de novo
+    console.log("Buscou")
     setIsLoading(true);
     try {
       const data = await OrderService.listOrders();

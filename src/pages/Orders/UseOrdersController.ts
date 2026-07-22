@@ -5,6 +5,7 @@ import type { Order } from "../../types/Order.type";
 import { createSocket } from "../../api/services/socket";
 import { useNotificationSound } from "../../hooks/useNotificationSound";
 import { useRestaurant } from "../../context/RestaurantContext";
+import { OrderService } from "../../api/services/order.service";
 
 export default function UseOrdersController(){
   const theme = useTheme();
@@ -33,7 +34,7 @@ export default function UseOrdersController(){
     setLoading(isLoading);
   }, [isLoading]);
     
-  //Effect para rederizar os pedidos e capturar novo pedido
+  // Effect para rederizar os pedidos e capturar novo pedido
   useEffect(() => {
     if(!restaurant) return
       (async () => {
@@ -70,6 +71,16 @@ export default function UseOrdersController(){
     setSelectedOrder(null);
   }
 
+  async function updateStatusOrder(status: string, orderId: string){
+    const updateOrder = await OrderService.updateStatusOrder(status, orderId)
+    
+    setOrders((prev) =>
+      prev.map((order) =>
+        order.id === updateOrder.id ? updateOrder : order
+      )
+    );
+  }
+
   return{
     restaurantIsOpen,
     isDesktop,
@@ -84,6 +95,7 @@ export default function UseOrdersController(){
     selectedOrder,
     openOrderDetail,
     closeOrderDetail,
-    orderToPrint
+    orderToPrint,
+    updateStatusOrder
   }
 }
