@@ -42,6 +42,7 @@ export default function UseOrdersController(){
       })();
       const socket = createSocket(restaurant?.id);
       socket.on('newOrder', (newOrder) => {
+        console.log("Recebido", newOrder.id);
         setOrders((prev) => [newOrder, ...prev]);
         setOrderToPrint(newOrder)
         playNotificationSound();

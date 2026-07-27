@@ -19,12 +19,10 @@ import {
 } from "@mui/material";
 import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
-import STATUS_COLOR, { STATUS, STATUS_LABEL } from "../../../utils/status.enum";
 import UseOrdersController from "../../../pages/Orders/UseOrdersController";
-
-function brl(value: number) {
-  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-}
+import STATUS_COLOR from "../../../utils/colors/colors";
+import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
+import { moneyMask } from "../../../utils/masks/mask";
 
 interface OrderDetailProps {
   order: Order | null;
@@ -32,7 +30,7 @@ interface OrderDetailProps {
 }
 
 export default function OrderDetail({ order, onClose }: OrderDetailProps) {
-  const {open, getItemFlavorLines, openModalOrderCancel, handleOpenModalOrderCancel, handleCloseModalOrderCancel, cancelOrder} = useOrderDetailController({ order, onClose });
+  const {open, openModalOrderCancel, handleOpenModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines} = useOrderDetailController({ order, onClose });
   const {  updateStatusOrder } = UseOrdersController()
 
   if (!order) return null;
@@ -62,40 +60,41 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         <DialogContent dividers>
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 7 }}>
-              <Typography variant="subtitle2" gutterBottom>
+              <Typography variant="subtitle1" gutterBottom>
                 Itens do pedido:
               </Typography>
-              <Stack spacing={1.25}>
-              {order?.items?.map((item, i) => (
-                <Paper key={i} sx={{ p: 1.5 }}>
-                  <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-                    <Box>
-                      <Typography sx={{ fontWeight: 600, color: "black" }}>
-                        {item.quantity}x {item.name}
-                      </Typography>
-
-                      {getItemFlavorLines(item).map((line, idx) => (
-                        <Typography key={idx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                          {line}
+              <Stack spacing={1.25} sx={{}}>
+                {order?.items?.map((item, i) => (
+                  <Paper elevation={0} key={i} sx={{ p: 1 }}>
+                    <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, color: "black" }}>
+                          {item.quantity}x {item.name}
                         </Typography>
-                      ))}
-                    </Box>
 
-                    <Typography sx={{ fontWeight: 700 }}>
-                      {brl(item.price * item.quantity)}
-                    </Typography>
-                  </Stack>
-                </Paper>
-              ))}
+                        {getItemFlavorLines(item).map((line, idx) => (
+                          <Typography key={idx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
+                            {line}
+                          </Typography>
+                        ))}
+                      </Box>
+
+                      <Typography sx={{ fontWeight: 700 }}>
+                        {moneyMask(item.price * item.quantity)}
+                      </Typography>
+                    </Stack>
+                  </Paper>
+                ))}
               </Stack>
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
-              <Typography variant="subtitle2" gutterBottom>
+              <Typography variant="subtitle1" gutterBottom>
                 Dados:
               </Typography>
               <Stack spacing={2}>
-                <Paper sx={{ p: 1.5 }}>
+                <Paper elevation={0} sx={{ p: 1 }}>
+                  <Divider sx={{ my: 1 }} />
                   <Typography variant="subtitle2" gutterBottom>
                     Cliente
                   </Typography>
@@ -122,27 +121,29 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                     <Typography variant="body2" color="text.secondary">
                       <strong>Cidade:</strong> {order.costumerAddress.city}
                     </Typography>
+                    
                   </Box>
                 </Paper>
-                <Paper sx={{ p: 1.5 }}>
+                <Divider sx={{ my: 1 }} />
+                <Paper elevation={0} sx={{ p: 1 }}>
                   <Typography variant="subtitle2" gutterBottom>
                     Pagamento
                   </Typography>
                   <Typography color="success" sx={{fontWeight: '600'}}>{order.paymentMethod.toLocaleUpperCase()}</Typography>
                 </Paper>
-
-              <Paper sx={{ p: 1.5, bgcolor: "#e3bc37", color: "#fff", borderColor: "primary.main" }}>
+                <Divider sx={{ my: 1 }} />
+              <Paper elevation={0} sx={{ p: 1 }}>
                 <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="subtitle1">Taxa entrega</Typography>
-                  <Typography variant="subtitle1" sx={{fontWeight: '600'}}>R$ {order.neighborhood.deliveryFee}</Typography>
+                  <Typography variant="subtitle1" sx={{fontWeight: '600'}}>{moneyMask(order.neighborhood.deliveryFee)} {}</Typography>
                 </Stack>
                 <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="subtitle1">Subtotal</Typography>
-                  <Typography variant="h6" sx={{fontWeight: '600'}}>R$ {order.orderTotal}</Typography>
+                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(order.orderTotal)} {}</Typography>
                 </Stack>
                 <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="subtitle1">Total</Typography>
-                  <Typography variant="h6" sx={{fontWeight: '600'}}>R$ {(Number(order.orderTotal) + Number(order.neighborhood.deliveryFee)).toFixed(2)}</Typography>
+                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(Number(order.orderTotal) + Number(order.neighborhood.deliveryFee))}</Typography>
                 </Stack>
               </Paper>
               </Stack>

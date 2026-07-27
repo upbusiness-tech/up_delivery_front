@@ -3,6 +3,7 @@ import type { Restaurant } from "../types/Restaurant.type";
 import { RestaurantService } from "../api/services/restaurant.service";
 import { OrderService } from "../api/services/order.service";
 import type { Order } from "../types/Order.type";
+import type { Product, ProductCategory } from "../types/Product.type";
 
 interface RestaurantContextValue {
   restaurant: Restaurant | undefined;
@@ -11,6 +12,11 @@ interface RestaurantContextValue {
   isLoading: boolean;
   setOrders: Dispatch<SetStateAction<Order[]>>; //aceita valor OU updater function
   fetchOrders: () => Promise<void>;
+  categories: ProductCategory[] | undefined
+  setCategories: Dispatch<SetStateAction<ProductCategory[]>>;
+  products: Product[] | undefined;
+  setProducts: Dispatch<SetStateAction<Product[]>>;
+  
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
@@ -18,8 +24,10 @@ export const RestaurantContext  = createContext<RestaurantContextValue | undefin
 export function RestaurantProvider({children}: { children: ReactNode }){
   const [restaurant, setRestaurant] = useState<Restaurant | undefined>(undefined)
   const [orders, setOrders] = useState<Order[]>([])
+  const [categories, setCategories] = useState<ProductCategory[]>([])
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false); // controla se já buscou
+  const [products, setProducts] = useState<Product[]>([]); // controla se já buscou
   
   
   useEffect(() => {
@@ -30,8 +38,15 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   }, []);
   
   const loadRestaurant = async () => {
-    const data = await RestaurantService.getMe()
-    setRestaurant(data)
+    const restaurant_data = await RestaurantService.getMe()
+    // if(!restaurant) return;
+    setRestaurant(restaurant_data)
+
+    const categories_data = await RestaurantService.restaurantCategories(restaurant_data.id)
+    if(categories_data) setCategories(categories_data)
+    const categories_products = await RestaurantService.restaurantProducts()
+    if(categories_products) setProducts(categories_products)
+    
   }
   
   async function fetchOrders() {
@@ -50,7 +65,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   }
 
   return(
-  <RestaurantContext.Provider value={{restaurant, orders, setOrders, fetchOrders, isLoading}}>
+  <RestaurantContext.Provider value={{restaurant, orders, setOrders, fetchOrders, isLoading, categories, setCategories, products, setProducts}}>
     {children}
   </RestaurantContext.Provider>
   )
