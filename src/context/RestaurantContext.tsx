@@ -1,25 +1,36 @@
 import { createContext, useContext, useEffect, useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
-import type { Restaurant } from "../types/Restaurant.type";
+import type { Neighborhood, Restaurant } from "../types/Restaurant.type";
 import { RestaurantService } from "../api/services/restaurant.service";
 import { OrderService } from "../api/services/order.service";
 import type { Order } from "../types/Order.type";
+import type { Additionals, Product, ProductCategory } from "../types/Product.type";
 
 interface RestaurantContextValue {
   restaurant: Restaurant | undefined;
   // setRestaurant: (restaurant: Restaurant | undefined) => void;
   orders: Order[] | undefined;
   isLoading: boolean;
-  setOrders: Dispatch<SetStateAction<Order[]>>; //aceita valor OU updater function
+  setOrders: Dispatch<SetStateAction<Order[] | undefined>>; //aceita valor OU updater function
   fetchOrders: () => Promise<void>;
+  categories: ProductCategory[] | undefined
+  setCategories: Dispatch<SetStateAction<ProductCategory[]>>;
+  products: Product[] | undefined;
+  setProducts: Dispatch<SetStateAction<Product[]>>;
+  additionals: Additionals[] | undefined;
+  neighborhoods: Neighborhood[] | undefined;
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
 
 export function RestaurantProvider({children}: { children: ReactNode }){
   const [restaurant, setRestaurant] = useState<Restaurant | undefined>(undefined)
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<Order[] | undefined>([])
+  const [categories, setCategories] = useState<ProductCategory[]>([])
   const [isLoading, setIsLoading] = useState(false);
   const [hasFetched, setHasFetched] = useState(false); // controla se já buscou
+  const [products, setProducts] = useState<Product[]>([]); // controla se já buscou
+  const [additionals, setAdditionals] = useState<Additionals[]>([])
+  const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
   
   
   useEffect(() => {
@@ -30,13 +41,30 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   }, []);
   
   const loadRestaurant = async () => {
-    const data = await RestaurantService.getMe()
-    setRestaurant(data)
+    const restaurant_data = await RestaurantService.getMe()
+    // if(!restaurant) return;
+    setRestaurant(restaurant_data)
+    
+    //Produtos
+    const products_data = await RestaurantService.restaurantProducts()
+    if(products_data) setProducts(products_data)
+    
+    //Categorias
+    const categories_data = await RestaurantService.restaurantCategories(restaurant_data.id)
+    if(categories_data) setCategories(categories_data)
+
+    //Adicionais
+    const additionals_data = await RestaurantService.restaurantAdditionals()
+    if(additionals_data) setAdditionals(additionals_data)
+
+    //Bairro
+    const neighborhoods_data = await RestaurantService.restaurantNeighborhoods()
+    if(neighborhoods_data) setNeighborhoods(neighborhoods_data)
+    
   }
   
   async function fetchOrders() {
     if (hasFetched) return; // já tem os dados, não busca de novo
-    console.log("Buscou")
     setIsLoading(true);
     try {
       const data = await OrderService.listOrders();
@@ -50,7 +78,11 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   }
 
   return(
-  <RestaurantContext.Provider value={{restaurant, orders, setOrders, fetchOrders, isLoading}}>
+  <RestaurantContext.Provider 
+    value={{restaurant, orders, setOrders, fetchOrders, isLoading, 
+    categories, setCategories, products, setProducts, additionals,
+    neighborhoods
+  }}>
     {children}
   </RestaurantContext.Provider>
   )

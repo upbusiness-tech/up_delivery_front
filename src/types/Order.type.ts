@@ -1,27 +1,5 @@
-interface SizeOrderItem {
-  name: string,
-  limitFlavors: number
-}
-
-interface ProductOrderItem {
-  id: string;
-  productName: string;
-  productCategoryName: string;
-}
-
-export interface Flavors{
-  id: string
-  price: string;
-  product: ProductOrderItem;
-  size: SizeOrderItem;
-}
-
-export interface OrderItem {
-  name: string;
-  quantity: number;
-  price: number;
-  flavors: Flavors[];
-}
+import type { Additionals } from "./Product.type";
+import type { Neighborhood } from "./Restaurant.type";
 
 export interface Address {
   city: string;
@@ -29,10 +7,12 @@ export interface Address {
   streetName: string;
 }
 
-export interface Neighborhood {
-  id: string;
-  neighborhoodName: string;
-  deliveryFee: number
+export interface OrderItem {
+  name: string;
+  quantity: number;
+  price: number;
+  additionals: Additionals[];
+  flavors: string[];
 }
 
 export interface Order {
@@ -41,15 +21,72 @@ export interface Order {
   code: string;
   printed: boolean;
   items: OrderItem[];
-  orderTotal: number,
-  paymentMethod: string,
-  changeFor: number,
-  isPaid: boolean,
-  status: string,
-  discount: number,
-  observation: string,
-  costumerName: string,
-  costumerPhone: number,
-  costumerAddress: Address,
+  orderTotal: number;
+  paymentMethod: string;
+  changeFor: number;
+  isPaid: boolean;
+  status: string;
+  discount: number;
+  observation: string;
+  costumerName: string;
+  costumerPhone: string;
+  costumerAddress: Address;
   neighborhood: Neighborhood
 }
+
+export interface CreateOrder {
+  type: string;
+  paymentMethod: string;
+  changeFor: number;
+  items: CreateOrderItem[];
+  observation: string;
+  costumerName: string;
+  costumerPhone: string;
+  address?: Address;
+  neighborhoodId?: string;
+}
+
+//Tranforma um OrderItemBag em um OrderItem para a requisição sem o id
+export interface CreateOrderItem {
+  name: string;
+  quantity: number;
+  flavors: string[];
+  additionals?: string[];
+}
+
+//Usar o CreateOrderItem para tranformar isso em um OrderItem
+export interface OrderItemBag {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  flavors: string[],
+  observation: string,
+  additionals?: Additionals[]
+}
+
+export type OrderMode =  "delivery" | "pickup";
+
+  
+
+// id: uuid-12312
+// name: Coca-Cola 1L
+// quantity: 1
+// price: 10
+// flavors: [uuid-90324]
+
+// id: uuid-12312
+// name: Pizza P 2 Sabores
+// quantity: 1
+// price: 30
+// flavors: [uuid-90324, uuid-90324]
+
+// -------------------------------------------------
+
+// name: Coca-Cola 1L
+// quantity: 1
+// flavors: [uuid-90324]
+
+// name: Pizza P 2 Sabores
+// quantity: 1
+// flavors: [uuid-90324, uuid-90324]

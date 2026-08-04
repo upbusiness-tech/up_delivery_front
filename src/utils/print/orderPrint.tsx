@@ -1,5 +1,6 @@
 // components/PrintOrder.tsx
-import type { Order } from "../types/Order.type";
+
+import type { Order } from "../../types/Order.type";
 
 interface PrintOrderProps {
   order: Order | null;

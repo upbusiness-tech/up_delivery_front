@@ -4,14 +4,26 @@ import Orders from '../pages/Orders/Orders'
 import Login from '../pages/Login/Login'
 import Layout from '../layout/Layout'
 import { EnterprisePage } from '../pages/Enterprise/EnterprisePage'
+import ClientMenu from '../pages/ClientMenu/ClientMenu'
+import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
+import PublicMenu from '../pages/PublicMenu/PublicMenu'
 
 export default function ReactRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES_ENUM.LOGIN} element={<Login />} />
+        <Route
+          path={ROUTES_ENUM.PUBLIC_MENU}
+          element={
+            <PublicRestaurantProvider>
+              <PublicMenu />
+            </PublicRestaurantProvider>
+          }
+        />
           <Route element={<Layout />}>
             <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
+            <Route path={ROUTES_ENUM.CLIENT_MENU} element={<ClientMenu />} />
             <Route path={ROUTES_ENUM.ORDERS} element={<Orders />} />
             <Route path={ROUTES_ENUM.ENTERPRISE} element={<EnterprisePage />} />
           </Route>

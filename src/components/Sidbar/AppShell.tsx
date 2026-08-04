@@ -20,11 +20,8 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-// import SettingsIcon from "@mui/icons-material/Settings";
-// import StoreIcon from "@mui/icons-material/Store";
-// import PaidIcon from "@mui/icons-material/Paid";
-// import DescriptionIcon from "@mui/icons-material/Description";
-// import PersonIcon from "@mui/icons-material/Person";
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+
 import LogoutIcon from "@mui/icons-material/Logout";
 import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
 import { useNavigate } from "react-router-dom";
@@ -36,7 +33,7 @@ const COLLAPSED_WIDTH = 72;
 const NAV = [
   { label: "Pedidos", route: ROUTES_ENUM.ORDERS , icon: ReceiptLongIcon },
   { label: "Empresa", route: ROUTES_ENUM.ENTERPRISE, icon: RestaurantMenuIcon },
-  // { label: "Configurações", route: , icon: SettingsIcon },
+  { label: "Cardápio On-line", route: ROUTES_ENUM.CLIENT_MENU, icon: MenuBookIcon },
   // { label: "Empresa", route: , icon: StoreIcon },
   // { label: "Finanças", route: , icon: PaidIcon },
   // { label: "Faturas", route: , icon: DescriptionIcon },

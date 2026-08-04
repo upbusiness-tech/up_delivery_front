@@ -8,17 +8,18 @@ import {
 import PrintIcon from "@mui/icons-material/PrintOutlined";
 import UseOrdersController from "./UseOrdersController";
 import OrderDetail from "../../components/OrdersComponents/OrderDetails/OrderDetails";
-import PrintOrder from "../../utils/orderPrint";
-import STATUS_COLOR, { STATUS, STATUS_LABEL } from "../../utils/status.enum";
+import  { STATUS, STATUS_LABEL } from "../../utils/texts/status.enum";
+import STATUS_COLOR from "../../utils/colors/colors";
+import PrintOrder from "../../utils/print/orderPrint";
+import {capitalizeMask, moneyMask, phoneMask} from "../../utils/masks/mask";
 
 export default function Orders() {
 
   const {
     isDesktop, orders, loading,
     selectedOrder, openOrderDetail, closeOrderDetail,
-    orderToPrint, updateStatusOrder
+    orderToPrint, updateStatusOrder, deliveryFee 
   } = UseOrdersController()
-
 
   return (
     <Stack spacing={2}>
@@ -58,7 +59,6 @@ export default function Orders() {
                   <TableRow
                     key={order.id}
                     onClick={() => openOrderDetail(order)}
-                    // sx={{ cursor: "pointer", backgroundColor: STATUS_COLOR(order.status)}}
                     sx={{ cursor: "pointer", backgroundColor: order.status == STATUS.CANCELADO ? "#ffabab" : '#f0f9ff'}}
                   >
                     <TableCell align="center">
@@ -68,16 +68,16 @@ export default function Orders() {
                     </TableCell>
 
                     <TableCell sx={{color: 'black', fontSize: '1rem'}}>#{order.code}</TableCell>
-                    <TableCell sx={{color: 'black', fontSize: '1rem', fontWeight: 600}}>{(order.type)}</TableCell>
+                    <TableCell sx={{color: 'black', fontSize: '1rem', fontWeight: 600}}>{capitalizeMask(order.type)}</TableCell>
                     <TableCell sx={{color: 'black', fontSize: '1rem'}}>{order.costumerName}</TableCell>
-                    <TableCell sx={{color: 'black', fontSize: '1rem'}}>{order.costumerPhone}</TableCell>
+                    <TableCell sx={{color: 'black', fontSize: '1rem'}}>{phoneMask(order.costumerPhone)}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, color: 'black', fontSize: '1rem' }}>
-                      {Number(order.orderTotal).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                      {moneyMask(Number(order.orderTotal) + deliveryFee(order))}
                     </TableCell>
                     <TableCell sx={{color: 'black'}}>{order.paymentMethod}</TableCell>
                     <TableCell align="right" sx={{color: 'black', fontSize: '1rem'}}>
                       {order.changeFor
-                        ? Number(order.changeFor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+                        ? moneyMask(order.changeFor)
                         : "—"}
                     </TableCell>
                     {order.status == STATUS.CANCELADO ? (
@@ -158,7 +158,12 @@ export default function Orders() {
         </Stack>
       )}
 
-      <OrderDetail order={selectedOrder} onClose={closeOrderDetail} />
+      <OrderDetail
+        order={selectedOrder}
+        onClose={closeOrderDetail}
+        updateStatusOrder={updateStatusOrder}
+      />
+
       <PrintOrder order={orderToPrint} />
     </Stack>
   );
