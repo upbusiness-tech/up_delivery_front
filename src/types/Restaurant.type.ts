@@ -3,6 +3,7 @@ export interface Restaurant {
   restaurantName: string;
   restaurantEmail: string;
   restaurantPhone: string;
+  restaurantAddress: string;
   businessHours: Record<string, { openTime: string; closeTime: string }[]>;
   image: string;
   description: string;
@@ -13,6 +14,12 @@ export interface Restaurant {
 export interface BusinessHourInterval {
   openTime: string | null;
   closeTime: string | null;
+}
+
+export interface Neighborhood {
+  id: string;
+  neighborhoodName: string
+  deliveryFee: number
 }
 
 export type BusinessHours = Record<string, BusinessHourInterval[]>;

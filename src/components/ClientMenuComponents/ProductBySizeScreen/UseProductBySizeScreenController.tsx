@@ -1,12 +1,34 @@
 import { useState } from "react";
-import type { Product, Size } from "../../../types/Product.type";
+import type { Additionals, Product, ProductCategory, Size } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
 
-export function UseProductBySizeScreenController(size: Size, categoryName: string) {
+export function UseProductBySizeScreenController(size: Size, category: ProductCategory, additionals: Additionals[]) {
 
   //Preciso tranformar isso em 1 unico produto com o flavors
   const [selectedFlavors, setSelectedFlavors] = useState<(Product | null)[]>( Array.from({ length: size.limitFlavors }, () => null));
   const [currentFlavorIndex, setCurrentFlavorIndex] = useState(0);
+  const [observation, setObservation] = useState("");
+  const [screenStep, setScreenStep] = useState<"flavors" | "extras">("flavors");
+  const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>([]);
+  const FLAVOR_LABELS = ["1º Sabor", "2º Sabor", "3º Sabor", "4º Sabor"];
+  const OBSERVATION_SUGGESTIONS = ["Sem cebola", "Sem pimenta", "Bem passado", "Molho à parte", "Cortar ao meio"];
+  const ADDITIONALS = additionals ?? []
+
+  function additionalsByCategory() {
+    return ADDITIONALS.filter((a) => a.category.id === category.id);
+  }
+
+  const toggleAdditional = (additional: Additionals) => {
+    setCheckedAdditionals((prev) =>
+      prev.some((a) => a.id === additional.id)
+        ? prev.filter((a) => a.id !== additional.id)
+        : [...prev, additional]
+    );
+  };
+  
+  const addSuggestion = (text: string) => {
+    setObservation((prev) => (prev.includes(text) ? prev : prev.trim().length ? `${prev.trim()}, ${text}` : text));
+  };
   
   function toOrderItem(){
     //Para cada produto em selectedFlavors[], percorro os ProductSizes desse produto e para cada 
@@ -23,7 +45,9 @@ export function UseProductBySizeScreenController(size: Size, categoryName: strin
       return Math.max(acc, price);
     }, 0);
 
-    const productName = `${categoryName} ${size.name}`;
+    const productName = `${category.categoryName} ${size.name}`;
+
+    console.log("Adicionais: ", checkedAdditionals)
 
     const orderItem: OrderItemBag = {
       id: crypto.randomUUID(),
@@ -31,7 +55,8 @@ export function UseProductBySizeScreenController(size: Size, categoryName: strin
       quantity: 1,
       price: maxPrice,
       flavors: getFlavors,
-
+      observation: observation,
+      additionals: checkedAdditionals
     }
     console.log("Produto simples adicionado: ", orderItem)
     return orderItem
@@ -70,6 +95,17 @@ export function UseProductBySizeScreenController(size: Size, categoryName: strin
     goToNextFlavor,
     goToFlavorTab,
     isLastFlavor,
-    toOrderItem
+    toOrderItem,
+    observation,
+    setObservation,
+    addSuggestion,
+    screenStep,
+    setScreenStep,
+    checkedAdditionals,
+    toggleAdditional,
+    FLAVOR_LABELS,
+    OBSERVATION_SUGGESTIONS,
+    ADDITIONALS,
+    additionalsByCategory
   };
 }

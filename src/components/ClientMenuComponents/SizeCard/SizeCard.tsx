@@ -6,11 +6,24 @@ interface SizeCardProps {
   size: Size;
   cat: string;
   onClick: (size: Size) => void;
+  selectCategory: () => void;
 }
 
-export default function SizeCard({ size, cat, onClick }: SizeCardProps) {
+export default function SizeCard({ size, cat, onClick, selectCategory }: SizeCardProps) {
+  
+  const handleClick = () => {
+    selectCategory();
+    onClick(size);
+  };
+
   return (
-    <Card onClick={() => onClick(size)} sx={{ display: "flex", cursor: "pointer", overflow: "hidden", boxShadow: 0, mb: 1}}>
+    <Card onClick={handleClick}
+      sx={{ 
+        display: "flex", cursor: "pointer", 
+        overflow: "hidden",  boxShadow: 0, 
+        borderRadius: 3, border: "1px solid",
+        borderColor: "grey.200"
+      }}>
       <CardActionArea sx={{ p: 2 }}>
           <Stack direction="row" spacing={2} sx={{flexWrap: "wrap", gap: 1, alignItems: "center" }}>
           <Stack sx={{ flex: 1 }}>

@@ -1,7 +1,8 @@
 import { type CreateOrder } from './../../types/Order.type';
 import axios from "axios";
 import { api } from "../axios"
-import type { Product, ProductCategory } from "../../types/Product.type";
+import type { Additionals, Product, ProductCategory } from "../../types/Product.type";
+import type { Neighborhood } from '../../types/Restaurant.type';
 
 export const RestaurantService = {
 
@@ -66,4 +67,82 @@ export const RestaurantService = {
       }
     }
   },
+
+  async restaurantAdditionals() {
+    try {
+      const { data } = await api.get<Additionals[]>(`/additional/additionals-restaurant`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantNeighborhoods() {
+    try {
+      const { data } = await api.get<Neighborhood[]>(`/neighborhood/neighborhoods-restaurant`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+  
+  //ROTAS SLUGS
+  async getPublicRestaurant(slug: string) {
+    try {
+      const { data } = await api.get(`/restaurant/public/${slug}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantProductsPublic(restaurantId: string) {
+    try {
+      const { data } = await api.get<Product[]>(`/product/public/${restaurantId}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantCategoriesPublic(restaurantId: string) {
+    try {
+      const { data } = await api.get<ProductCategory[]>(`/product_category/public/${restaurantId}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantAdditionalsPublic(restaurantId: string) {
+    try {
+      const { data } = await api.get<Additionals[]>(`/additional/public/${restaurantId}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantNeighborhoodsPublic(restaurantId: string) {
+    try {
+      const { data } = await api.get<Neighborhood[]>(`/neighborhood/public/${restaurantId}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  }
 }

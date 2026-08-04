@@ -15,7 +15,7 @@ export default function Row({ label, value, bold, color }: RowProps) {
       </Typography>
       <Typography
         variant={bold ? "subtitle1" : "body2"}
-        sx={{ fontWeight: bold ? 700 : 500, color: color ?? (bold ? "primary.main" : undefined) }}
+        sx={{ fontWeight: bold ? 700 : 500, color: color ?? (bold ? "primary.success" : undefined) }}
       >
         {value}
       </Typography>

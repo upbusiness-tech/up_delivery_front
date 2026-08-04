@@ -18,9 +18,8 @@ export default function Orders() {
   const {
     isDesktop, orders, loading,
     selectedOrder, openOrderDetail, closeOrderDetail,
-    orderToPrint, updateStatusOrder
+    orderToPrint, updateStatusOrder, deliveryFee 
   } = UseOrdersController()
-
 
   return (
     <Stack spacing={2}>
@@ -60,7 +59,6 @@ export default function Orders() {
                   <TableRow
                     key={order.id}
                     onClick={() => openOrderDetail(order)}
-                    // sx={{ cursor: "pointer", backgroundColor: STATUS_COLOR(order.status)}}
                     sx={{ cursor: "pointer", backgroundColor: order.status == STATUS.CANCELADO ? "#ffabab" : '#f0f9ff'}}
                   >
                     <TableCell align="center">
@@ -74,7 +72,7 @@ export default function Orders() {
                     <TableCell sx={{color: 'black', fontSize: '1rem'}}>{order.costumerName}</TableCell>
                     <TableCell sx={{color: 'black', fontSize: '1rem'}}>{phoneMask(order.costumerPhone)}</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600, color: 'black', fontSize: '1rem' }}>
-                      {moneyMask(order.orderTotal)}
+                      {moneyMask(Number(order.orderTotal) + deliveryFee(order))}
                     </TableCell>
                     <TableCell sx={{color: 'black'}}>{order.paymentMethod}</TableCell>
                     <TableCell align="right" sx={{color: 'black', fontSize: '1rem'}}>
@@ -160,7 +158,12 @@ export default function Orders() {
         </Stack>
       )}
 
-      <OrderDetail order={selectedOrder} onClose={closeOrderDetail} />
+      <OrderDetail
+        order={selectedOrder}
+        onClose={closeOrderDetail}
+        updateStatusOrder={updateStatusOrder}
+      />
+
       <PrintOrder order={orderToPrint} />
     </Stack>
   );

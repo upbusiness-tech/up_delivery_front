@@ -1,6 +1,7 @@
 import PrintIcon from "@mui/icons-material/Print";
 import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CloseIcon from "@mui/icons-material/Close";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 import {
   Box,
   Button,
@@ -19,7 +20,6 @@ import {
 } from "@mui/material";
 import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
-import UseOrdersController from "../../../pages/Orders/UseOrdersController";
 import STATUS_COLOR from "../../../utils/colors/colors";
 import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
 import { moneyMask } from "../../../utils/masks/mask";
@@ -27,13 +27,22 @@ import { moneyMask } from "../../../utils/masks/mask";
 interface OrderDetailProps {
   order: Order | null;
   onClose: () => void;
+  updateStatusOrder: (status: string, orderId: string) => void;
 }
 
-export default function OrderDetail({ order, onClose }: OrderDetailProps) {
+
+export default function OrderDetail({ 
+  order, 
+  onClose,
+  updateStatusOrder
+  }: OrderDetailProps) {
+
   const {open, openModalOrderCancel, handleOpenModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines} = useOrderDetailController({ order, onClose });
-  const {  updateStatusOrder } = UseOrdersController()
 
   if (!order) return null;
+
+  const isDelivery = order.type === "delivery";
+  const deliveryFee = isDelivery ? Number(order.neighborhood?.deliveryFee ?? 0) : 0;
 
   return (
     <>
@@ -77,6 +86,11 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                             {line}
                           </Typography>
                         ))}
+                        {item.additionals && item.additionals.length > 0 && (
+                          <Typography variant="body2" color="success" sx={{ ml: 2 }}>
+                            + {item.additionals.map((e) => e.additionalName).join(", ")}
+                          </Typography>
+                        )}
                       </Box>
 
                       <Typography sx={{ fontWeight: 700 }}>
@@ -86,6 +100,14 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                   </Paper>
                 ))}
               </Stack>
+              <Typography variant="subtitle1" gutterBottom>
+                Observações:
+              </Typography>
+                  <Paper elevation={0}>
+                    <Typography variant="subtitle2" gutterBottom>
+                      {order.observation || "Nenhuma observação"}
+                    </Typography>
+                  </Paper>
             </Grid>
 
             <Grid size={{ xs: 12, md: 5 }}>
@@ -103,26 +125,40 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                     {order.costumerPhone}
                   </Typography>
                   <Divider sx={{ my: 1 }} />
-                  <Typography variant="subtitle2" gutterBottom>
-                    Endereço
-                  </Typography>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Bairro:</strong> {order.neighborhood.neighborhoodName}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Rua:</strong> {order.costumerAddress.streetName}
-                    </Typography>
 
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Número:</strong> {order.costumerAddress.number}
-                    </Typography>
-
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Cidade:</strong> {order.costumerAddress.city}
-                    </Typography>
-                    
-                  </Box>
+                  {isDelivery ? (
+                    <>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Endereço
+                      </Typography>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Bairro:</strong> {order.neighborhood?.neighborhoodName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Rua:</strong> {order.costumerAddress?.streetName}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Número:</strong> {order.costumerAddress?.number}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Cidade:</strong> {order.costumerAddress?.city}
+                        </Typography>
+                      </Box>
+                    </>
+                  ) : (
+                    <>
+                      <Typography variant="subtitle2" gutterBottom>
+                        Modalidade
+                      </Typography>
+                      <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                        <StorefrontIcon fontSize="small" sx={{ color: "grey.500" }} />
+                        <Typography variant="body2" color="text.secondary">
+                          Retirada no local
+                        </Typography>
+                      </Stack>
+                    </>
+                  )}
                 </Paper>
                 <Divider sx={{ my: 1 }} />
                 <Paper elevation={0} sx={{ p: 1 }}>
@@ -133,17 +169,19 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                 </Paper>
                 <Divider sx={{ my: 1 }} />
               <Paper elevation={0} sx={{ p: 1 }}>
-                <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                  <Typography variant="subtitle1">Taxa entrega</Typography>
-                  <Typography variant="subtitle1" sx={{fontWeight: '600'}}>{moneyMask(order.neighborhood.deliveryFee)} {}</Typography>
-                </Stack>
+                {isDelivery && (
+                  <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                    <Typography variant="subtitle1">Taxa entrega</Typography>
+                    <Typography variant="subtitle1" sx={{fontWeight: '600'}}>{moneyMask(deliveryFee)}</Typography>
+                  </Stack>
+                )}
                 <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="subtitle1">Subtotal</Typography>
-                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(order.orderTotal)} {}</Typography>
+                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(order.orderTotal)}</Typography>
                 </Stack>
                 <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   <Typography variant="subtitle1">Total</Typography>
-                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(Number(order.orderTotal) + Number(order.neighborhood.deliveryFee))}</Typography>
+                  <Typography variant="h6" sx={{fontWeight: '600'}}>{moneyMask(Number(order.orderTotal) + deliveryFee)}</Typography>
                 </Stack>
               </Paper>
               </Stack>

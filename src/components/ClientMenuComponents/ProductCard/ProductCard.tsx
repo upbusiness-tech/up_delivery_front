@@ -11,7 +11,13 @@ interface props {
 export default function ProductCard({ product, onClick }: props) {
 
   return (
-    <Card onClick={onClick} sx={{ display: "flex", cursor: "pointer", overflow: "hidden",  boxShadow: 0, borderRadius: 3 }}>
+    <Card onClick={onClick} 
+    sx={{ 
+      display: "flex", cursor: "pointer", 
+      overflow: "hidden",  boxShadow: 0, 
+      borderRadius: 3, border: "1px solid",
+      borderColor: "grey.200",
+    }}>
       <CardContent sx={{ flex: 1, py: 1.5 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{product.productName}</Typography>
         <Typography variant="subtitle1" color="primary" sx={{ mt: 1, fontWeight: 700 }}>
@@ -19,6 +25,7 @@ export default function ProductCard({ product, onClick }: props) {
               R${(product.sizes[0].price || 0).toFixed(2)}
             </Typography>
         </Typography>
+        <Typography variant="caption" sx={{ lineHeight: 1.2 }}>{product.productDescription}</Typography>
       </CardContent>
       <Box sx={{ position: "relative", width: { xs: 110, sm: 140 }, flexShrink: 0 }}>
         <CardMedia component="img" image={genericImage} alt={product.productName} sx={{ height: "100%", objectFit: "cover" }} />

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Order, OrderItem } from "../../../types/Order.type";
-import { STATUS } from "../../../utils/texts/status.enum";
-import UseOrdersController from "../../../pages/Orders/UseOrdersController";
+// import { STATUS } from "../../../utils/texts/status.enum";
+// import UseOrdersController from "../../../pages/Orders/UseOrdersController";
 import { useRestaurant } from "../../../context/RestaurantContext";
 import type { ProducSize } from "../../../types/Product.type";
 
@@ -17,7 +17,7 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
   const handleOpenModalOrderCancel = () => setOpenModalOrderCancel(true)
   const handleCloseModalOrderCancel = () => setOpenModalOrderCancel(false)
 
-  const {  updateStatusOrder } = UseOrdersController()
+  // const {  updateStatusOrder } = UseOrdersController()
   const {products} = useRestaurant()
   
   function getProductNameByProductSize(flavor: string | ProducSize): string {
@@ -35,9 +35,9 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
     const limitFlavors = item.flavors.length;
 
     // Se for só 1 sabor permitido, mostra só o nome do produto
-    if (limitFlavors <= 1) {
-      return [];
-    }
+    // if (limitFlavors <= 1) {
+    //   return [];
+    // }
 
     // Mais de 1 sabor, mostra os nomes dos sabores
     return item.flavors.map((flavor, index) => {
@@ -48,7 +48,7 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
 
   async function cancelOrder(){
     if(!order) return;
-    await updateStatusOrder(STATUS.CANCELADO, order?.id);
+    // await updateStatusOrder(STATUS.CANCELADO, order?.id);
     handleCloseModalOrderCancel()
     onClose()
   }

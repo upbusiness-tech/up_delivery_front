@@ -5,7 +5,7 @@ import type { Order } from "../../types/Order.type";
 export const OrderService = {
   async listOrders(){
     try{
-      const { data } = await api.get(`/order/list-orders-restaurant`)
+      const { data } = await api.get<Order[]>(`/order/list-orders-restaurant`)
       return data
     }catch (error) {
       if (axios.isAxiosError(error)) {

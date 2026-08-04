@@ -1,3 +1,5 @@
+import type { Neighborhood, Restaurant } from "./Restaurant.type";
+
 export interface ProductRestaurant {
   id: string;
   restaurantName: string;
@@ -6,17 +8,17 @@ export interface ProductCategory {
   id: string;
   categoryName: string;
 }
-export interface Adicionais {
-  name: string,
-  price: number
+export interface Additionals {
+  id: string;
+  additionalName: string;
+  additionalPrice: number;
+  category: ProductCategory
 }
-
-
-
 
 export interface Product {
   id: string;
   productName: string;
+  productDescription: string;
   productActive: boolean;
   productCategory: ProductCategory;
   sizes: ProducSize[];
@@ -36,7 +38,13 @@ export interface Size {
   limitFlavors: number;
 }
 
-
+export interface MenuData {
+  restaurant: Restaurant | undefined;
+  products: Product[];
+  categories: ProductCategory[];
+  additionals: Additionals[];
+  neighborhoods: Neighborhood[];
+}
 
 
 

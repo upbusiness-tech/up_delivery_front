@@ -1,19 +1,17 @@
+import type { Additionals } from "./Product.type";
+import type { Neighborhood } from "./Restaurant.type";
+
 export interface Address {
   city: string;
   number: number;
   streetName: string;
 }
 
-export interface Neighborhood {
-  id: string;
-  neighborhoodName: string;
-  deliveryFee: number;
-}
-
 export interface OrderItem {
   name: string;
   quantity: number;
   price: number;
+  additionals: Additionals[];
   flavors: string[];
 }
 
@@ -44,15 +42,16 @@ export interface CreateOrder {
   observation: string;
   costumerName: string;
   costumerPhone: string;
-  address: Address;
-  neighborhoodId: string;
+  address?: Address;
+  neighborhoodId?: string;
 }
 
 //Tranforma um OrderItemBag em um OrderItem para a requisição sem o id
 export interface CreateOrderItem {
   name: string;
   quantity: number;
-  flavors: string[]
+  flavors: string[];
+  additionals?: string[];
 }
 
 //Usar o CreateOrderItem para tranformar isso em um OrderItem
@@ -61,8 +60,14 @@ export interface OrderItemBag {
   name: string;
   quantity: number;
   price: number;
-  flavors: string[]
+  flavors: string[],
+  observation: string,
+  additionals?: Additionals[]
 }
+
+export type OrderMode =  "delivery" | "pickup";
+
+  
 
 // id: uuid-12312
 // name: Coca-Cola 1L

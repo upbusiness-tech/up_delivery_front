@@ -1,8 +1,8 @@
-import {useState } from "react";
-import { type Address, type CreateOrder, type CreateOrderItem, type OrderItemBag } from "../../types/Order.type";
-import { useRestaurant } from '../../context/RestaurantContext';
-import type { Product, Size } from '../../types/Product.type';
+import {useEffect, useState } from "react";
+import { type Address, type CreateOrder, type CreateOrderItem, type Order, type OrderItemBag, type OrderMode } from "../../types/Order.type";
+import type { MenuData, Product, ProductCategory, Size } from '../../types/Product.type';
 import { RestaurantService } from "../../api/services/restaurant.service";
+import type { Neighborhood } from "../../types/Restaurant.type";
 
 type CheckoutStep =
 | "menu"
@@ -11,28 +11,31 @@ type CheckoutStep =
 | "customer"
 | "address"
 | "payment"
-| "confirmation";
+| "paymentMethod"
 
-export function UseClientMenuController() {
-
-  const { products, restaurant } = useRestaurant()
+export function UseClientMenuController({ restaurant, products }: MenuData) {
 
   const [step, setStep] = useState<CheckoutStep>("menu");
   const [selectedSize, setSelectedSize] = useState<Size>();
   const [productsBySize, setProductsBySize] = useState<Product[]>([]);
-  const [catName, setCatName] = useState("Pizza");
+  const [category, setCategory] = useState<ProductCategory>();
   //Produto selecionado
   const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
   //Produtos adicionados no pedido, o produto tem que ser adicionado ja com os flavors escolhidos 
   const [productsAdded, setProductsAdded] = useState<OrderItemBag[]>([])
-  const [type, setType] = useState("delivery");
-  const [paymentMethod, setPaymentMethod] = useState("PIX");
+  const [type, setType] = useState<OrderMode>("delivery");
+  const [paymentMethod, setPaymentMethod] = useState("pix");
   const [changeFor, setChangeFor] = useState(0);
   const [observation, setObservation] = useState("");
-  const [costumerName, setCostumerName] = useState("Widney");
-  const [costumerPhone, setCostumerPhone] = useState("88981486910");
-  const [address, setAddress] = useState<Address>({ city: 'Quixada', number: 2003, streetName: "Rua dos gato"});
-  const [neighborhoodId, setNeighborhoodId] = useState("44b120d0-f864-4c3e-9af9-6402cd9113b8");
+  const [costumerName, setCostumerName] = useState("");
+  const [costumerPhone, setCostumerPhone] = useState("");
+  const [address, setAddress] = useState<Address>({ city: "", number: 0, streetName: "" });
+  const [neighborhood, setNeighborhood] = useState<Neighborhood>();
+  const [orderCreated, setOrderCreated] = useState<Order>()
+
+  useEffect(() => {
+    setOrderCreated(undefined);
+  }, [productsAdded, address, neighborhood, type]);
 
   const openSize = (size: Size) => {
     setSelectedSize(size);
@@ -65,8 +68,11 @@ export function UseClientMenuController() {
         setStep("payment");
         break;
       case "payment":
-        setStep("confirmation");
+        setStep("paymentMethod");
         break;
+      case "paymentMethod":
+        setStep("menu")
+        break
     }
   }
 
@@ -87,20 +93,27 @@ export function UseClientMenuController() {
       case "payment":
         setStep("address");
         break;
-      case "confirmation":
-        setStep("payment");
-        break;
+      case "paymentMethod":
+        setStep("payment")
+        break
     }
   }
 
-  const total = productsAdded.reduce((tot, item) => { return tot + item.price;}, 0);;
+  const subtotal = productsAdded.reduce((tot, item) => {
+    const additionalsSum = (item.additionals ?? []).reduce((sum, ad) => sum + ad.additionalPrice, 0);
+    return tot + (item.price + additionalsSum) * item.quantity;
+  }, 0);
+
+  const total = subtotal + (neighborhood?.deliveryFee ?? 0);
 
   function addProduct(item: OrderItemBag) {
     setProductsAdded((prev) => [...prev, item]);
+    setOrderCreated(undefined);
   }
 
   function removeItem(id: string) {
     setProductsAdded((prev) => prev.filter((item) => item.id !== id));
+    setOrderCreated(undefined);
   }
 
   function increaseQuantity(id: string) {
@@ -111,6 +124,7 @@ export function UseClientMenuController() {
         : item
       )
     );
+    setOrderCreated(undefined);
   }
 
   function decreaseQuantity(id: string) {
@@ -121,75 +135,55 @@ export function UseClientMenuController() {
         : item
       )
     );
+    setOrderCreated(undefined);
   }
 
   async function createOrder() {
-    if(!address) return;
+    // Se já existe um pedido criado, não cria de novo
+    if (orderCreated) return;
 
-    // Antes de mandar os itens, preciso tranformar eles em OrderItens,
-    // eles estão como OrderItemBag
+    if (type === "delivery" && (!address || !neighborhood)) return;
+
     const orderItens = productsAdded.map((e) => {
       const item: CreateOrderItem = {
         name: e.name,
         quantity: e.quantity,
-        flavors: e.flavors
+        flavors: e.flavors,
+        additionals: e.additionals?.map((ad) => ad.id)
       }
       return item;
     })
-    console.log("Produtos tranformados para a requisição: ", orderItens)
+
+    const observations = productsAdded
+      .map((e) => e.observation)
+      .filter(Boolean)
+      .join(" | ");
 
     const newOrder: CreateOrder = {
       type: type,
       paymentMethod: paymentMethod,
       changeFor: changeFor,
       items: orderItens,
-      observation: observation,
+      observation: observations,
       costumerName: costumerName,
       costumerPhone: costumerPhone,
-      address: address,
-      neighborhoodId: neighborhoodId,
+      ...(type === "delivery" && { address, neighborhoodId: neighborhood!.id }),
     };
-    console.log(newOrder);
 
     if(!restaurant) return
-    const order = await RestaurantService.createOrder(restaurant?.id, newOrder)
+    const order = await RestaurantService.createOrder(restaurant.id, newOrder)
+    setOrderCreated(order)
     console.log(order)
   }
 
   return {
-    step,
-    openSize,
-    selectedSize,
-    productsBySize,
-    previousStep,
-    selectedProduct,
-    setSelectedProduct,
-    productsAdded,
-    setProductsAdded,
-    addProduct,
-    nextStep,
-    removeItem,
-    increaseQuantity,
-    decreaseQuantity,
-    observation,
-    setObservation,
-    costumerName,
-    setCostumerName,
-    costumerPhone,
-    setCostumerPhone,
-    address,
-    setAddress,
-    neighborhoodId,
-    setNeighborhoodId,
-    type,
-    setType,
-    paymentMethod,
-    setPaymentMethod,
-    changeFor,
-    setChangeFor,
-    createOrder,
-    total,
-    catName,
-    setCatName
+    step, openSize, selectedSize, productsBySize, previousStep,
+    selectedProduct, setSelectedProduct, productsAdded, setProductsAdded,
+    addProduct, nextStep, removeItem, increaseQuantity, decreaseQuantity,
+    observation, setObservation, costumerName, setCostumerName,
+    costumerPhone, setCostumerPhone, address, setAddress,
+    neighborhood, setNeighborhood, type, setType, paymentMethod,
+    setPaymentMethod, changeFor, setChangeFor, createOrder,
+    subtotal, total, category, setCategory, orderCreated
   };
 }
