@@ -31,7 +31,8 @@ export interface Order {
   costumerName: string;
   costumerPhone: string;
   costumerAddress: Address;
-  neighborhood: Neighborhood
+  neighborhood: Neighborhood;
+  restaurant: { id: string };
 }
 
 export interface CreateOrder {
