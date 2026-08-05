@@ -1,6 +1,6 @@
 import { QrCode2, ContentCopy, CheckCircle } from "@mui/icons-material";
 import { Button, LinearProgress, Paper, Stack, Typography } from "@mui/material";
-import { moneyMask } from "../../../../utils/masks/mask";
+import { moneyMask } from "../../../../../utils/masks/mask";
 
 interface Props {
   total: number;
@@ -56,7 +56,7 @@ export default function PixScreen({
       ) : (
         qrCodeBase64 && (
           <Stack sx={{ alignItems: "center", justifyContent: "center", mb: 2.5 }}>
-            <img style={{ width: 170, height: 170 }} src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" />
+            <img style={{ width: 180, height: 180 }} src={`data:image/png;base64,${qrCodeBase64}`} alt="QR Code Pix" />
           </Stack>
         )
       )}
@@ -76,7 +76,7 @@ export default function PixScreen({
           {copied ? "Copiado" : "Copiar"}
         </Button>
       </Paper>
-
+      
       <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5, textAlign: "center" }}>
         Após o pagamento, a confirmação pode levar alguns instantes.
       </Typography>
