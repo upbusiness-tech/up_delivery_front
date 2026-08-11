@@ -7,7 +7,7 @@ export interface PixData {
   expiresAt: string;
 }
 
-export interface CreatePayment {
+export interface CreatePixPayment {
   amount: number;
   paymentMethod: 'pix';
   payerEmail: string;

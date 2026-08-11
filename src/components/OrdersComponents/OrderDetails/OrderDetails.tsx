@@ -209,9 +209,17 @@ export default function OrderDetail({
               onChange={(e) => updateStatusOrder(e.target.value, order.id)}
               onClick={(e) => e.stopPropagation()}
               sx={{
+                color: 'black',
                 backgroundColor: STATUS_COLOR(order.status),
                 '& .MuiSelect-icon': {
-                  color: '#000000',
+                  color: 'black',
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
+                },
+                
+                '&:hover .MuiOutlinedInput-notchedOutline': {
+                  border: 'none',
                 },
               }}
             >

@@ -1,18 +1,19 @@
 import { Avatar, Box, Button, Container, Paper, Radio, Stack, Typography } from "@mui/material";
 import { BackHeader } from "../BackHeader/BackHeader";
-import { UsePaymentController } from "./UsePaymentControllerScreen";
+import { UsePaymentController } from "./UseSelectPaymentMethodControllerScreen";
 
 interface PaymentScreenProps {
   total: number;
+  paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   onCreateOrder: () => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreateOrder}: PaymentScreenProps) {
+export default function PaymentScreen({onBack, onNext, setPaymentMethod, paymentMethod, onCreateOrder}: PaymentScreenProps) {
 
-  const c = UsePaymentController()
+  const c = UsePaymentController({ paymentMethod, setPaymentMethod });
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -26,7 +27,7 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreat
             return (
               <Paper
                 key={o.id}
-                onClick={() => c.setPaymentMethod(o.id)}
+                onClick={() => setPaymentMethod(o.id)}
                 sx={{
                   p: 2,
                   cursor: "pointer",
@@ -65,7 +66,6 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreat
             color="success"
             sx={{ borderRadius: 999, textTransform: "none", fontWeight: 700, bgcolor: "success.main", boxShadow: "none", "&:hover": { bgcolor: "success.dark", boxShadow: "none" }, "&.Mui-disabled": { bgcolor: "grey.200", color: "grey.500" } }}
             onClick={() => {
-              setPaymentMethod(c.paymentMethod)
               onCreateOrder()
               onNext()
             }}

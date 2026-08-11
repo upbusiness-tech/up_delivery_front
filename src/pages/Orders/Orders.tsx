@@ -90,10 +90,10 @@ export default function Orders() {
                           onChange={(e) => updateStatusOrder(e.target.value, order.id)}
                           onClick={(e) => e.stopPropagation()}
                           sx={{
-                            color: 'white',
+                            color: 'black',
                             backgroundColor: STATUS_COLOR(order.status),
                             '& .MuiSelect-icon': {
-                              color: 'white',
+                              color: 'black',
                             },
                             '& .MuiOutlinedInput-notchedOutline': {
                               border: 'none',

@@ -67,27 +67,3 @@ export interface OrderItemBag {
 }
 
 export type OrderMode =  "delivery" | "pickup";
-
-  
-
-// id: uuid-12312
-// name: Coca-Cola 1L
-// quantity: 1
-// price: 10
-// flavors: [uuid-90324]
-
-// id: uuid-12312
-// name: Pizza P 2 Sabores
-// quantity: 1
-// price: 30
-// flavors: [uuid-90324, uuid-90324]
-
-// -------------------------------------------------
-
-// name: Coca-Cola 1L
-// quantity: 1
-// flavors: [uuid-90324]
-
-// name: Pizza P 2 Sabores
-// quantity: 1
-// flavors: [uuid-90324, uuid-90324]

@@ -1,19 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { MethodPayment, type CreatePayment } from "../../../types/Payment.type";
-import { PaymentSevice } from "../../../api/services/payment.service";
-import { usePaymentSocket } from "../../../api/services/socket";
-import type { Order } from "../../../types/Order.type";
+import type { Order } from "../../../../types/Order.type";
+import { usePaymentSocket } from "../../../../api/services/socket";
+import { MethodPayment, type CreatePixPayment } from "../../../../types/Payment.type";
+import { PaymentSevice } from "../../../../api/services/payment.service";
 
 interface Props {
   order: Order;
   total: number;
+  userEmail: string
 }
 
 const PIX_EXPIRATION_SECONDS = 60;
 
-const FINAL_STATUSES = ["approved", "rejected", "cancelled"];
-
-export function UsePaymentMethodScreenController({ order, total }: Props) {
+export function UsePixScreenController({ order, total, userEmail }: Props) {
   const [loading, setLoading] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState("");
   const [qrCode, setQrCode] = useState("");
@@ -23,9 +22,10 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
   const [orderId, setOrderId] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
   const [restStatus, setRestStatus] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const pollingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const paymentCreatedRef = useRef(false);
+  
   const socketStatus = usePaymentSocket(orderId);
   
   //prioriza o que chegar, seja via socket ou via polling
@@ -37,14 +37,14 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
     setExpired(false);
     setRestStatus(null);
     try {
-      const payment: CreatePayment = {
+      const payment: CreatePixPayment = {
         amount: total,
         paymentMethod: MethodPayment.PIX,
         description: "UPDELIVERY_ORDER",
-        payerEmail: "cliente.teste@gmail.com",
+        payerEmail: userEmail,
         orderInternalId: order.id
       };
-      const data = await PaymentSevice.createPayment(payment);
+      const data = await PaymentSevice.createPayment(order.restaurant.id, payment);
       if (data) {
         setQrCodeBase64(data.qrCodeBase64);
         setQrCode(data.qrCode);
@@ -58,7 +58,7 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
     }
   }, [order.id, total]);
 
-  // cria o pagamento
+  // cria o pagamento PIX
   useEffect(() => {
     if (order.paymentMethod !== MethodPayment.PIX) return;
     if (paymentCreatedRef.current) return;
@@ -66,42 +66,15 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
     fetchPayment();
   }, [order.paymentMethod, fetchPayment]);
 
-  // polling do status do pagamento
-  useEffect(() => {
-    if (!orderId || expired) return;
+  // Chamado pelo CardScreen depois que o pagamento com cartão foi criado
+  const handleCardPaymentCreated = useCallback((paymentId: string) => {
+    setSubmitError(null);
+    setOrderId(paymentId);
+  }, []);
 
-    const stopPolling = () => {
-      if (pollingIntervalRef.current) {
-        clearInterval(pollingIntervalRef.current);
-        pollingIntervalRef.current = null;
-      }
-    };
-
-    const checkPaymentStatus = async () => {
-      try {
-        const status = await PaymentSevice.getStatusPaymentPolling(order.restaurant.id, orderId);
-        console.log("Status do pagamento:", status);
-        setRestStatus(status);
-        if (FINAL_STATUSES.includes(status)) {
-          stopPolling();
-        }
-      } catch (err) {
-        console.error("Erro ao consultar pagamento:", err);
-      }
-    };
-
-    checkPaymentStatus();
-    pollingIntervalRef.current = setInterval(checkPaymentStatus, 10000);
-
-    return stopPolling;
-  }, [orderId, expired, order.restaurant.id]);
-
-  useEffect(() => {
-    if (socketStatus === "approved" && pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-  }, [socketStatus]);
+  const handleCardSubmitError = useCallback((message: string) => {
+    setSubmitError(message);
+  }, []);
 
   //Expiração
   useEffect(() => {
@@ -112,13 +85,7 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
       const diff = Math.max(0, Math.floor((expirationTime - Date.now()) / 1000));
       setSecondsLeft(diff);
 
-      if (diff === 0) {
-        setExpired(true);
-        if (pollingIntervalRef.current) {
-          clearInterval(pollingIntervalRef.current);
-          pollingIntervalRef.current = null;
-        }
-      }
+      if (diff === 0) setExpired(true);
     };
 
     updateCountdown();
@@ -145,6 +112,8 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
     fetchPayment();
   };
 
+  const truncatedCode = qrCode.length > 40 ? `${qrCode.slice(0, 20)}...${qrCode.slice(-15)}`  : qrCode;
+
   return {
     loading,
     qrCodeBase64,
@@ -157,6 +126,10 @@ export function UsePaymentMethodScreenController({ order, total }: Props) {
     handleCopy,
     paymentStatus,
     expired,
-    handleRetry
+    handleRetry,
+    handleCardPaymentCreated,
+    handleCardSubmitError,
+    submitError,
+    truncatedCode
   };
 }

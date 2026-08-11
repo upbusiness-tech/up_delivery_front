@@ -16,8 +16,8 @@ export default function DoneScreen({ order, onNext }: DoneScreenProps) {
     <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
       <CheckCircle sx={{ fontSize: 96, color: "success.main" }} />
       <Typography variant="h5" sx={{ fontWeight: 800, mt: 2 }}>Pedido confirmado!</Typography>
-      <Typography color="text.secondary" sx={{ mt: 1 }}>
-        Seu pedido <b>{order.code}</b> foi recebido pelo restaurante.
+      <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+        Seu pedido foi recebido pelo restaurante.
       </Typography>
       <Paper sx={{ p: 2, mt: 3, textAlign: "left" }}>
         <Row label="Número do pedido" value={order.code} />

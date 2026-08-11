@@ -47,7 +47,6 @@ export const RestaurantService = {
           filter: `restaurant.id||$eq||${restaurantId}`,
         },
       });
-      // console.log("Categorias: ", data)
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -59,7 +58,6 @@ export const RestaurantService = {
   async restaurantProducts() {
     try {
       const { data } = await api.get<Product[]>(`/product/products-restaurant`);
-      // console.log("produtos: ", data)
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -90,7 +88,10 @@ export const RestaurantService = {
     }
   },
   
-  //ROTAS SLUGS
+  
+  //--------------------------------------------------------ROTAS SLUGS
+
+  
   async getPublicRestaurant(slug: string) {
     try {
       const { data } = await api.get(`/restaurant/public/${slug}`);
