@@ -8,19 +8,31 @@ import {
   IconButton,
   InputAdornment,
   Divider,
+  Alert,
 } from "@mui/material";
+import { useState } from "react";
 import MailOutlinedIcon from "@mui/icons-material/MailOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import { UseLoginController } from "./UseLoginController";
 
-
 export default function Login() {
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    signIn,
+    loading,
+    error,
+  } = UseLoginController();
 
-  const { signIn } = UseLoginController()
+  const [showPassword, setShowPassword] = useState(false);
 
   return (
     <Box
@@ -75,9 +87,9 @@ export default function Login() {
       >
         <Paper
           component="form"
+          onSubmit={(e) => { e.preventDefault(); signIn(); }}
           sx={{ p: { xs: 3, sm: 5 }, width: "100%", maxWidth: 420 }}
           elevation={0}
-
         >
           <Stack spacing={0.5} sx={{ mb: 3 }}>
             <Typography variant="h4" sx={{ fontWeight: 800 }}>
@@ -89,11 +101,15 @@ export default function Login() {
           </Stack>
 
           <Stack spacing={2}>
+            {error && <Alert severity="error">{error}</Alert>}
+
             <TextField
               label="E-mail"
               type="email"
               fullWidth
               autoComplete="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -103,11 +119,14 @@ export default function Login() {
                   ),
                 },
               }}
-              />
+            />
             <TextField
               label="Senha"
+              type={showPassword ? "text" : "password"}
               fullWidth
               autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               slotProps={{
                 input: {
                   startAdornment: (
@@ -119,7 +138,9 @@ export default function Login() {
                     <InputAdornment position="end">
                       <IconButton
                         edge="end"
+                        onClick={() => setShowPassword((v) => !v)}
                       >
+                        {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -147,13 +168,14 @@ export default function Login() {
             </Stack>
 
             <Button
+              type="submit"
               variant="contained"
               color="success"
               size="large"
               sx={{ py: 1.25 }}
-              onClick={() => signIn("upbusinessenterprise@gmail.com", "senha12345")}
+              disabled={loading}
             >
-              Entrar
+              {loading ? "Entrando..." : "Entrar"}
             </Button>
 
             <Divider sx={{ my: 1 }}>ou</Divider>

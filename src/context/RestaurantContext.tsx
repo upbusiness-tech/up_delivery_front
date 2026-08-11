@@ -4,6 +4,7 @@ import { RestaurantService } from "../api/services/restaurant.service";
 import { OrderService } from "../api/services/order.service";
 import type { Order } from "../types/Order.type";
 import type { Additionals, Product, ProductCategory } from "../types/Product.type";
+import { useAuth } from "./AuthContext";
 
 interface RestaurantContextValue {
   restaurant: Restaurant | undefined;
@@ -23,6 +24,7 @@ interface RestaurantContextValue {
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
 
 export function RestaurantProvider({children}: { children: ReactNode }){
+  const { user, loading: authLoading } = useAuth();
   const [restaurant, setRestaurant] = useState<Restaurant | undefined>(undefined)
   const [orders, setOrders] = useState<Order[] | undefined>([])
   const [categories, setCategories] = useState<ProductCategory[]>([])
@@ -33,12 +35,11 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
   
   
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if(!token) return;
+ useEffect(() => {
+    if (authLoading) return; // ainda verificando sessão do Firebase
+    if (!user) return; // ninguém logado
     loadRestaurant();
-    // fetchOrders();
-  }, []);
+  }, [authLoading, user]);
   
   const loadRestaurant = async () => {
     const restaurant_data = await RestaurantService.getMe()
