@@ -1,18 +1,25 @@
 import { Avatar, Box, Button, Container, Paper, Radio, Stack, Typography } from "@mui/material";
 import { BackHeader } from "../BackHeader/BackHeader";
-import { UsePaymentController } from "./UsePaymentControllerScreen";
+import { UsePaymentController } from "./UseSelectPaymentMethodControllerScreen";
+import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
 
 interface PaymentScreenProps {
   total: number;
+  paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   onCreateOrder: () => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreateOrder}: PaymentScreenProps) {
+export default function PaymentScreen({onBack, onNext, setPaymentMethod, paymentMethod, onCreateOrder}: PaymentScreenProps) {
 
-  const c = UsePaymentController()
+  const c = UsePaymentController({ paymentMethod, setPaymentMethod });
+
+  async function handleNext(){
+    onCreateOrder()
+    onNext()
+  }
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -26,7 +33,7 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreat
             return (
               <Paper
                 key={o.id}
-                onClick={() => c.setPaymentMethod(o.id)}
+                onClick={() => setPaymentMethod(o.id)}
                 sx={{
                   p: 2,
                   cursor: "pointer",
@@ -50,29 +57,12 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, onCreat
             );
           })}
         </Stack>
-
-        <Stack direction="row" spacing={1} sx={{ mt: "auto", py: 1 }}>
-          <Button
-            variant="outlined"
-            onClick={onBack}
-            sx={{ borderRadius: 999, textTransform: "none", fontWeight: 600, borderColor: "grey.300", color: "text.primary", px: 3, "&:hover": { borderColor: "grey.400", bgcolor: "grey.50" } }}
-          >
-            Voltar
-          </Button>
-          <Button
-            variant="contained"
-            fullWidth
-            color="success"
-            sx={{ borderRadius: 999, textTransform: "none", fontWeight: 700, bgcolor: "success.main", boxShadow: "none", "&:hover": { bgcolor: "success.dark", boxShadow: "none" }, "&.Mui-disabled": { bgcolor: "grey.200", color: "grey.500" } }}
-            onClick={() => {
-              setPaymentMethod(c.paymentMethod)
-              onCreateOrder()
-              onNext()
-            }}
-          >
-            Continuar
-          </Button>
-        </Stack>
+        <ScreenFooterActions
+          onBack={onBack}
+          onNext={handleNext}
+          nextLabel="Continuar"
+          nextDisabled={!c.paymentMethod}
+        />
       </Container>
     </Box>
   );

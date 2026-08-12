@@ -13,7 +13,7 @@ type CheckoutStep =
 | "payment"
 | "paymentMethod"
 
-export function UseClientMenuController({ restaurant, products }: MenuData) {
+export function UsePublicMenuController({ restaurant, products }: MenuData) {
 
   const [step, setStep] = useState<CheckoutStep>("menu");
   const [selectedSize, setSelectedSize] = useState<Size>();
@@ -24,11 +24,12 @@ export function UseClientMenuController({ restaurant, products }: MenuData) {
   //Produtos adicionados no pedido, o produto tem que ser adicionado ja com os flavors escolhidos 
   const [productsAdded, setProductsAdded] = useState<OrderItemBag[]>([])
   const [type, setType] = useState<OrderMode>("delivery");
-  const [paymentMethod, setPaymentMethod] = useState("pix");
+  const [paymentMethod, setPaymentMethod] = useState("");
   const [changeFor, setChangeFor] = useState(0);
   const [observation, setObservation] = useState("");
   const [costumerName, setCostumerName] = useState("");
   const [costumerPhone, setCostumerPhone] = useState("");
+  const [costumerEmail, setCostumerEmail] = useState("");
   const [address, setAddress] = useState<Address>({ city: "", number: 0, streetName: "" });
   const [neighborhood, setNeighborhood] = useState<Neighborhood>();
   const [orderCreated, setOrderCreated] = useState<Order>()
@@ -184,6 +185,6 @@ export function UseClientMenuController({ restaurant, products }: MenuData) {
     costumerPhone, setCostumerPhone, address, setAddress,
     neighborhood, setNeighborhood, type, setType, paymentMethod,
     setPaymentMethod, changeFor, setChangeFor, createOrder,
-    subtotal, total, category, setCategory, orderCreated
+    subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail
   };
 }

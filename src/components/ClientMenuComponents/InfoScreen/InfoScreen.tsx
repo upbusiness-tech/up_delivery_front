@@ -1,6 +1,7 @@
 import { Box, Container, Stack, TextField, Typography, InputAdornment } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import AlternateEmailIcon from '@mui/icons-material/AlternateEmail';
 import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
 import { phoneMask } from "../../../utils/masks/mask";
 import { BackHeader } from "../BackHeader/BackHeader";
@@ -8,13 +9,15 @@ import { BackHeader } from "../BackHeader/BackHeader";
 interface InfoScreenProps {
   name: string;
   setName: (v: string) => void;
+  email: string;
+  setEmail: (v: string) => void;
   phone: string;
   setPhone: (v: string) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function InfoScreen({ name, setName, phone, setPhone, onBack, onNext }: InfoScreenProps) {
+export default function InfoScreen({ name, setName, phone, setPhone, email, setEmail, onBack, onNext }: InfoScreenProps) {
   const isValid = name.trim().length > 1 && phone.replace(/\D/g, "").length >= 10;
 
   return (
@@ -35,11 +38,30 @@ export default function InfoScreen({ name, setName, phone, setPhone, onBack, onN
             value={name}
             onChange={(e) => setName(e.target.value)}
             autoFocus
+            placeholder="José Ferreira"
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <PersonOutlineIcon sx={{ color: "grey.400" }} />
+                    <PersonOutlineIcon sx={{ color: "black" }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
+          />
+
+          <TextField
+            label="Email"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="cliente@gmail.com"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <AlternateEmailIcon sx={{ color: "blue" }} />
                   </InputAdornment>
                 ),
               },
@@ -52,13 +74,13 @@ export default function InfoScreen({ name, setName, phone, setPhone, onBack, onN
             fullWidth
             value={phone}
             onChange={(e) => setPhone(phoneMask(e.target.value))}
-            placeholder="(11) 99999-9999"
+            placeholder="(88) 99999-9999"
             inputMode="tel"
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <WhatsAppIcon sx={{ color: "grey.400" }} />
+                    <WhatsAppIcon sx={{ color: "green" }} />
                   </InputAdornment>
                 ),
               },

@@ -1,19 +1,19 @@
 import { Box, CircularProgress, Stack, Typography } from "@mui/material";
 import MenuScreen from "../../components/ClientMenuComponents/MenuScreen/MenuScreen";
-import { UseClientMenuController } from "../ClientMenu/UseClientMenuController";
 import ProductsBySizeScreen from "../../components/ClientMenuComponents/ProductBySizeScreen/ProductBySizeScreen";
 import ProductSheet from "../../components/ClientMenuComponents/ProductSheet/ProductSheet";
 import { CartBar } from "../../components/ClientMenuComponents/CartBar/CartBar";
 import { CartScreen } from "../../components/ClientMenuComponents/CartScreen/CartScreen";
 import InfoScreen from "../../components/ClientMenuComponents/InfoScreen/InfoScreen";
 import AddressScreen from "../../components/ClientMenuComponents/AddressScreen/AddressScren";
-import PaymentScreen from "../../components/ClientMenuComponents/PaymentScreen/PaymentScreen";
+import PaymentScreen from "../../components/ClientMenuComponents/SelectPaymentMethod/SelectMethodPaymentScreen";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
-import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentMethodScreen";
+import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentScreen";
+import { UsePublicMenuController } from "./UsePublicMenuController";
 
 export default function PublicMenu() {
   const { restaurant, products, categories, additionals, neighborhoods, isLoading, notFound } = usePublicRestaurant();
-  const c = UseClientMenuController({ restaurant, products, categories, additionals, neighborhoods });
+  const c = UsePublicMenuController({ restaurant, products, categories, additionals, neighborhoods });
 
   if (isLoading) {
     return (
@@ -81,6 +81,8 @@ export default function PublicMenu() {
           phone={c.costumerPhone}
           setName={c.setCostumerName}
           setPhone={c.setCostumerPhone}
+          email={c.costumerEmail}
+          setEmail={c.setCostumerEmail}
           onBack={c.previousStep}
           onNext={c.nextStep}
         />
@@ -101,12 +103,14 @@ export default function PublicMenu() {
         />
       )}
 
+      {/* Tela para selecionar o metodo de pagamento */}
       {c.step === "payment" && (
         <PaymentScreen
           onBack={c.previousStep}
           onNext={c.nextStep}
-          onCreateOrder={c.createOrder}
+          paymentMethod={c.paymentMethod}    
           setPaymentMethod={c.setPaymentMethod}
+          onCreateOrder={c.createOrder}
           total={c.total}
         />
       )}
@@ -114,9 +118,14 @@ export default function PublicMenu() {
       {c.step === "paymentMethod" && c.orderCreated && (
         <PaymentMethodScreen
           order={c.orderCreated}
+          userEmail={c.costumerEmail}
+          userName={c.costumerName}
+          userPhone={c.costumerPhone}
+          paymentMethod={c.paymentMethod}
           total={c.total}
           onNext={c.nextStep}
           onBack={c.previousStep}
+
         />
       )}
     </Box>

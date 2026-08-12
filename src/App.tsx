@@ -1,9 +1,12 @@
+import { AuthProvider } from './context/AuthContext'
 import ReactRouter from './routes/routes'
 
 function App() {
 
   return (
-    <ReactRouter/>
+    <AuthProvider>
+      <ReactRouter />
+    </AuthProvider>
   )
 }
 
