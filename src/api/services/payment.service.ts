@@ -3,9 +3,9 @@ import { api } from "../axios"
 import type { CreatePixPayment, PixData } from "../../types/Payment.type";
 
 export const PaymentSevice = {
-  async createPayment(restaurantId: string, dto: CreatePixPayment){
+  async createPixPayment(restaurantId: string, dto: CreatePixPayment){
     try{
-      const { data } = await api.post<PixData>(`/payment/create-payment-pix/${restaurantId}`, dto)
+      const { data } = await api.post<PixData>(`/payment/create-pix-payment/${restaurantId}`, dto)
       return data
     }catch (error) {
       if (axios.isAxiosError(error)) {
@@ -15,8 +15,12 @@ export const PaymentSevice = {
   },
 
   async  createCardPayment(restaurantId: string, payload: any) {
-    console.log("chegou aq")
-    const { data } = await api.post(`/payment/card-payment/${restaurantId}`, payload);
+    const { data } = await api.post(`/payment/create-card-payment/${restaurantId}`, payload);
+    return data;
+  },
+
+  async  createCashPayment(orderId: string) {
+    const { data } = await api.post(`/payment/create-cash-payment/${orderId}`);
     return data;
   },
   

@@ -7,15 +7,18 @@ import TimerOffIcon from "@mui/icons-material/TimerOff";
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore';
 import HighlightOffIcon from '@mui/icons-material/HighlightOff';
 import DoneScreen from "../../DoneScreen/DoneScreen";
+import { useEffect } from "react";
 
 interface Props {
   total: number;
   order: Order;
   userEmail: string;
   onNext: () => void;
+  onBack: () => void;
+  setDisabeHeader: (value: boolean) => void;
 }
 
-export default function PixScreen({total, order, userEmail, onNext}: Props) {
+export default function PixScreen({total, order, userEmail, onNext, setDisabeHeader}: Props) {
 
   const c = UsePixScreenController({order, total, userEmail})
 
@@ -23,19 +26,25 @@ export default function PixScreen({total, order, userEmail, onNext}: Props) {
   const isRejected = c.paymentStatus === "rejected";
   const isCancelled = c.paymentStatus === "cancelled";
 
-  return (
-    <Paper sx={{ mt: 1, p: 2, borderRadius: 4, border: "1px solid", borderColor: "grey.200", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", textAlign: "center" }}>
-      <Stack direction="row" sx={{mb: 2, position: "relative" }}>
-        <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
-          <QrCode2 sx={{ color: "success.main" }} />
-          <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
-            Pague com Pix
-          </Typography>
-        </Stack>
-      </Stack>
+  useEffect(() => {
+    if (isApproved) setDisabeHeader(true);
+  }, [isApproved]);
 
+  return (
+    <>
+    <Paper sx={{ mt: 1, p: 2, borderRadius: 4, border: "1px solid", borderColor: "grey.200", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", textAlign: "center" }}>
       {isApproved && (
         <DoneScreen order={order} onNext={onNext}/>
+      )}
+      {!isApproved && (
+        <Stack direction="row" sx={{mb: 2, position: "relative" }}>
+          <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+            <QrCode2 sx={{ color: "success.main" }} />
+            <Typography variant="subtitle1" sx={{ fontWeight: 700 }}>
+              Pague com Pix
+            </Typography>
+          </Stack>
+        </Stack>
       )}
 
       {/* Se não estiver carregando, se não tiver sido aprovado e se tiver expirado */}
@@ -110,15 +119,15 @@ export default function PixScreen({total, order, userEmail, onNext}: Props) {
           <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
             Valor a pagar
           </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 800, mb: 2.5, textAlign: "center" }}>
+          <Typography color="success" variant="h5" sx={{ fontWeight: 800, mb: 2.5, textAlign: "center" }}>
             {moneyMask(total)}
           </Typography>
     
           <Paper variant="outlined" sx={{ p: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5, borderRadius: 3, bgcolor: "grey.50", borderColor: "grey.200" }}>
-            <Typography variant="caption" sx={{ flex: 1, textAlign: "center", fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <Typography variant="body1" sx={{ flex: 1, textAlign: "center", fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {c.qrCode ? c.truncatedCode : "Carregando código..."}
             </Typography>
-            <Button size="small" onClick={c.handleCopy} startIcon={c.copied ? <CheckCircle fontSize="small" /> : <ContentCopy fontSize="small" />} color={c.copied ? "success" : "primary"} sx={{ textTransform: "none", flexShrink: 0, borderRadius: 2 }}>
+            <Button size="small" onClick={c.handleCopy} startIcon={c.copied ? <CheckCircle fontSize="small" /> : <ContentCopy fontSize="small" />} color={c.copied ? "success" : "success"} sx={{ textTransform: "none", flexShrink: 0, borderRadius: 2 }}>
               {c.copied ? "Copiado" : "Copiar"}
             </Button>
           </Paper>
@@ -129,5 +138,6 @@ export default function PixScreen({total, order, userEmail, onNext}: Props) {
         </Paper>
       )}
     </Paper>
+    </>
   );
 }

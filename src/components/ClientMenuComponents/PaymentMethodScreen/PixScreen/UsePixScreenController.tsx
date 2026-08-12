@@ -44,7 +44,7 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
         payerEmail: userEmail,
         orderInternalId: order.id
       };
-      const data = await PaymentSevice.createPayment(order.restaurant.id, payment);
+      const data = await PaymentSevice.createPixPayment(order.restaurant.id, payment);
       if (data) {
         setQrCodeBase64(data.qrCodeBase64);
         setQrCode(data.qrCode);

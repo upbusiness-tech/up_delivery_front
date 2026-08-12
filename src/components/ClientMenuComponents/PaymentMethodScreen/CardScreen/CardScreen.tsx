@@ -1,49 +1,45 @@
-import { Payment } from '@mercadopago/sdk-react';
-import { useCallback } from 'react';
+import { CardPayment } from '@mercadopago/sdk-react';
+import { useCallback, useEffect } from 'react';
 import type { Order } from '../../../../types/Order.type';
-
+import type { ICardPaymentBrickPayer, ICardPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/cardPayment/type';
+import { UseCardScreenController } from './UseCardScreenController';
+import DoneScreen from '../../DoneScreen/DoneScreen';
 interface PaymentFormProps {
   amount: number;
   order: Order
+  onNext: () => void;
+  setDisabeHeader: (value: boolean) => void;
 }
 
-interface BrickSubmitData {
-  selectedPaymentMethod: string;
-  formData: {
-    token: string;
-    issuer_id: string;
-    payment_method_id: string;
-    transaction_amount: number;
-    installments: number;
-    payer: {
-      email: string;
-      identification: {
-        type: string;
-        number: string;
-      };
-    };
-  };
-}
+export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFormProps) {
 
-export function CardScreen({ amount, order }: PaymentFormProps) {
+  const c = UseCardScreenController({order})
+
+  const isApproved = c.paymentStatus === 'approved';
+  const isInProcess = c.paymentStatus === 'in_process' || c.paymentStatus === 'pending';
+  const isRejected = c.paymentStatus === 'rejected';
+
+  useEffect(() => {
+    if (isApproved) setDisabeHeader(true);
+  }, [isApproved]);
+
   const initialization = {
-    amount,
+    amount
   };
 
-  const customization = {
+  const customization: any = {
     paymentMethods: {
-      creditCard: 'all' as const,
-      debitCard: 'all' as const,
-      maxInstallments: 12,
+      creditCard: 'all',
+      maxInstallments: 1,
     },
   };
 
   const onSubmit = useCallback(
-    async ({ selectedPaymentMethod, formData }: BrickSubmitData) => {
-      const response = await fetch(`http://localhost:3000/payment/payment-card/${order.restaurant.id}`, {
+    async (cardFormData: ICardPaymentFormData<ICardPaymentBrickPayer>) => {
+      const response = await fetch(`http://localhost:3000/payment/create-card-payment/${order.restaurant.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, selectedPaymentMethod, orderId: order.id }),
+        body: JSON.stringify({ ...cardFormData, orderId: order.id }),
       });
 
       if (!response.ok) {
@@ -51,19 +47,7 @@ export function CardScreen({ amount, order }: PaymentFormProps) {
       }
 
       const result = await response.json();
-
-      switch (result.status) {
-        case 'approved':
-          console.log('Pagamento aprovado!');
-          break;
-        case 'in_process':
-        case 'pending':
-          console.log('Pagamento em análise.');
-          break;
-        case 'rejected':
-          console.log('Pagamento recusado:', result.status_detail);
-          break;
-      }
+      c.setLocalStatus(result.status); // feedback imediato, até o socket confirmar
     },
     [order.restaurant.id, order.id]
   );
@@ -77,12 +61,21 @@ export function CardScreen({ amount, order }: PaymentFormProps) {
   }, []);
 
   return (
-    <Payment
-      initialization={initialization}
-      customization={customization}
-      onSubmit={onSubmit}
-      onReady={onReady}
-      onError={onError}
-    />
+    <>
+      {isApproved && <DoneScreen order={order} onNext={onNext} />}
+
+      {!isApproved && !isInProcess && (
+          <CardPayment
+            initialization={initialization}
+            customization={customization}
+            onSubmit={onSubmit}
+            onReady={onReady}
+            onError={onError}
+            />
+      )}
+
+      {isInProcess && <p>Pagamento em análise...</p>}
+      {isRejected && <p>Pagamento recusado. Tente novamente.</p>}
+    </>
   );
 }
