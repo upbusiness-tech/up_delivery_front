@@ -20,7 +20,7 @@ import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
-// import MenuBookIcon from '@mui/icons-material/MenuBook';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
 
 import LogoutIcon from "@mui/icons-material/Logout";
 import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
@@ -33,7 +33,7 @@ const COLLAPSED_WIDTH = 72;
 const NAV = [
   { label: "Pedidos", route: ROUTES_ENUM.ORDERS , icon: ReceiptLongIcon },
   { label: "Empresa", route: ROUTES_ENUM.ENTERPRISE, icon: RestaurantMenuIcon },
-  // { label: "Cardápio On-line", route: ROUTES_ENUM.CLIENT_MENU, icon: MenuBookIcon },
+  { label: "Cardápio", route: ROUTES_ENUM.CARDAPIO, icon: MenuBookIcon },
   // { label: "Empresa", route: , icon: StoreIcon },
   // { label: "Finanças", route: , icon: PaidIcon },
   // { label: "Faturas", route: , icon: DescriptionIcon },

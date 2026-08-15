@@ -36,7 +36,7 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
 
   const onSubmit = useCallback(
     async (cardFormData: ICardPaymentFormData<ICardPaymentBrickPayer>) => {
-      const response = await fetch(`http://localhost:3000/payment/create-card-payment/${order.restaurant.id}`, {
+      const response = await fetch(`http://localhost:3000/payment/create-payment-card/${order.restaurant.id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...cardFormData, orderId: order.id }),

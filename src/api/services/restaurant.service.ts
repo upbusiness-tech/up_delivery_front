@@ -1,7 +1,7 @@
 import { type CreateOrder } from './../../types/Order.type';
 import axios from "axios";
 import { api } from "../axios"
-import type { Additionals, Product, ProductCategory } from "../../types/Product.type";
+import type { Additionals, Product, ProductCategory, Size } from "../../types/Product.type";
 import type { Neighborhood } from '../../types/Restaurant.type';
 
 export const RestaurantService = {
@@ -80,6 +80,17 @@ export const RestaurantService = {
   async restaurantNeighborhoods() {
     try {
       const { data } = await api.get<Neighborhood[]>(`/neighborhood/neighborhoods-restaurant`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
+
+  async restaurantSizes(){
+    try {
+      const { data } = await api.get<Size[]>(`/size/sizes-restaurant`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

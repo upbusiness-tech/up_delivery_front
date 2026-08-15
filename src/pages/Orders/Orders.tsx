@@ -32,7 +32,7 @@ export default function Orders() {
           <Typography color="text.secondary">Nenhum pedido encontrado.</Typography>
         </Paper>
       ) : isDesktop ? (
-        <Paper elevation={0} sx={{ overflow: "hidden" }}>
+        <Paper elevation={1} sx={{ overflow: "hidden", p: 2 }}>
           <Box sx={{ overflowX: "auto" }}>
             <Table
               size="medium"

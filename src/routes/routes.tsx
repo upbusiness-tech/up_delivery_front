@@ -7,6 +7,7 @@ import { EnterprisePage } from '../pages/Enterprise/EnterprisePage'
 import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
 import PublicMenu from '../pages/PublicMenu/PublicMenu'
 import { ProtectedRoute } from './ProtectedRoute'
+import Menu from '../pages/Menu/Menu'
 
 export default function ReactRouter() {
   return (
@@ -26,6 +27,7 @@ export default function ReactRouter() {
             <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
             <Route path={ROUTES_ENUM.ORDERS} element={<Orders />} />
             <Route path={ROUTES_ENUM.ENTERPRISE} element={<EnterprisePage />} />
+            <Route path={ROUTES_ENUM.CARDAPIO} element={<Menu />} />
           </Route>
         </Route>
       </Routes>

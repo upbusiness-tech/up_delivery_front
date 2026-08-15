@@ -1,7 +1,7 @@
 export enum ROUTES_ENUM {
   HOME = '/',
   LOGIN = '/login',
-  CLIENT_MENU = '/client-menu',
+  CARDAPIO = '/cardapio',
   PUBLIC_MENU = '/:slug',
   ORDERS = '/orders',
   ENTERPRISE = '/enterprise',
