@@ -3,7 +3,7 @@ import type { Neighborhood, Restaurant } from "../types/Restaurant.type";
 import { RestaurantService } from "../api/services/restaurant.service";
 import { OrderService } from "../api/services/order.service";
 import type { Order } from "../types/Order.type";
-import type { Additionals, Product, ProductCategory } from "../types/Product.type";
+import type { Additionals, Product, ProductCategory, Size } from "../types/Product.type";
 import { useAuth } from "./AuthContext";
 
 interface RestaurantContextValue {
@@ -19,6 +19,7 @@ interface RestaurantContextValue {
   setProducts: Dispatch<SetStateAction<Product[]>>;
   additionals: Additionals[] | undefined;
   neighborhoods: Neighborhood[] | undefined;
+  sizes: Size[] | undefined
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
@@ -33,6 +34,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   const [products, setProducts] = useState<Product[]>([]); // controla se já buscou
   const [additionals, setAdditionals] = useState<Additionals[]>([])
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
+  const [sizes, setSizes] = useState<Size[]>([])
   
   
  useEffect(() => {
@@ -61,6 +63,10 @@ export function RestaurantProvider({children}: { children: ReactNode }){
     //Bairro
     const neighborhoods_data = await RestaurantService.restaurantNeighborhoods()
     if(neighborhoods_data) setNeighborhoods(neighborhoods_data)
+
+    //Tamanhos
+    const sizes_data = await RestaurantService.restaurantSizes()
+    if(sizes_data) setSizes(sizes_data)
     
   }
   
@@ -82,7 +88,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   <RestaurantContext.Provider 
     value={{restaurant, orders, setOrders, fetchOrders, isLoading, 
     categories, setCategories, products, setProducts, additionals,
-    neighborhoods
+    neighborhoods, sizes
   }}>
     {children}
   </RestaurantContext.Provider>
