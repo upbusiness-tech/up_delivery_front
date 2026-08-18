@@ -15,6 +15,13 @@ export interface Additionals {
   category: ProductCategory
 }
 
+export interface AdditionalDTO {
+  additionalName: string;
+  additionalPrice: number;
+  categoryId: string
+}
+
+
 export interface Product {
   id: string;
   productName: string;

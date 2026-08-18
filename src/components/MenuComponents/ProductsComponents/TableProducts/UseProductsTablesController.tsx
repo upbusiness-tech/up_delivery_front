@@ -1,16 +1,15 @@
 import { useState } from "react";
-import type { Product } from "../../../types/Product.type";
-import { useRestaurant } from "../../../context/RestaurantContext";
+import type { Product } from "../../../../types/Product.type";
+import { useRestaurant } from "../../../../context/RestaurantContext";
 
 
 export default function UseMenuController(){
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-
-  const {additionals, categories, products} = useRestaurant()
-
+  const {additionals, categories, products, sizes} = useRestaurant()
   const CATEGORIAS  = categories ?? []
   const PRODUCTS = products ?? []
   const ADDITIONALS = additionals ?? []
+  const SIZES = sizes ?? []
   
   function openProductDetail(product: Product) {
     setSelectedProduct(product);
@@ -34,6 +33,7 @@ export default function UseMenuController(){
     PRODUCTS,
     ADDITIONALS,
     selectedProduct,
+    SIZES,
     produtosPorCategoria,
     additionalsByCategory,
     closeProductDetail,

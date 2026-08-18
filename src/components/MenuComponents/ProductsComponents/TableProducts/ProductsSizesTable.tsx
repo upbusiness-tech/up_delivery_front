@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { moneyMask } from "../../../utils/masks/mask";
+import { moneyMask } from "../../../../utils/masks/mask";
 
 interface SizeItem {
   size: { name: string };
@@ -20,7 +20,7 @@ interface Props {
   sizes: SizeItem[];
 }
 
-export default function SizesTable({ sizes }: Props) {
+export default function ProductsSizesTable({ sizes }: Props) {
   return (
     <TableContainer sx={{ border: "1px solid #e5e7eb", borderRadius: 2 }}>
       <Table size="small">
