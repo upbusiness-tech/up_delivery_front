@@ -57,6 +57,17 @@ export const ProductService = {
         console.log(error.response?.data.message);
       }
     }
+  },
+
+  async updateProduct(productId: string, body: any){
+    try {
+      const { data } = await api.patch(`product/${productId}`, body)
+      return data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
   }
 }
 

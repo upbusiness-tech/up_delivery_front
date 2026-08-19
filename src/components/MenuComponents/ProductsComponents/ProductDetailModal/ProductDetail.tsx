@@ -18,7 +18,7 @@ export default function ProductDetail({ product, onClose }: props) {
     return null;
   }
 
-  const c = UseProductDetailModalController({product})
+  const c = UseProductDetailModalController({product, onClose})
 
   return (
     <Dialog open={!!product} onClose={onClose} maxWidth="sm" fullWidth>
@@ -62,13 +62,25 @@ export default function ProductDetail({ product, onClose }: props) {
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Nome
                 </Typography>
-                <TextField value={product.productName} size="small" fullWidth sx={{ fontWeight: 600 }} />
+                <TextField
+                  value={c.productName}
+                  onChange={(e) => c.setProductName(e.target.value)}
+                  size="small"
+                  fullWidth
+                  sx={{ fontWeight: 600 }}
+                />
               </Box>
               <Box>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Descrição
                 </Typography>
-                <TextField value={product.productDescription} size="small" fullWidth sx={{ fontWeight: 600 }} />
+                <TextField
+                  value={c.productDescription}
+                  onChange={(e) => c.setProductDescription(e.target.value)}
+                  size="small"
+                  fullWidth
+                  sx={{ fontWeight: 600 }}
+                />
               </Box>
             </Stack>
           </Grid>
@@ -123,13 +135,22 @@ export default function ProductDetail({ product, onClose }: props) {
         <Stack direction="row" sx={{ justifyContent: 'space-between', width: '100%', px: 2}} spacing={1}>
           <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={c.deleteProduct}>Excluir</Button>
           <Stack direction="row" spacing={1}>
-            <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={onClose}>Cancelar</Button>
-            <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium">Salvar alterações</Button>
+            <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={c.handleCancel}>Cancelar</Button>
+            <Button
+              sx={{ textTransform: "none" }}
+              variant="contained"
+              color="success"
+              size="medium"
+              disabled={!c.isDirty}
+              onClick={c.handleSaveChanges}
+            >
+              Salvar alterações
+            </Button>
           </Stack>
         </Stack>
       </DialogActions>
 
-      <LoadingModal title="Apagando produto" open={c.openLoading} />
+      <LoadingModal title="Aguarde" open={c.openLoading} />
       <RegisterProductSizetModal onClose={c.handleCloseNewOptionProductSize} open={c.openNewOptionProductSize} product={product}/>
 
     </Dialog>
