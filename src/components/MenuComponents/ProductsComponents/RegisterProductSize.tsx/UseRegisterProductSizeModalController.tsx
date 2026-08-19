@@ -15,8 +15,7 @@ export default function UseRegisterProductSizeModalController({product}: props){
   const [size, setSize] = useState<string>("")
   const [price, setPrice] = useState<number>(0)
   const [openLoading, setOpenLoading] = useState(false);
-
-
+  
   async function handleSetSizePrice(sizeId: string, price: number ){
     setSize(sizeId);
     setPrice(price)

@@ -15,7 +15,6 @@ export default function RegisterProductSizetModal({open, onClose, product }: pro
 
   const c = UseRegisterProductSizeModalController({product})
 
-
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -72,7 +71,7 @@ export default function RegisterProductSizetModal({open, onClose, product }: pro
       </DialogActions>
 
 
-      <GenericModal title="Registrando tamanho" open={c.openLoading}/>
+      <GenericModal title="Aguarde" open={c.openLoading}/>
     </Dialog>
   );
 }

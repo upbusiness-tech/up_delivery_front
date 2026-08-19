@@ -68,6 +68,28 @@ export const ProductService = {
         console.log(error.response?.data.message);
       }
     }
+  },
+
+  async updateProductSize(productSizeid: string, body: any){
+    try{
+      const { data } = await api.patch(`product_size/${productSizeid}`, body)
+      return data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  }, 
+
+  async deleteProductSize(productId: string, productSizeid: string){
+    try{
+      const { data } = await api.delete(`product/delete-size-product/${productId}/${productSizeid}`)
+      return data
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
   }
 }
 

@@ -6,7 +6,7 @@ import imagemGenerica from '../../../../assets/capa.avif'
 import UseProductDetailModalController from "./UseProductDetailModalController";
 import LoadingModal from "../../../LoadingModal/GenericModal";
 import RegisterProductSizetModal from "../RegisterProductSize.tsx/RegisterProductSizeModal";
-import ProductsSizesTable from "../TableProducts/ProductsSizesTable";
+import ProductsSizesTable from "../SizesTable/ProductsSizesTable";
 
 interface props {
   product: Product | null;
@@ -126,6 +126,7 @@ export default function ProductDetail({ product, onClose }: props) {
             </Stack>
             <ProductsSizesTable
               sizes={product.sizes}
+              product={product}
             />
           </Grid>
         </Grid>

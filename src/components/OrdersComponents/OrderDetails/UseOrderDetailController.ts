@@ -32,13 +32,14 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
   const open = Boolean(order);
 
   function getItemFlavorLines(item: OrderItem): string[] {
+    console.log(item)
     const limitFlavors = item.flavors.length;
 
     // Se for só 1 sabor permitido, mostra só o nome do produto
     // if (limitFlavors <= 1) {
     //   return [];
     // }
-
+  
     // Mais de 1 sabor, mostra os nomes dos sabores
     return item.flavors.map((flavor, index) => {
       const name = getProductNameByProductSize(flavor);
