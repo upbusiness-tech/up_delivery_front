@@ -9,14 +9,16 @@ import { HeadarOrders } from "../../components/OrdersComponents/HeaderComponents
 export default function Orders() {
 
   const {
-    isDesktop, orders, loading,
+    isDesktop, orders, loading, restaurant,
     selectedOrder, openOrderDetail, closeOrderDetail,
     orderToPrint, updateStatusOrder, deliveryFee 
   } = UseOrdersController()
 
   return (
     <Stack spacing={2}>
-      <HeadarOrders/>
+      <HeadarOrders
+        restaurant={restaurant}
+      />
       <OrderTable 
         orders={orders} 
         isDesktop={isDesktop} 

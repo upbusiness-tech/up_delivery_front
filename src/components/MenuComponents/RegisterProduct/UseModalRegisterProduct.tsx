@@ -26,7 +26,7 @@ export default function UseModalRegisterProduct(){
     setManySizes(prev => !prev)
   }
 
-  const {sizes, categories} = useRestaurant()
+  const {sizes, categories, addProduct} = useRestaurant()
   const SIZES = sizes ?? [];
   const CATEGORIES = categories ?? [];
   
@@ -49,6 +49,7 @@ export default function UseModalRegisterProduct(){
   }, [imagePreview]);
 
   async function createProduct(){
+    try {
     let sizes: ProducSizeDTO[] = [];
       if (manySizes) {
       sizes = SIZES
@@ -74,6 +75,21 @@ export default function UseModalRegisterProduct(){
 
     const productCreated = await ProductService.createProduct(product)
     console.log(productCreated)
+    addProduct(productCreated);
+    resetForm();
+    } catch (e) {
+      console.log(e);
+    } 
+  }
+
+  function resetForm() {
+    setProductName("");
+    setProductDescription("");
+    setProductCategory("");
+    setSizePrices({});
+    setCommonPrice(0);
+    setImageFile(null);
+    setImagePreview(null);
   }
 
 

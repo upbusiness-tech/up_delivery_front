@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { ProductService } from "../../../../api/services/product.service";
 import type { Product } from "../../../../types/Product.type";
+import { useRestaurant } from "../../../../context/RestaurantContext";
 
 interface props {
   product: Product;
@@ -13,6 +14,8 @@ interface UpdateProductPayload {
 }
 
 export default function UseProductDetailModalController({product, onClose}: props){
+
+  const { onUpdateProduct, removeProduct } = useRestaurant()
 
   const [productName, setProductName] = useState(product.productName);
   const [productDescription, setProductDescription] = useState(product.productDescription);
@@ -45,21 +48,28 @@ export default function UseProductDetailModalController({product, onClose}: prop
   }
 
   async function deleteProduct(){
-    setOpenLoading(true)
-    const response = await ProductService.deleteProduct(product.id)
-    setOpenLoading(false)
-    if(!response) return;
-    console.log(response)
+    setOpenLoading(true);
+    try {
+      await ProductService.deleteProduct(product.id);
+      removeProduct(product.id); 
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setOpenLoading(false);
+    }
   }
-  
+
   async function updateProduct(payload: UpdateProductPayload){
-    setOpenLoading(true)
-    const response = await ProductService.updateProduct(product.id, payload)
-    setOpenLoading(false)
-    if(!response) return;
-    console.log(response)
+    setOpenLoading(true);
+    try {
+      const response = await ProductService.updateProduct(product.id, payload);
+      onUpdateProduct(response); 
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setOpenLoading(false);
+    }
   }
- 
   function handleSaveChanges(){
     if (!isDirty) return;
     updateProduct({ productName, productDescription });

@@ -1,4 +1,4 @@
-import { Avatar, Box, Button, Container, Paper, Radio, Stack, Typography } from "@mui/material";
+import { Avatar, Box, Container, Paper, Radio, Stack, Typography } from "@mui/material";
 import { BackHeader } from "../BackHeader/BackHeader";
 import { UsePaymentController } from "./UseSelectPaymentMethodControllerScreen";
 import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";

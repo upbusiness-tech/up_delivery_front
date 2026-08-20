@@ -98,6 +98,17 @@ export const RestaurantService = {
       }
     }
   },
+
+  async restaurantOpen(restaurantId: string){
+    try {
+      const response = await api.get<boolean>(`restaurant/restaurant-isopen/${restaurantId}`);
+      return response;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
   
   
   //--------------------------------------------------------ROTAS SLUGS

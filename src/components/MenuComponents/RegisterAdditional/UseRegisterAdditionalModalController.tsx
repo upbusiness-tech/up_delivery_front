@@ -4,7 +4,7 @@ import type { AdditionalDTO } from "../../../types/Product.type";
 import { useRestaurant } from "../../../context/RestaurantContext";
 
 export default function UseRegisterAdditionalModalController(){
-  const {categories} = useRestaurant()
+  const {categories, addAdditional} = useRestaurant()
   const CATEGORIES = categories ?? [];
 
   const [additionalName, setAdditionalName] = useState<string>("")
@@ -20,6 +20,7 @@ export default function UseRegisterAdditionalModalController(){
 
     const additionalCreated = await ProductService.createAdditional(body);
     if(!additionalCreated) return
+    addAdditional(additionalCreated)
     console.log(additionalCreated)
   }
 

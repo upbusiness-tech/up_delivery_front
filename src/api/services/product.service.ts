@@ -12,6 +12,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -23,6 +24,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -34,6 +36,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
   
@@ -45,6 +48,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -56,6 +60,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -67,6 +72,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -78,6 +84,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   }, 
 
@@ -89,6 +96,7 @@ export const ProductService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   }
 }

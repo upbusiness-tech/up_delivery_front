@@ -5,6 +5,7 @@ import SizeCard from "../SizeCard/SizeCard";
 import ProductCard from "../ProductCard/ProductCard";
 import type { Product, ProductCategory, Size } from "../../../types/Product.type";
 import type { Restaurant } from "../../../types/Restaurant.type";
+import RestauranteClosedModal from "./RestauranteClosedModal";
 
 interface MenuScreenProps {
   restaurant: Restaurant | undefined;
@@ -13,11 +14,13 @@ interface MenuScreenProps {
   onSelectSize: (size: Size) => void;
   onSelectProduct: (product: Product) => void;
   onSelectCategory: (category: ProductCategory) => void;
+  restaurantClosedModal: boolean,
+  handleCloseRestauranteClosed: () => void;
 }
 
-export default function MenuScreen({ restaurant, products, categories, onSelectSize, onSelectProduct, onSelectCategory }: MenuScreenProps) {
+export default function MenuScreen({ restaurant, products, categories, onSelectSize, onSelectProduct, onSelectCategory, restaurantClosedModal, handleCloseRestauranteClosed }: MenuScreenProps) {
   const c = UseMenuScreenController({ restaurant, categories, products });
-
+  
   return (
     <Box sx={{minHeight: "100vh" }}>
       
@@ -50,7 +53,7 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
             <Box key={cat.id} id={cat.id} ref={(el: HTMLDivElement | null) => { c.sectionRefs.current[cat.id] = el; }} sx={{ mb: 3, pb: 3, scrollMarginTop: 64, borderBottom: isLast ? "none" : "1px dashed", borderColor: "grey.200" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
                 <Box sx={{ width: 4, height: 22, borderRadius: 999, bgcolor: "success.main", flexShrink: 0 }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                <Typography variant="body1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
                   {cat.categoryName}
                 </Typography>
                 <Typography variant="caption" sx={{ color: "white", fontWeight: 600, bgcolor: "#c90303", borderRadius: 999, px: 1, py: 0.25 }}>
@@ -84,6 +87,7 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
           );
         })}
       </Container>
+      <RestauranteClosedModal open={restaurantClosedModal} close={handleCloseRestauranteClosed}/>
     </Box>
   );
 }

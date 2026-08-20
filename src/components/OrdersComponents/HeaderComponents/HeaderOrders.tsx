@@ -3,8 +3,16 @@ import WebIcon from '@mui/icons-material/Web';
 import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import { Logout, PersonAdd, Settings } from "@mui/icons-material";
 import React from "react";
+import UseHeaderOrdersController from "./UseHeaderOrdersController";
+import type { Restaurant } from "../../../types/Restaurant.type";
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import OpenCloseRestaurantModal from "./OpenCloseRestaurantModal";
 
-export function HeadarOrders() {
+interface props {
+  restaurant: Restaurant | undefined
+}
+
+export function HeadarOrders({restaurant}: props) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -16,6 +24,9 @@ export function HeadarOrders() {
     setAnchorEl(null);
   };
 
+  const c = UseHeaderOrdersController({restaurant})
+  
+
   return (
     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
       <Stack direction="row" spacing={2}>
@@ -26,6 +37,13 @@ export function HeadarOrders() {
         </Badge>
         <Button onClick={() => window.open('http://localhost:5173/upbusiness', '_blank')} endIcon={<WebIcon />} variant="contained" sx={{ textTransform: 'none' }}>
           Cardápio Web
+        </Button>
+        <Button
+          sx={{bgcolor: c.restaurantOpen ? "success.main" : "error.main", color:  "#fff",  textTransform: 'none' }}
+          endIcon={<StorefrontIcon/>}
+          onClick={c.handleOpenModalStatusRestaurant}
+        >
+        {c.restaurantOpen ? "Aberto agora" : "Fechado"}
         </Button>
       </Stack>
 
@@ -68,6 +86,7 @@ export function HeadarOrders() {
           </MenuItem>
         </Menu>
       </Box>
+      <OpenCloseRestaurantModal restaurant={restaurant} open={c.modalStatusRestaurant} onClose={c.handleCloseModalStatusRestaurant}/>
     </Stack>
   );
 }
