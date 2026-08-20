@@ -9,7 +9,7 @@ interface SizeCardProps {
   selectCategory: () => void;
 }
 
-export default function SizeCard({ size, cat, onClick, selectCategory }: SizeCardProps) {
+export default function SizeCard({ size, onClick, selectCategory }: SizeCardProps) {
   
   const handleClick = () => {
     selectCategory();
@@ -27,7 +27,7 @@ export default function SizeCard({ size, cat, onClick, selectCategory }: SizeCar
       <CardActionArea sx={{ p: 2 }}>
           <Stack direction="row" spacing={2} sx={{flexWrap: "wrap", gap: 1, alignItems: "center" }}>
           <Stack sx={{ flex: 1 }}>
-            <Typography variant="body1" sx={{ fontWeight: 700 }}>{cat}{' '}{size.name}</Typography>
+            <Typography variant="body1" sx={{ fontWeight: 700 }}>Tamanhos {size.name}</Typography>
             <Typography variant="body2">0{size.limitFlavors} opções de sabores</Typography>
           </Stack>
         </Stack>

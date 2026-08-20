@@ -105,7 +105,7 @@ export default function RegisterProductModal({open, onClose }: props) {
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Categoria
                 </Typography>
-               <Select
+                <Select
                   size="small"
                   value={c.productCategory ?? ""}
                   displayEmpty
@@ -117,7 +117,7 @@ export default function RegisterProductModal({open, onClose }: props) {
                     const found = c.CATEGORIES.find((cat) => cat.id === selected);
                     return found?.categoryName;
                   }}
-                >
+                  >
                   {c.CATEGORIES.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>
                       {cat.categoryName}

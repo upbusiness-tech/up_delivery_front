@@ -121,6 +121,7 @@ export default function UseOrdersController(){
     closeOrderDetail,
     orderToPrint,
     updateStatusOrder,
-    deliveryFee
+    deliveryFee,
+    restaurant
   }
 }

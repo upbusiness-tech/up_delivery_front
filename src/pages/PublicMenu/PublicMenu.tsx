@@ -43,6 +43,8 @@ export default function PublicMenu() {
             onSelectSize={c.openSize}
             onSelectProduct={c.setSelectedProduct}
             onSelectCategory={c.setCategory}
+            handleCloseRestauranteClosed={c.handleCloseRestauranteClosed}
+            restaurantClosedModal={c.restauranteClosed}
           />
           {c.category && (
            <ProductSheet item={c.selectedProduct} category={c.category} additionals={additionals} addProduct={c.addProduct} onClose={() => c.setSelectedProduct(undefined)} />

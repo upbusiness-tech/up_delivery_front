@@ -34,6 +34,12 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   const [neighborhood, setNeighborhood] = useState<Neighborhood>();
   const [orderCreated, setOrderCreated] = useState<Order>()
 
+  const [restauranteClosed, setRestauranteClosed] = useState(false)
+  const handleOpenRestauranteClosed = () => setRestauranteClosed(true)
+  const handleCloseRestauranteClosed = () => setRestauranteClosed(false)
+
+
+
   useEffect(() => {
     setOrderCreated(undefined);
   }, [productsAdded, address, neighborhood, type]);
@@ -143,6 +149,16 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     // Se já existe um pedido criado, não cria de novo
     if (orderCreated) return;
 
+    if(!restaurant) return
+
+    const restaurantIsOpen = await RestaurantService.restaurantOpen(restaurant.id)
+    if(!restaurantIsOpen?.data){
+      console.log('RESTAURANTE FECHADO AGR')
+      setStep('menu')
+      handleOpenRestauranteClosed()
+      return
+    }
+
     if (type === "delivery" && (!address || !neighborhood)) return;
 
     const orderItens = productsAdded.map((e) => {
@@ -171,7 +187,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
       ...(type === "delivery" && { address, neighborhoodId: neighborhood!.id }),
     };
 
-    if(!restaurant) return
+
     const order = await RestaurantService.createOrder(restaurant.id, newOrder)
     setOrderCreated(order)
     console.log(order)
@@ -184,7 +200,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     observation, setObservation, costumerName, setCostumerName,
     costumerPhone, setCostumerPhone, address, setAddress,
     neighborhood, setNeighborhood, type, setType, paymentMethod,
-    setPaymentMethod, changeFor, setChangeFor, createOrder,
+    setPaymentMethod, changeFor, setChangeFor, createOrder, handleCloseRestauranteClosed, restauranteClosed,
     subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail
   };
 }

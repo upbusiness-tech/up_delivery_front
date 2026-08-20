@@ -3,6 +3,7 @@ import { api } from "../axios"
 import type { CreatePixPayment, PixData } from "../../types/Payment.type";
 
 export const PaymentSevice = {
+  
   async createPixPayment(restaurantId: string, dto: CreatePixPayment){
     try{
       const { data } = await api.post<PixData>(`/payment/create-pix-payment/${restaurantId}`, dto)

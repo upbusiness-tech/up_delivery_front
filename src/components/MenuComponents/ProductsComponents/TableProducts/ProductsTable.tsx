@@ -1,8 +1,10 @@
-import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
-import imagemGenerica from '../../../assets/capa.avif'
-import { moneyMask } from "../../../utils/masks/mask";
-import ProductDetail from "./ProductDetail";
+import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch, Button } from "@mui/material";
+import imagemGenerica from '../../../../assets/capa.avif'
+import { moneyMask } from "../../../../utils/masks/mask";
+import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseMenuController from "./UseProductsTablesController";
+import StopCircleIcon from '@mui/icons-material/StopCircle';
+import SizeComponent from "../SizeComponent/SizeComponent";
 
 
 export default function ProductsTable(){
@@ -10,19 +12,20 @@ export default function ProductsTable(){
 
   return (
     <Box >
+      <SizeComponent sizes={c.SIZES}/>
       {c.CATEGORIAS.map((cat) => {
         const produtos = c.produtosPorCategoria(cat.id)
         const adicionais = c.additionalsByCategory(cat.id)
         return (
           <Paper elevation={1} sx={{p: 2, mb: 4}}>
-            <Stack direction="row" spacing={1.5} sx={{ mb: 1.5, alignItems: "center" }}>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: "#1f2937" }}>{cat.categoryName}</Typography>
-              <Chip
-                label={produtos.length}
-                color="error"
-                size="small"
-                sx={{borderRadius: 2}}
-              />
+            <Stack direction="row" spacing={1.5} sx={{ mb: 1.5, alignItems: "center", justifyContent: "space-between" }}>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Typography variant="h6" sx={{ fontWeight: 700, color: "#1f2937" }}>{cat.categoryName}</Typography>
+                <Chip label={produtos.length} color="error" size="small" sx={{ borderRadius: 2 }} />
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Button endIcon={<StopCircleIcon/>} variant="contained" size="small" color="warning" sx={{ textTransform: "none" }}>Pausar Categoria</Button>
+              </Stack>
             </Stack>
 
             <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e5e7eb", borderRadius: 2, overflow: "hidden", mb: 2 }}>

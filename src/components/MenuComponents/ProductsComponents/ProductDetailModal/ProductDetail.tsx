@@ -1,9 +1,12 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, Stack, TextField, Typography } from "@mui/material";
-import type { Product } from "../../../types/Product.type";
+import type { Product } from "../../../../types/Product.type";
 import CloseIcon from "@mui/icons-material/Close";
-import SizesTable from "./ProductsSizesTable";
 import AddIcon from '@mui/icons-material/Add';
-import imagemGenerica from '../../../assets/capa.avif'
+import imagemGenerica from '../../../../assets/capa.avif'
+import UseProductDetailModalController from "./UseProductDetailModalController";
+import LoadingModal from "../../../LoadingModal/GenericModal";
+import RegisterProductSizetModal from "../RegisterProductSize.tsx/RegisterProductSizeModal";
+import ProductsSizesTable from "../SizesTable/ProductsSizesTable";
 
 interface props {
   product: Product | null;
@@ -15,13 +18,7 @@ export default function ProductDetail({ product, onClose }: props) {
     return null;
   }
 
-  const formattedDate = product.created_at
-    ? new Date(product.created_at).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
-    : "—";
+  const c = UseProductDetailModalController({product, onClose})
 
   return (
     <Dialog open={!!product} onClose={onClose} maxWidth="sm" fullWidth>
@@ -65,13 +62,25 @@ export default function ProductDetail({ product, onClose }: props) {
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Nome
                 </Typography>
-                <TextField value={product.productName} size="small" fullWidth sx={{ fontWeight: 600 }} />
+                <TextField
+                  value={c.productName}
+                  onChange={(e) => c.setProductName(e.target.value)}
+                  size="small"
+                  fullWidth
+                  sx={{ fontWeight: 600 }}
+                />
               </Box>
               <Box>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Descrição
                 </Typography>
-                <TextField value={product.productDescription} size="small" fullWidth sx={{ fontWeight: 600 }} />
+                <TextField
+                  value={c.productDescription}
+                  onChange={(e) => c.setProductDescription(e.target.value)}
+                  size="small"
+                  fullWidth
+                  sx={{ fontWeight: 600 }}
+                />
               </Box>
             </Stack>
           </Grid>
@@ -97,7 +106,7 @@ export default function ProductDetail({ product, onClose }: props) {
               <Typography variant="caption" sx={{ color: "#6b7280" }}>
                 Criado em
               </Typography>
-              <Typography variant="body1">{formattedDate}</Typography>
+              <Typography variant="body1">{c.formattedDate}</Typography>
             </Grid>
           </Grid>
 
@@ -108,28 +117,43 @@ export default function ProductDetail({ product, onClose }: props) {
                 <Typography variant="subtitle2" gutterBottom>
                   Tamanhos e preços
                 </Typography>
-                <Button endIcon={<AddIcon/>} sx={{ textTransform: "none" }} variant="contained" color="primary" size="small">
+                <Button endIcon={<AddIcon/>} sx={{ textTransform: "none" }} variant="contained" color="primary" size="small"
+                  onClick={c.handleOpenNewOptionProductSize}
+                >
                   Nova opção
                 </Button>
               </Stack>
             </Stack>
-            <SizesTable
+            <ProductsSizesTable
               sizes={product.sizes}
+              product={product}
             />
           </Grid>
         </Grid>
       </DialogContent>
 
       <DialogActions>
-        <Stack direction="row" spacing={1}>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium">
-            Salvar
-          </Button>
+        <Stack direction="row" sx={{ justifyContent: 'space-between', width: '100%', px: 2}} spacing={1}>
+          <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={c.deleteProduct}>Excluir</Button>
+          <Stack direction="row" spacing={1}>
+            <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={c.handleCancel}>Cancelar</Button>
+            <Button
+              sx={{ textTransform: "none" }}
+              variant="contained"
+              color="success"
+              size="medium"
+              disabled={!c.isDirty}
+              onClick={c.handleSaveChanges}
+            >
+              Salvar alterações
+            </Button>
+          </Stack>
         </Stack>
       </DialogActions>
+
+      <LoadingModal title="Aguarde" open={c.openLoading} />
+      <RegisterProductSizetModal onClose={c.handleCloseNewOptionProductSize} open={c.openNewOptionProductSize} product={product}/>
+
     </Dialog>
   );
 }

@@ -2,12 +2,14 @@ import { LocationOn } from "@mui/icons-material";
 import { Box, Chip, Stack, Typography } from "@mui/material";
 import genericImage from "../../../assets/capa.avif";
 import type { Restaurant } from "../../../types/Restaurant.type";
+import UseRestauranteInfoController from "./UseRestauranteInfoController";
 
 interface props {
   restaurant: Restaurant | undefined
 }
 
 export default function RestaurantInfo({restaurant}: props){
+  const c = UseRestauranteInfoController({restaurant})
   return(
     <Box sx={{ position: "relative", height: { xs: 140, md: 220 } }}>
       <img
@@ -21,10 +23,10 @@ export default function RestaurantInfo({restaurant}: props){
         <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap", gap: 1 }}>
           <Chip
             size="small"
-            color="success"
-            label={restaurant?.isOpen ? "Aberto agora" : "Fechado"}
-            sx={{ color: "#fff", fontWeight: 600 }}
-            />
+            label={c.restaurantOpen ? "Aberto agora" : "Fechado"}
+            sx={{bgcolor: c.restaurantOpen ? "success.main" : "error.main", color:  "#fff", fontWeight: 600, borderRadius: 2 }}
+
+          />
           <Chip
             size="small"
             icon={<LocationOn sx={{ color: "#fff !important" }} />}

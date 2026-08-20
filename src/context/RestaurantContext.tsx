@@ -20,6 +20,13 @@ interface RestaurantContextValue {
   additionals: Additionals[] | undefined;
   neighborhoods: Neighborhood[] | undefined;
   sizes: Size[] | undefined
+  addProduct: (novoProduto: Product) => void
+
+  addCategory: (novaCategoria: ProductCategory) => void
+  onUpdateProduct: (produtoAtualizado: Product) => void
+  removeProduct: (id: string) => void
+  addAdditional: (novoAdicional: Additionals) => void
+  addSize: (novoTamanho: Size) => void
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
@@ -84,11 +91,37 @@ export function RestaurantProvider({children}: { children: ReactNode }){
     }
   }
 
+  function addProduct(novoProduto: Product) {
+    setProducts((prev) => [...prev, novoProduto]);
+  }
+  function onUpdateProduct(produtoAtualizado: Product) {
+    setProducts((prev) =>
+      prev.map((p) => (p.id === produtoAtualizado.id ? produtoAtualizado : p))
+    );
+  }
+
+  function removeProduct(id: string) {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  function addCategory(novaCategoria: ProductCategory) {
+    setCategories((prev) => [...prev, novaCategoria]);
+  }
+
+  function addAdditional(novoAdicional: Additionals) {
+    setAdditionals((prev) => [...prev, novoAdicional]);
+  }
+
+  function addSize(novoTamanho: Size) {
+    setSizes((prev) => [...prev, novoTamanho]);
+  }
+
   return(
   <RestaurantContext.Provider 
     value={{restaurant, orders, setOrders, fetchOrders, isLoading, 
     categories, setCategories, products, setProducts, additionals,
-    neighborhoods, sizes
+    neighborhoods, sizes, addProduct,onUpdateProduct, removeProduct,
+    addCategory, addAdditional, addSize
   }}>
     {children}
   </RestaurantContext.Provider>
