@@ -17,6 +17,7 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
   const c = UsePaymentController({ paymentMethod, setPaymentMethod });
 
   async function handleNext(){
+    //Se o pagamento for em dinheiro, o troco não é adicionado pq o pedido é criado e o troco é calculado depois
     onCreateOrder()
     onNext()
   }

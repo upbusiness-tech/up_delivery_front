@@ -1,6 +1,6 @@
-import { Avatar, Badge, Box, Button, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material";
+import { Avatar, Box, Button, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material";
 import WebIcon from '@mui/icons-material/Web';
-import PendingActionsIcon from '@mui/icons-material/PendingActions';
+// import PendingActionsIcon from '@mui/icons-material/PendingActions';
 import { Logout, PersonAdd, Settings } from "@mui/icons-material";
 import React from "react";
 import UseHeaderOrdersController from "./UseHeaderOrdersController";
@@ -30,11 +30,11 @@ export function HeadarOrders({restaurant}: props) {
   return (
     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
       <Stack direction="row" spacing={2}>
-        <Badge badgeContent={4} color="error">
+        {/* <Badge badgeContent={4} color="error">
           <Button size="small" endIcon={<PendingActionsIcon />} variant="contained" sx={{ textTransform: 'none' }}>
             Pedidos Pendentes
           </Button>
-        </Badge>
+        </Badge> */}
         <Button onClick={() => window.open('http://localhost:5173/upbusiness', '_blank')} endIcon={<WebIcon />} variant="contained" sx={{ textTransform: 'none' }}>
           Cardápio Web
         </Button>

@@ -5,7 +5,7 @@ import type { Additionals, Product, ProductCategory } from "../../../types/Produ
 import type { OrderItemBag } from "../../../types/Order.type";
 
 export default function UseProductSheetController(category: ProductCategory, additionals: Additionals[]){
-  console.log(category)
+  // console.log(category)
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [qty, setQty] = useState(1);
@@ -36,7 +36,7 @@ export default function UseProductSheetController(category: ProductCategory, add
       observation: observation,
       additionals: checkedAdditionals
     }
-    console.log("Produto simples adicionado: ", orderItem)
+    // console.log("Produto simples adicionado: ", orderItem)
     return orderItem
   }
 

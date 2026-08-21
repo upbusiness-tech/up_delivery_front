@@ -69,7 +69,10 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
                 label='Troco para quanto?'
                 placeholder='R$ 0,00'
                 value={formattedChangeFor}
-                onChange={(e) => handleChangeForInput(e.target.value)}
+                onChange={(e) => {
+                  handleChangeForInput(e.target.value)
+                }
+                }
                 onBlur={handleBlur}
                 error={insufficient}
                 helperText={

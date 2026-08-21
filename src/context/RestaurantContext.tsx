@@ -79,8 +79,18 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   
   async function fetchOrders() {
     if (hasFetched) return; // já tem os dados, não busca de novo
+    if (!restaurant) return;
+
     setIsLoading(true);
     try {
+      const response = await RestaurantService.restaurantOpen(restaurant?.id)
+
+      if(!response?.data){
+        setOrders([])
+        // setHasFetched(true); // evita ficar re-checando toda hora
+        return;
+      }
+
       const data = await OrderService.listOrders();
       setOrders(data);
       setHasFetched(true);

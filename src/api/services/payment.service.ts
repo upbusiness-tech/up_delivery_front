@@ -20,8 +20,8 @@ export const PaymentSevice = {
     return data;
   },
 
-  async  createCashPayment(orderId: string) {
-    const { data } = await api.post(`/payment/create-cash-payment/${orderId}`);
+  async  createCashPayment(orderId: string, changeFor: any) {
+    const { data } = await api.post(`/payment/create-cash-payment/${orderId}`, changeFor);
     return data;
   },
   

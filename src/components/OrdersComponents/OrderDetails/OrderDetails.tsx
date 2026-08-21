@@ -22,7 +22,7 @@ import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
 import STATUS_COLOR from "../../../utils/colors/colors";
 import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
-import { moneyMask } from "../../../utils/masks/mask";
+import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 
 interface OrderDetailProps {
   order: Order | null;
@@ -165,7 +165,7 @@ export default function OrderDetail({
                   <Typography variant="subtitle2" gutterBottom>
                     Pagamento
                   </Typography>
-                  <Typography color="success" sx={{fontWeight: '600'}}>{order.paymentMethod.toLocaleUpperCase()}</Typography>
+                  <Typography color="success" sx={{fontWeight: '600'}}>{paymentMethodMask(order.paymentMethod)}</Typography>
                 </Paper>
                 <Divider sx={{ my: 1 }} />
               <Paper elevation={0} sx={{ p: 1 }}>

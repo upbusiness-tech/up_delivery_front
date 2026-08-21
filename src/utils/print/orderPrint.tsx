@@ -38,11 +38,11 @@ export default function PrintOrder({ order }: PrintOrderProps) {
             <tr key={i}>
               <td>
                 {item.name}
-                {item.flavors && item.flavors.length > 0 && (
+                {/* {item.flavors && item.flavors.length > 0 && (
                   <div style={{ fontSize: "0.85em", marginLeft: 8 }}>
                     {item.flavors.map((f) => f.product?.productName).join(" + ")}
                   </div>
-                )}
+                )} */}
               </td>
               <td style={{ textAlign: "center" }}>{item.quantity}</td>
               <td style={{ textAlign: "right" }}>
@@ -56,11 +56,11 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       <hr />
 
       <p><strong>Forma de pagamento:</strong> {order.paymentMethod}</p>
-      {order.changeFor > 0 && (
-        <p><strong>Troco para:</strong> R$ {order.changeFor.toFixed(2)}</p>
+      {Number(order.changeFor) > 0 && (
+        <p><strong>Troco para:</strong> R$ {Number(order.changeFor).toFixed(2)}</p>
       )}
-      {order.discount > 0 && (
-        <p><strong>Desconto:</strong> R$ {order.discount.toFixed(2)}</p>
+      {Number(order.discount) > 0 && (
+        <p><strong>Desconto:</strong> R$ {Number(order.discount).toFixed(2)}</p>
       )}
       <p style={{ fontSize: "1.2em" }}>
         <strong>Total: R$ {Number(order.orderTotal).toFixed(2)}</strong>

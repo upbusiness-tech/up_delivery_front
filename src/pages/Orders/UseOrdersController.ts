@@ -17,14 +17,25 @@ export default function UseOrdersController(){
   const [loading, setLoading] = useState(true);
   const [type, setType] = useState<string>("Todos os tipos");
   const [query, setQuery] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
   const { play: playNotificationSound } = useNotificationSound();
 
   const socketRef = useRef<any>(null);
-
+  
   //Contexts
   const { restaurant, orders, isLoading, setOrders, fetchOrders } = useRestaurant()
+
+  const selectedOrder = orders?.find((o) => o.id === selectedOrderId) ?? null;
+
+  function openOrderDetail(order: Order) {
+    setSelectedOrderId(order.id);
+  }
+
+  function closeOrderDetail() {
+    setSelectedOrderId(null);
+  }
+
 
   const restaurantIsOpen = async (restaurantId: string) => {
     const restaurantIsOpen = await RestaurantService.restaurantIsopen(restaurantId);
@@ -38,6 +49,16 @@ export default function UseOrdersController(){
   useEffect(() => {
     setLoading(isLoading);
   }, [isLoading]);
+
+  useEffect(() => {
+    if (!restaurant?.id) return;
+
+    RestaurantService.restaurantOpen(restaurant.id).then((response) => {
+      if (!response?.data) {
+        setOrders([]);
+      }
+    });
+  }, [restaurant?.id]);
     
   // Effect para rederizar os pedidos e capturar novo pedido
   useEffect(() => {
@@ -61,6 +82,7 @@ export default function UseOrdersController(){
       setOrderToPrint(newOrder);
       playNotificationSound();
     });
+
     return () => {
       socket.disconnect();
       socketRef.current = null;
@@ -81,13 +103,7 @@ export default function UseOrdersController(){
   }, [orderToPrint]);
 
 
-  function openOrderDetail(order: Order) {
-    setSelectedOrder(order);
-  }
 
-  function closeOrderDetail() {
-    setSelectedOrder(null);
-  }
 
   async function updateStatusOrder(status: string, orderId: string){
     const updateOrder = await OrderService.updateStatusOrder(status, orderId)

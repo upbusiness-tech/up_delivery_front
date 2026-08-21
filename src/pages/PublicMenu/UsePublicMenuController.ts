@@ -25,7 +25,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   const [productsAdded, setProductsAdded] = useState<OrderItemBag[]>([])
   const [type, setType] = useState<OrderMode>("delivery");
   const [paymentMethod, setPaymentMethod] = useState("");
-  const [changeFor, setChangeFor] = useState(0);
+  const [changeFor, setChangeFor] = useState<number>(0);
   const [observation, setObservation] = useState("");
   const [costumerName, setCostumerName] = useState("");
   const [costumerPhone, setCostumerPhone] = useState("");
@@ -175,7 +175,8 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
       .map((e) => e.observation)
       .filter(Boolean)
       .join(" | ");
-
+    
+    console.log("TROCO: ", changeFor)
     const newOrder: CreateOrder = {
       type: type,
       paymentMethod: paymentMethod,

@@ -32,3 +32,13 @@ export function cpfMask(cpf: string): string {
     "$1.$2.$3-$4"
   );
 }
+
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  cash: 'Dinheiro',
+  pix: 'Pix',
+  card: 'Cartão',
+};
+
+export function paymentMethodMask(method: string): string {
+  return PAYMENT_METHOD_LABEL[method] ?? capitalizeMask(method);
+}

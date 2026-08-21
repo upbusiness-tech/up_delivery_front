@@ -13,7 +13,7 @@ interface PaymentMethodScreenProps {
   userName: string;
   userPhone: string;
   userEmail: string;
-  paymentMethod: string,
+  paymentMethod: string;
   onNext: () => void;
   onBack: () => void;
 }
