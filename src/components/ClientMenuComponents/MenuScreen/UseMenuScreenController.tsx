@@ -17,7 +17,7 @@ export function UseMenuScreenController({ restaurant, categories, products }: Us
   const isClickScrolling = useRef(false);
 
   function produtosPorCategoria(catId: string) {
-    return PRODUCTS.filter((p) => p.productCategory.id === catId);
+    return PRODUCTS.filter((p) => p.productCategory.id === catId && p.productActive);
   }
 
   function produtosComuns(catId: string) {

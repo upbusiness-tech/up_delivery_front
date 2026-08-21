@@ -1,11 +1,12 @@
 import { useState } from "react";
 import type { Product } from "../../../../types/Product.type";
 import { useRestaurant } from "../../../../context/RestaurantContext";
+import { ProductService } from "../../../../api/services/product.service";
 
 
 export default function UseMenuController(){
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const {additionals, categories, products, sizes} = useRestaurant()
+  const {additionals, categories, products, setProducts, sizes} = useRestaurant()
   const CATEGORIAS  = categories ?? []
   const PRODUCTS = products ?? []
   const ADDITIONALS = additionals ?? []
@@ -26,6 +27,17 @@ export default function UseMenuController(){
     return ADDITIONALS.filter((a) => a.category.id === catId);
   }
 
+  async function updateActiveProduct(productId: string){
+    const response = await ProductService.updateActiveProduct(productId)
+    setProducts((prev) =>
+    prev.map((p) =>
+      p.id === productId
+        ? { ...p, productActive: response.productActive }
+        : p
+    ))
+    return response
+  }
+
 
   
   return {
@@ -37,6 +49,7 @@ export default function UseMenuController(){
     produtosPorCategoria,
     additionalsByCategory,
     closeProductDetail,
-    openProductDetail
+    openProductDetail,
+    updateActiveProduct
   }
 }
