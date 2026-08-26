@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { LocationOn, Storefront, AccessTime } from "@mui/icons-material";
 import { Box, Container, InputAdornment, MenuItem, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
 import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
@@ -6,6 +7,7 @@ import { moneyMask } from "../../../utils/masks/mask";
 import type { Neighborhood, Restaurant } from "../../../types/Restaurant.type";
 import { BackHeader } from "../BackHeader/BackHeader";
 import { useAddressValidation } from "../../../hooks/useInfoScreenValidation";
+import { useRestaurantSettings } from "../../../hooks/useRestaurantSettings";
 
 interface AddressScreenProps {
   type: OrderMode;
@@ -15,13 +17,21 @@ interface AddressScreenProps {
   neighborhood: Neighborhood | undefined;
   setNeighborhood: (v: Neighborhood) => void;
   neighborhoods: Neighborhood[];
-  restaurant: Restaurant | undefined;
+  restaurant: Restaurant;
   onBack: () => void;
   onNext: () => void;
 }
 
+const toggleButtonSx = { py: 1.25, borderRadius: 3, textTransform: "none", fontWeight: 600, "&.Mui-selected": { bgcolor: "success.50", color: "success.dark", borderColor: "success.main" } };
+
 export default function AddressScreen({ type, setType, address, setAddress, neighborhood, setNeighborhood, neighborhoods, restaurant, onBack, onNext }: AddressScreenProps) {
   const { errors, isValid } = useAddressValidation(type, address, neighborhood);
+  const { allowDelivery, allowPickup } = useRestaurantSettings(restaurant.id);
+
+  useEffect(() => {
+    if (allowDelivery && !allowPickup && type !== "delivery") setType("delivery");
+    if (allowPickup && !allowDelivery && type !== "pickup") setType("pickup");
+  }, [allowDelivery, allowPickup]);
 
   const updateField = (field: keyof Address) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress({ ...address, [field]: e.target.value });
@@ -29,29 +39,25 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <BackHeader onBack={onBack} title="Voltar"/>
+      <BackHeader onBack={onBack} title="Voltar" />
       <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {type === "delivery" ? "Onde vamos entregar?" : "Como você quer receber?"}
+          {type === "delivery" ? "Onde vamos entregar?" : "Retire seu pedido no local"}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {type === "delivery" ? "Confirme seu endereço para calcularmos a entrega." : "Escolha retirar seu pedido no local."}
+          {type === "delivery" ? "Confirme seu endereço para calcularmos a entrega." : "O restaurante enviará uma mensagem quando o seu pedido estiver pronto."}
         </Typography>
 
-        <ToggleButtonGroup
-          value={type}
-          exclusive
-          fullWidth
-          onChange={(_, value: OrderMode | null) => value && setType(value)}
-          sx={{ mb: 3, gap: 1 }}
-        >
-          <ToggleButton value="delivery" sx={{ py: 1.25, borderRadius: 3, textTransform: "none", fontWeight: 600, "&.Mui-selected": { bgcolor: "success.50", color: "success.dark", borderColor: "success.main" } }}>
-            <LocationOn sx={{ mr: 1 }} fontSize="small" /> Entrega
-          </ToggleButton>
-          <ToggleButton value="pickup" sx={{ py: 1.25, borderRadius: 3, textTransform: "none", fontWeight: 600, "&.Mui-selected": { bgcolor: "success.50", color: "success.dark", borderColor: "success.main" } }}>
-            <Storefront sx={{ mr: 1 }} fontSize="small" /> Retirada
-          </ToggleButton>
-        </ToggleButtonGroup>
+        {allowDelivery && allowPickup && (
+          <ToggleButtonGroup value={type} exclusive fullWidth onChange={(_, value: OrderMode | null) => value && setType(value)} sx={{ mb: 3, gap: 1 }}>
+            <ToggleButton value="delivery" sx={toggleButtonSx}>
+              <LocationOn sx={{ mr: 1 }} fontSize="small" /> Entrega
+            </ToggleButton>
+            <ToggleButton value="pickup" sx={toggleButtonSx}>
+              <Storefront sx={{ mr: 1 }} fontSize="small" /> Retirada
+            </ToggleButton>
+          </ToggleButtonGroup>
+        )}
 
         {type === "pickup" ? (
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor: "grey.200" }}>
