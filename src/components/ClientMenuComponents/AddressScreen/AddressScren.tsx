@@ -5,6 +5,7 @@ import type { Address, OrderMode } from "../../../types/Order.type";
 import { moneyMask } from "../../../utils/masks/mask";
 import type { Neighborhood, Restaurant } from "../../../types/Restaurant.type";
 import { BackHeader } from "../BackHeader/BackHeader";
+import { useAddressValidation } from "../../../hooks/useInfoScreenValidation";
 
 interface AddressScreenProps {
   type: OrderMode;
@@ -20,15 +21,11 @@ interface AddressScreenProps {
 }
 
 export default function AddressScreen({ type, setType, address, setAddress, neighborhood, setNeighborhood, neighborhoods, restaurant, onBack, onNext }: AddressScreenProps) {
+  const { errors, isValid } = useAddressValidation(type, address, neighborhood);
 
   const updateField = (field: keyof Address) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress({ ...address, [field]: e.target.value });
   };
-
-  const isValid =
-    type === "pickup"
-      ? true
-      : address.streetName.trim().length > 2 && String(address.number).trim().length > 0 && !!neighborhood;
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -91,7 +88,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
                 if (selected) setNeighborhood(selected);
               }}
               disabled={!neighborhoods || neighborhoods.length === 0}
-              helperText={!neighborhoods || neighborhoods.length === 0 ? "Carregando bairros..." : undefined}
+              error={!!neighborhood && !!errors.neighborhoodError}
+              helperText={!neighborhoods || neighborhoods.length === 0 ? "Carregando bairros..." : errors.neighborhoodError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             >
               <MenuItem value="" disabled>
@@ -114,6 +112,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               fullWidth
               value={address.city}
               onChange={updateField("city")}
+              error={!!address.city && !!errors.cityError}
+              helperText={!!address.city && errors.cityError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
 
@@ -122,6 +122,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               fullWidth
               value={address.streetName}
               onChange={updateField("streetName")}
+              error={!!address.streetName && !!errors.streetNameError}
+              helperText={!!address.streetName && errors.streetNameError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
 
@@ -132,6 +134,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
                 value={address.number}
                 onChange={updateField("number")}
                 inputMode="numeric"
+                error={!!address.number && !!errors.numberError}
+                helperText={!!address.number && errors.numberError}
                 slotProps={{
                   input: {
                     startAdornment: <InputAdornment position="start">#</InputAdornment>,

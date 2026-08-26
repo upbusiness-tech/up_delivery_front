@@ -1,11 +1,8 @@
 /*88981496910 -> (88) 9 8149-6910*/
 export function phoneMask(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length !== 11) return phone;
-  return digits.replace(
-    /(\d{2})(\d{1})(\d{4})(\d{4})/,
-    "($1) $2 $3-$4"
-  );
+  const digits = phone.replace(/\D/g, "").slice(0, 11);
+  if (digits.length !== 11) return digits;
+  return digits.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, "($1) $2 $3-$4");
 }
 
 /*100 -> R$100,00*/
