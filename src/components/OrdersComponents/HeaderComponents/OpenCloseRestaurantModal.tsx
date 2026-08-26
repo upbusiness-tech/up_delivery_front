@@ -1,4 +1,4 @@
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, Stack, Typography } from "@mui/material";
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
 import type { Restaurant } from "../../../types/Restaurant.type";
 import UseOpenCloseRestaurantModalController from "./UseOpenCloseRestaurantModalController";
 
