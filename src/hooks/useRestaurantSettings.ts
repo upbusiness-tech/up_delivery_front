@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import api from '../api/axios';
+import { SettingsService } from '../api/services/settings.service';
 
 type RestaurantSettingUsage = {
   id: number;
@@ -25,9 +25,17 @@ export function useRestaurantSettings(restaurantId: string) {
 
   async function fetchSettings() {
     setLoading(true)
-    const res = await api.get(`/restaurant-setting-usage/${restaurantId}/restaurant`)
+    const res = await SettingsService.getSettings(restaurantId)
+    if (!res) return;
     setSettings(res.data)
     setLoading(false)
+  }
+
+  async function toggleSetting(key: string) {
+    const usage = settings.find((s) => s.setting.key === key);
+    if (!usage) return;
+    await SettingsService.toggleActive(String(usage.id));
+    await fetchSettings();
   }
 
   const resolved = useMemo<ResolvedSettings>(() => settings.reduce((acc, usage) => {
@@ -43,9 +51,9 @@ export function useRestaurantSettings(restaurantId: string) {
   const allowPixPayment = resolved.Restaurant?.allow_pix_payment ?? false;
   const allowCardPayment = resolved.Restaurant?.allow_card_payment ?? false;
 
-  return { 
-    settings, resolved, allowDelivery, allowPickup, 
-    separetePayments, paymentsPlatform, allowCardPayment, allowPixPayment,  
-    loading, refetch: fetchSettings 
+  return {
+    settings, resolved, allowDelivery, allowPickup,
+    separetePayments, paymentsPlatform, allowCardPayment, allowPixPayment,
+    loading, toggleSetting, refetch: fetchSettings
   }
 }

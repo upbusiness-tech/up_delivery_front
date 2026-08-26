@@ -4,11 +4,13 @@ import {
   Table, TableRow, TableCell, TableBody, Chip,
   useMediaQuery, useTheme, Tabs, Tab, Box,
   Button, FormGroup, FormControlLabel, Checkbox,
-  RadioGroup, Radio, FormControl, FormLabel, TextField,
+  FormControl, FormLabel,
+  Switch,
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import UseEnterpriseController from "./UseEnterpriseController";
 import { DAYS_LABEL, DAYS_ORDER } from "../../types/Restaurant.type";
+import { useRestaurantSettings } from "../../hooks/useRestaurantSettings";
 
 const TABS = {
   GENERAL: 0,
@@ -33,6 +35,7 @@ export function EnterprisePage() {
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
   const { restaurant, loading, businessHours } = UseEnterpriseController();
+  const { allowDelivery, allowPickup, paymentsPlatform, toggleSetting } = useRestaurantSettings(restaurant?.id ?? "");
 
   if (loading) { return <Typography>Carregando...</Typography>; }
   if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
@@ -179,37 +182,29 @@ export function EnterprisePage() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Processados pela plataforma via Mercado Pago. O pagamento é confirmado automaticamente no pedido.
             </Typography>
-            <Divider sx={{ mb: 1 }} />
-
             <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Cartões de Débito e Crédito" />
-              <FormControlLabel control={<Checkbox defaultChecked />} label="PIX via Mercado Pago" />
+              <FormControlLabel control={<Checkbox defaultChecked checked={paymentsPlatform} />} label="Usar pagamentos integrados" />
             </FormGroup>
-          </Paper>
-
-          <Paper sx={{ p: { xs: 2, md: 3 } }}>
+            <Divider sx={{ mb: 1 }} />
             <Typography variant="subtitle1" gutterBottom>
               Pagamentos à parte
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
               Acertados diretamente entre o cliente e o restaurante/entregador, fora da plataforma.
             </Typography>
-            <Divider sx={{ mb: 1 }} />
-
             <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Dinheiro na entrega/retirada" />
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Cartões na entrega/retirada" />
-              <FormControlLabel control={<Checkbox />} label="PIX" />
+              <FormControlLabel control={<Checkbox defaultChecked />} label="Usar pagamentos a parte" />
             </FormGroup>
-
-            <TextField
-              label="Chave PIX exibida ao cliente"
-              placeholder="CPF, e-mail, telefone ou chave aleatória"
-              fullWidth
-              size="small"
-              sx={{ mt: 2, maxWidth: 420 }}
-              helperText="Mostrada ao cliente na finalização do pedido para envio manual do PIX."
-            />
+          </Paper>
+          <Paper sx={{ p: { xs: 2, md: 3 } }}>
+            <Typography variant="subtitle1" gutterBottom>
+              Formas de pagamento
+            </Typography>
+            <FormGroup>
+              <FormControlLabel control={<Checkbox defaultChecked />} label="Pix" />
+              <FormControlLabel control={<Checkbox defaultChecked />} label="Dinheiro" />
+              <FormControlLabel control={<Checkbox defaultChecked />} label="Cartões Crédito e Débito" />
+            </FormGroup>
           </Paper>
         </Stack>
       </TabPanel>
@@ -223,11 +218,8 @@ export function EnterprisePage() {
 
           <FormControl>
             <FormLabel id="order-mode-label">Como os clientes podem receber os pedidos?</FormLabel>
-            <RadioGroup aria-labelledby="order-mode-label" defaultValue="both">
-              <FormControlLabel value="delivery" control={<Radio />} label="Permitir somente delivery" />
-              <FormControlLabel value="pickup" control={<Radio />} label="Permitir somente retirada" />
-              <FormControlLabel value="both" control={<Radio />} label="Permitir ambos" />
-            </RadioGroup>
+            <FormControlLabel control={<Switch checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
+            <FormControlLabel control={<Switch checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
           </FormControl>
         </Paper>
       </TabPanel>

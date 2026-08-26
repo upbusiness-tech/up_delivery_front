@@ -1,10 +1,10 @@
 import axios from "axios";
 import api from "../axios";
 
-export const SettingsController = {
+export const SettingsService = {
   async toggleActive(id: string) {
     try {
-      const { data } = await api.patch(`${id}/toggle`);
+      const { data } = await api.patch(`/restaurant-setting-usage/${id}/toggle`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -12,4 +12,14 @@ export const SettingsController = {
       }
     }
   },
+  async getSettings(restaurantId: string){
+    try{
+      const res = await api.get(`/restaurant-setting-usage/${restaurantId}/restaurant`)
+      return res;
+    }catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  }
 }
