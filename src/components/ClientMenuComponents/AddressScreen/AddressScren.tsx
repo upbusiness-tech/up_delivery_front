@@ -17,7 +17,7 @@ interface AddressScreenProps {
   neighborhood: Neighborhood | undefined;
   setNeighborhood: (v: Neighborhood) => void;
   neighborhoods: Neighborhood[];
-  restaurant: Restaurant;
+  restaurant: Restaurant | undefined;
   onBack: () => void;
   onNext: () => void;
 }
@@ -25,6 +25,7 @@ interface AddressScreenProps {
 const toggleButtonSx = { py: 1.25, borderRadius: 3, textTransform: "none", fontWeight: 600, "&.Mui-selected": { bgcolor: "success.50", color: "success.dark", borderColor: "success.main" } };
 
 export default function AddressScreen({ type, setType, address, setAddress, neighborhood, setNeighborhood, neighborhoods, restaurant, onBack, onNext }: AddressScreenProps) {
+  if(!restaurant) return;
   const { errors, isValid } = useAddressValidation(type, address, neighborhood);
   const { allowDelivery, allowPickup } = useRestaurantSettings(restaurant.id);
 

@@ -83,8 +83,8 @@ export default function PublicMenu() {
           phone={c.costumerPhone}
           setName={c.setCostumerName}
           setPhone={c.setCostumerPhone}
-          email={c.costumerEmail}
-          setEmail={c.setCostumerEmail}
+          // email={c.costumerEmail}
+          // setEmail={c.setCostumerEmail}
           onBack={c.previousStep}
           onNext={c.nextStep}
         />

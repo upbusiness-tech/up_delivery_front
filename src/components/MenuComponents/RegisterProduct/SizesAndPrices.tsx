@@ -13,16 +13,41 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 
 const DEFAULT_SIZE_LABEL = 'COMUM';
+interface Size {
+  id: string;
+  name: string;
+}
+
+interface SizeRow {
+  id: string;
+  sizeId: string;
+  price: string;
+}
+
+interface SizeItem {
+  sizeId: string | null;
+  sizeName: string;
+  price: string;
+}
+
+interface SizesAndPricesChange {
+  multipleSizes: boolean;
+  items: SizeItem[];
+}
+
+interface SizesAndPricesProps {
+  sizes?: Size[];
+  onChange?: (value: SizesAndPricesChange) => void;
+}
 
 function createEmptyRow() {
   return { id: crypto.randomUUID(), sizeId: '', price: '' };
 }
 
-export default function SizesAndPrices({ sizes = [], onChange }) {
+export default function SizesAndPrices({ sizes = [], onChange }: SizesAndPricesProps) {
   const [multipleSizes, setMultipleSizes] = useState(false);
   const [singlePrice, setSinglePrice] = useState('');
-  const [sizeRows, setSizeRows] = useState([createEmptyRow()]);
-
+  const [sizeRows, setSizeRows] = useState<SizeRow[]>([createEmptyRow()]);
   const isFirstRender = useRef(true);
 
   useEffect(() => {
@@ -50,7 +75,7 @@ export default function SizesAndPrices({ sizes = [], onChange }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [multipleSizes, singlePrice, sizeRows]);
 
-  const handleToggle = (e) => {
+  const handleToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
     const checked = e.target.checked;
     setMultipleSizes(checked);
     // ao ligar o switch, garante que exista ao menos uma linha vazia pra preencher
@@ -63,17 +88,17 @@ export default function SizesAndPrices({ sizes = [], onChange }) {
     setSizeRows((prev) => [...prev, createEmptyRow()]);
   };
 
-  const handleRemoveSizeRow = (rowId) => {
+  const handleRemoveSizeRow = (rowId: string) => {
     setSizeRows((prev) => prev.filter((row) => row.id !== rowId));
   };
 
-  const handleSizeRowChange = (rowId, field, value) => {
+  const handleSizeRowChange = (rowId: string, field: keyof SizeRow, value: string) => {
     setSizeRows((prev) =>
       prev.map((row) => (row.id === rowId ? { ...row, [field]: value } : row))
     );
   };
 
-  const usedSizeIds = (excludeRowId) =>
+  const usedSizeIds = (excludeRowId: string) =>
     sizeRows.filter((row) => row.id !== excludeRowId).map((row) => row.sizeId);
 
   return (
