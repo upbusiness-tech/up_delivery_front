@@ -76,6 +76,19 @@ export const ProductService = {
     }
   },
 
+  async updateActiveProduct(productId: string) {
+    try {
+    const { data } = await api.patch(`/product/toggle-active-product/${productId}/active`);
+    console.log(data)
+    return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
   async updateProductSize(productSizeid: string, body: any){
     try{
       const { data } = await api.patch(`product_size/${productSizeid}`, body)

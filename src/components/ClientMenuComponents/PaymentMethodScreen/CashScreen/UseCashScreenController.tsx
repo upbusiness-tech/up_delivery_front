@@ -39,7 +39,10 @@ export function useCashScreenController({ total, onBack, order }: UseCashScreenC
 
   async function handleConfirm(){
     try {
-      const response = await PaymentSevice.createCashPayment(order.id)
+      const changeForBody = {
+        value: changeFor
+      }
+      const response = await PaymentSevice.createCashPayment(order.id, changeForBody)
       if(response){setStatus(true)}
     }catch(err){
       console.log(err)

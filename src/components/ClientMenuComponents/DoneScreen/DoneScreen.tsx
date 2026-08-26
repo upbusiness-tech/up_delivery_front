@@ -1,10 +1,9 @@
-import { Button, Container, Divider, Paper, Typography } from "@mui/material";
-import { CheckCircle } from "@mui/icons-material";
+import { Box, Button, Container, Divider, Paper, Typography } from "@mui/material";
+import { CheckCircleRounded, WhatsApp } from "@mui/icons-material";
 import Row from "../Row";
 import type { Order } from "../../../types/Order.type";
-import { capitalizeMask, moneyMask } from "../../../utils/masks/mask";
+import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 
 interface DoneScreenProps {
   order: Order,
@@ -14,38 +13,39 @@ interface DoneScreenProps {
 export default function DoneScreen({ order, onNext }: DoneScreenProps) {
   return (
     <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
-      <CheckCircle sx={{ fontSize: 96, color: "success.main" }} />
-      <Typography variant="h5" sx={{ fontWeight: 800, mt: 2 }}>Pedido confirmado!</Typography>
-      <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-        Seu pedido foi recebido pelo restaurante.
-      </Typography>
-      <Paper sx={{ p: 2, mt: 3, textAlign: "left" }}>
-        <Row label="Número do pedido" value={order.code} />
-        <Divider sx={{ my: 1 }} />
-        <Row label="Forma de pagamento" value={capitalizeMask(order.paymentMethod)} />
-        <Row label="Total pago" value={moneyMask(order.orderTotal)} bold />
+      <Box sx={{ animation: "scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)", "@keyframes scaleIn": { "0%": { transform: "scale(0.6)", opacity: 0 }, "100%": { transform: "scale(1)", opacity: 1 } } }}>
+        <CheckCircleRounded sx={{ fontSize: 88, color: "success.main" }} />
+      </Box>
+
+      <Typography variant="h5" sx={{ fontWeight: 800, mt: 2, color: "#0F172A" }}>Pedido confirmado!</Typography>
+      <Typography variant="body2" sx={{ color: "#64748B", mt: 0.5 }}>O restaurante já recebeu seu pedido</Typography>
+
+      <Paper elevation={0} sx={{ mt: 4, border: "1px solid #E5E7EB", borderRadius: 3, overflow: "hidden", textAlign: "left" }}>
+        <Box sx={{ px: 3, py: 2.5, textAlign: "center", borderBottom: "1px dashed #E2E8F0" }}>
+          <Typography sx={{ fontSize: "0.72rem", color: "#94A3B8", textTransform: "uppercase", letterSpacing: "0.05em" }}>Pedido</Typography>
+          <Typography sx={{ fontFamily: "monospace", fontWeight: 800, fontSize: "1.6rem", color: "#0F172A", mt: 0.5 }}>#{order.code}</Typography>
+        </Box>
+
+        <Box sx={{ px: 3, py: 2.5 }}>
+          <Row label="Pagamento" value={paymentMethodMask(order.paymentMethod)} />
+          <Divider sx={{ my: 1, borderColor: "#F1F5F9" }} />
+          <Row label="Total pago" value={moneyMask(order.orderTotal)} bold />
+        </Box>
+
+        <Box sx={{ px: 3, py: 2, backgroundColor: "#F0FDF4", display: "flex", alignItems: "center", gap: 1.5 }}>
+          <WhatsApp sx={{ fontSize: 22, color: "#16A34A" }} />
+          <Typography sx={{ fontSize: "0.82rem", color: "#166534", textAlign: "left" }}>Você vai receber as atualizações do pedido pelo WhatsApp</Typography>
+        </Box>
       </Paper>
-      <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 3 }}>
-        Você receberá atualizações do pedido pelo WhatsApp informado.
-      </Typography>
 
       <Button
         variant="contained"
         fullWidth
         onClick={onNext}
-        endIcon={<WhatsAppIcon sx={{ fontSize: 18 }} />}
-        sx={{ borderRadius: 999, textTransform: "none", fontWeight: 700, bgcolor: "success.main", boxShadow: "none", "&:hover": { bgcolor: "success.dark", boxShadow: "none" }, "&.Mui-disabled": { bgcolor: "grey.200", color: "grey.500" }, mt: 2 }}
-      >
-        WhatsApp
-      </Button>
-      <Button
-        variant="contained"
-        fullWidth
-        onClick={onNext}
         endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
-        sx={{ borderRadius: 999, textTransform: "none", fontWeight: 700, bgcolor: "primary.main", boxShadow: "none", "&:hover": { bgcolor: "primary.dark", boxShadow: "none" }, "&.Mui-disabled": { bgcolor: "grey.200", color: "grey.500" }, mt: 2 }}
+        sx={{ borderRadius: 3, textTransform: "none", fontWeight: 700, bgcolor: "primary.main", boxShadow: "none", "&:hover": { bgcolor: "primary.dark", boxShadow: "none" }, mt: 4 }}
       >
-        Cardapio
+        Ver cardápio
       </Button>
     </Container>
   );

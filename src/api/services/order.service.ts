@@ -26,5 +26,16 @@ export const OrderService = {
       }
       throw error
     }
+  },
+  async updatePrinted(orderId: string) {
+    try {
+      const { data } = await api.post<Order>(`/order/${orderId}/printed`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
   }
 }

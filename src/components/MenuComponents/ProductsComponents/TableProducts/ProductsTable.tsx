@@ -1,9 +1,9 @@
-import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch, Button } from "@mui/material";
+import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
 import imagemGenerica from '../../../../assets/capa.avif'
 import { moneyMask } from "../../../../utils/masks/mask";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseMenuController from "./UseProductsTablesController";
-import StopCircleIcon from '@mui/icons-material/StopCircle';
+// import StopCircleIcon from '@mui/icons-material/StopCircle';
 import SizeComponent from "../SizeComponent/SizeComponent";
 
 
@@ -24,7 +24,7 @@ export default function ProductsTable(){
                 <Chip label={produtos.length} color="error" size="small" sx={{ borderRadius: 2 }} />
               </Stack>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                <Button endIcon={<StopCircleIcon/>} variant="contained" size="small" color="warning" sx={{ textTransform: "none" }}>Pausar Categoria</Button>
+                {/* <Button endIcon={<StopCircleIcon/>} variant="contained" size="small" color="warning" sx={{ textTransform: "none" }}>Pausar Categoria</Button> */}
               </Stack>
             </Stack>
 
@@ -95,7 +95,14 @@ export default function ProductsTable(){
                       <TableCell align="center">
                         <Stack sx={{alignItems: 'center'}}>
                           <Typography variant="caption">Ativo</Typography>
-                          <Switch onClick={(e) => e.stopPropagation()} defaultChecked />
+                          {/* <Switch onClick={(e) => e.stopPropagation() } defaultChecked /> */}
+                          <Switch
+                            checked={p.productActive}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              c.updateActiveProduct(p.id);
+                            }}
+                          />
                         </Stack>
                       </TableCell>
                     </TableRow>

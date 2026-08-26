@@ -8,7 +8,7 @@ import InfoScreen from "../../components/ClientMenuComponents/InfoScreen/InfoScr
 import AddressScreen from "../../components/ClientMenuComponents/AddressScreen/AddressScren";
 import PaymentScreen from "../../components/ClientMenuComponents/SelectPaymentMethod/SelectMethodPaymentScreen";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
-import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentScreen";
+import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentMethodScreen";
 import { UsePublicMenuController } from "./UsePublicMenuController";
 
 export default function PublicMenu() {
