@@ -113,6 +113,7 @@ export default function PublicMenu() {
           paymentMethod={c.paymentMethod}    
           setPaymentMethod={c.setPaymentMethod}
           onCreateOrder={c.createOrder}
+          restaurant={restaurant}
           total={c.total}
         />
       )}

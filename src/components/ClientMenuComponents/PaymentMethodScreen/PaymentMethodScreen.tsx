@@ -5,7 +5,7 @@ import PixScreen from "./PixScreen/PixScreen";
 import { CardScreen } from "./CardScreen/CardScreen";
 import { CashScreen } from "./CashScreen/CashScreen";
 import { BackHeader } from "../BackHeader/BackHeader";
-import { useState } from "react";
+import {useState } from "react";
 
 interface PaymentMethodScreenProps {
   order: Order;
@@ -20,6 +20,7 @@ interface PaymentMethodScreenProps {
 
 export default function PaymentMethodScreen({ order, total, paymentMethod, onBack, onNext }: PaymentMethodScreenProps) {
   const [disabeHeader, setDisabeHeader] = useState(false)
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
       {!disabeHeader && (

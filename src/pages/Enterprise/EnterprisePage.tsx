@@ -35,7 +35,10 @@ export function EnterprisePage() {
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
   const { restaurant, loading, businessHours } = UseEnterpriseController();
-  const { allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode } = useRestaurantSettings(restaurant?.id ?? "");
+  const { 
+    allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
+    allowCardPayment, allowPixPayment
+   } = useRestaurantSettings(restaurant?.id ?? "");
 
   if (loading) { return <Typography>Carregando...</Typography>; }
   if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
@@ -207,9 +210,14 @@ export function EnterprisePage() {
               Formas de pagamento
             </Typography>
             <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Pix" />
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Dinheiro" />
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Cartões Crédito e Débito" />
+           <FormControlLabel
+              control={<Checkbox checked={allowPixPayment} onChange={() => toggleSetting("allow_pix_payment")} />}
+              label="Pix"
+            />
+            <FormControlLabel
+              control={<Checkbox checked={allowCardPayment} onChange={() => toggleSetting("allow_card_payment")} />}
+              label="Cartões Crédito e Débito"
+            />
             </FormGroup>
           </Paper>
         </Stack>

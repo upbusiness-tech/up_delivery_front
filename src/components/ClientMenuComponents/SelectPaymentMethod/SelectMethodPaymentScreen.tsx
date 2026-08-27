@@ -2,20 +2,25 @@ import { Avatar, Box, Container, Paper, Radio, Stack, Typography } from "@mui/ma
 import { BackHeader } from "../BackHeader/BackHeader";
 import { UsePaymentController } from "./UseSelectPaymentMethodControllerScreen";
 import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
+import type { Restaurant } from "../../../types/Restaurant.type";
+import { useRestaurantSettings } from "../../../hooks/useRestaurantSettings";
 
 interface PaymentScreenProps {
   total: number;
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   onCreateOrder: () => void;
+  restaurant: Restaurant | undefined;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function PaymentScreen({onBack, onNext, setPaymentMethod, paymentMethod, onCreateOrder}: PaymentScreenProps) {
+export default function PaymentScreen({onBack, onNext, setPaymentMethod, paymentMethod, onCreateOrder, restaurant}: PaymentScreenProps) {
 
-  const c = UsePaymentController({ paymentMethod, setPaymentMethod });
-
+  if(!restaurant) return null;
+  const { allowPixPayment, allowCardPayment } = useRestaurantSettings(restaurant.id);
+  const c = UsePaymentController({ paymentMethod, setPaymentMethod, allowPixPayment, allowCardPayment });
+  
   async function handleNext(){
     //Se o pagamento for em dinheiro, o troco não é adicionado pq o pedido é criado e o troco é calculado depois
     onCreateOrder()
