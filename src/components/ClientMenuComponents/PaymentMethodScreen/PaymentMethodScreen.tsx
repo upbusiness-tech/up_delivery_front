@@ -12,13 +12,13 @@ interface PaymentMethodScreenProps {
   total: number;
   userName: string;
   userPhone: string;
-  userEmail: string;
+  // userEmail: string;
   paymentMethod: string;
   onNext: () => void;
   onBack: () => void;
 }
 
-export default function PaymentMethodScreen({ order, total, paymentMethod, userEmail, onBack, onNext }: PaymentMethodScreenProps) {
+export default function PaymentMethodScreen({ order, total, paymentMethod, onBack, onNext }: PaymentMethodScreenProps) {
   const [disabeHeader, setDisabeHeader] = useState(false)
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -30,7 +30,7 @@ export default function PaymentMethodScreen({ order, total, paymentMethod, userE
           <PixScreen
             total={total}
             order={order}
-            userEmail={userEmail}
+            // userEmail={userEmail}
             onNext={onNext}
             onBack={onBack}
             setDisabeHeader={setDisabeHeader}

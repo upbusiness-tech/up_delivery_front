@@ -7,12 +7,12 @@ import { PaymentSevice } from "../../../../api/services/payment.service";
 interface Props {
   order: Order;
   total: number;
-  userEmail: string
+  // userEmail: string
 }
 
 const PIX_EXPIRATION_SECONDS = 60;
 
-export function UsePixScreenController({ order, total, userEmail }: Props) {
+export function UsePixScreenController({ order, total }: Props) {
   const [loading, setLoading] = useState(false);
   const [qrCodeBase64, setQrCodeBase64] = useState("");
   const [qrCode, setQrCode] = useState("");
@@ -41,7 +41,7 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
         amount: total,
         paymentMethod: MethodPayment.PIX,
         description: "UPDELIVERY_ORDER",
-        payerEmail: userEmail,
+        // payerEmail: userEmail,
         orderInternalId: order.id
       };
       const data = await PaymentSevice.createPixPayment(order.restaurant.id, payment);

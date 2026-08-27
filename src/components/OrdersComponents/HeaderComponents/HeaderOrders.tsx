@@ -1,8 +1,7 @@
-import { Avatar, Box, Button, Divider, IconButton, ListItemIcon, Menu, MenuItem, Stack, Tooltip, Typography } from "@mui/material";
+import { Button, Stack } from "@mui/material";
 import WebIcon from '@mui/icons-material/Web';
 // import PendingActionsIcon from '@mui/icons-material/PendingActions';
-import { Logout, PersonAdd, Settings } from "@mui/icons-material";
-import React from "react";
+// import { Logout, PersonAdd, Settings } from "@mui/icons-material";
 import UseHeaderOrdersController from "./UseHeaderOrdersController";
 import type { Restaurant } from "../../../types/Restaurant.type";
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -13,16 +12,16 @@ interface props {
 }
 
 export function HeadarOrders({restaurant}: props) {
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+  // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  // const open = Boolean(anchorEl);
 
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  // const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+  //   setAnchorEl(event.currentTarget);
+  // };
 
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  // const handleClose = () => {
+  //   setAnchorEl(null);
+  // };
 
   const c = UseHeaderOrdersController({restaurant})
   
@@ -47,7 +46,7 @@ export function HeadarOrders({restaurant}: props) {
         </Button>
       </Stack>
 
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      {/* <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <Typography sx={{ minWidth: 100, textAlign: 'right' }}>@Empresa</Typography>
 
         <Tooltip title="Sua conta">
@@ -85,7 +84,7 @@ export function HeadarOrders({restaurant}: props) {
             Sair
           </MenuItem>
         </Menu>
-      </Box>
+      </Box> */}
       <OpenCloseRestaurantModal restaurant={restaurant} open={c.modalStatusRestaurant} onClose={c.handleCloseModalStatusRestaurant}/>
     </Stack>
   );

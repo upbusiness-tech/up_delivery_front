@@ -61,7 +61,7 @@ export default function UseModalRegisterProduct(){
     } else {
       sizes = [
         {
-          size: "b316a702-927c-4864-8dad-e224a4019629",
+          size: "0146a23d-5554-47b4-aa76-e16c0244597f",
           price: commonPrice
         }
       ];
