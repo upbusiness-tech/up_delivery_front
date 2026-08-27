@@ -35,7 +35,7 @@ export function EnterprisePage() {
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
   const { restaurant, loading, businessHours } = UseEnterpriseController();
-  const { allowDelivery, allowPickup, paymentsPlatform, toggleSetting } = useRestaurantSettings(restaurant?.id ?? "");
+  const { allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode } = useRestaurantSettings(restaurant?.id ?? "");
 
   if (loading) { return <Typography>Carregando...</Typography>; }
   if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
@@ -183,7 +183,10 @@ export function EnterprisePage() {
               Processados pela plataforma via Mercado Pago. O pagamento é confirmado automaticamente no pedido.
             </Typography>
             <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked checked={paymentsPlatform} />} label="Usar pagamentos integrados" />
+            <FormControlLabel
+              control={<Checkbox checked={paymentsPlatform} onChange={() => togglePaymentMode("payments_via_the_platform", "separete_payments")} />}
+              label="Usar pagamentos integrados"
+            />
             </FormGroup>
             <Divider sx={{ mb: 1 }} />
             <Typography variant="subtitle1" gutterBottom>
@@ -193,7 +196,10 @@ export function EnterprisePage() {
               Acertados diretamente entre o cliente e o restaurante/entregador, fora da plataforma.
             </Typography>
             <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked />} label="Usar pagamentos a parte" />
+              <FormControlLabel
+                control={<Checkbox checked={separetePayments} onChange={() => togglePaymentMode("separete_payments", "payments_via_the_platform")} />}
+                label="Usar pagamentos a parte"
+              />
             </FormGroup>
           </Paper>
           <Paper sx={{ p: { xs: 2, md: 3 } }}>

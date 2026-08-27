@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
+const SOCKET_URL = import.meta.env.VITE_DELIVERY_API_URL;
+
 export const createSocket = (restaurantId: string) => {
-  return io('http://localhost:3000', {
-    query: { restaurantId },
-  });
+  return io(SOCKET_URL, { query: { restaurantId } });
 };
 
 export function usePaymentSocket(orderId: string | null) {
@@ -13,14 +13,14 @@ export function usePaymentSocket(orderId: string | null) {
   useEffect(() => {
     if (!orderId) return;
 
-    const socket: Socket = io("http://localhost:3000/payment");
+    const socket: Socket = io(`${SOCKET_URL}/payment`);
 
-    socket.on("connect", () => {
-      socket.emit("joinOrderRoom", orderId);
+    socket.on('connect', () => {
+      socket.emit('joinOrderRoom', orderId);
     });
 
-    socket.on("paymentStatusUpdate", (data: { orderId: string; status: string }) => {
-      console.log("Status atualizado:", data);
+    socket.on('paymentStatusUpdate', (data: { orderId: string; status: string }) => {
+      console.log('Status atualizado:', data);
       setStatus(data.status);
     });
 

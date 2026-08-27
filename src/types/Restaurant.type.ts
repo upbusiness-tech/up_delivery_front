@@ -5,6 +5,7 @@ export interface Restaurant {
   restaurantPhone: string;
   restaurantAddress: string;
   businessHours: Record<string, { openTime: string; closeTime: string }[]>;
+  slug: string;
   image: string;
   description: string;
   isOpen: boolean;
