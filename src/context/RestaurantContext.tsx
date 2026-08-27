@@ -6,6 +6,11 @@ import type { Order } from "../types/Order.type";
 import type { Additionals, Product, ProductCategory, Size } from "../types/Product.type";
 import { useAuth } from "./AuthContext";
 
+//Socket de pedidos global
+import { useRef } from "react";
+import { createSocket } from "../api/services/socket";
+import { useNotificationSound } from "../hooks/useNotificationSound";
+
 interface RestaurantContextValue {
   restaurant: Restaurant | undefined;
   // setRestaurant: (restaurant: Restaurant | undefined) => void;
@@ -27,6 +32,9 @@ interface RestaurantContextValue {
   removeProduct: (id: string) => void
   addAdditional: (novoAdicional: Additionals) => void
   addSize: (novoTamanho: Size) => void
+
+  orderToPrint: Order | null;
+setOrderToPrint: Dispatch<SetStateAction<Order | null>>;
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
@@ -42,6 +50,34 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   const [additionals, setAdditionals] = useState<Additionals[]>([])
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
   const [sizes, setSizes] = useState<Size[]>([])
+  const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
+
+  //----------------Socket global para os pedidos--------------------------
+  const socketRef = useRef<ReturnType<typeof createSocket> | null>(null);
+  const { play: playNotificationSound } = useNotificationSound();
+
+  useEffect(() => {
+    if (!restaurant?.id) return;
+    if (socketRef.current) return;
+
+    const socket = createSocket(restaurant.id);
+    socketRef.current = socket;
+
+    socket.on("newOrder", (newOrder: Order) => {
+      setOrders((prev) => {
+        const exists = prev?.some((order) => order.id === newOrder.id);
+        if (exists) return prev;
+        return [newOrder, ...(prev ?? [])];
+      });
+      setOrderToPrint(newOrder);
+      playNotificationSound();
+    });
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [restaurant?.id]);
   
   
  useEffect(() => {
@@ -131,7 +167,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
     value={{restaurant, orders, setOrders, fetchOrders, isLoading, 
     categories, setCategories, products, setProducts, additionals,
     neighborhoods, sizes, addProduct,onUpdateProduct, removeProduct,
-    addCategory, addAdditional, addSize
+    addCategory, addAdditional, addSize, orderToPrint, setOrderToPrint
   }}>
     {children}
   </RestaurantContext.Provider>

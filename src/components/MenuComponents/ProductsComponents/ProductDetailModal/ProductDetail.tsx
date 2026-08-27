@@ -2,7 +2,6 @@ import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider
 import type { Product } from "../../../../types/Product.type";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from '@mui/icons-material/Add';
-import imagemGenerica from '../../../../assets/capa.avif'
 import UseProductDetailModalController from "./UseProductDetailModalController";
 import LoadingModal from "../../../LoadingModal/GenericModal";
 import RegisterProductSizetModal from "../RegisterProductSize.tsx/RegisterProductSizeModal";
@@ -46,7 +45,7 @@ export default function ProductDetail({ product, onClose }: props) {
           <Grid size={{ xs: 12 }} sx={{ display: "flex", gap: 2 }}>
             <Box
               component="img"
-              src={imagemGenerica}
+              src={product.image}
               alt={product.productName}
               sx={{
                 width: 140,

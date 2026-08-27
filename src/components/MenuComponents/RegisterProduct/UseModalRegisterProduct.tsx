@@ -70,10 +70,10 @@ export default function UseModalRegisterProduct(){
     const product: ProductDTO = {
       productName,
       productCategory,
-      sizes
+      sizes,
     }
 
-    const productCreated = await ProductService.createProduct(product)
+    const productCreated = await ProductService.createProduct(product, imageFile ?? undefined)
     console.log(productCreated)
     addProduct(productCreated);
     resetForm();

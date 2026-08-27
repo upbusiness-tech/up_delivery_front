@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { useMediaQuery, useTheme } from "@mui/material";
 import { RestaurantService } from "../../api/services/restaurant.service";
 import type { Order } from "../../types/Order.type";
-import { createSocket } from "../../api/services/socket";
-import { useNotificationSound } from "../../hooks/useNotificationSound";
+// import { createSocket } from "../../api/services/socket";
+// import { useNotificationSound } from "../../hooks/useNotificationSound";
 import { useRestaurant } from "../../context/RestaurantContext";
 import { OrderService } from "../../api/services/order.service";
-import { useRef } from "react";
+// import { useRef } from "react";
 
 
 export default function UseOrdersController(){
@@ -18,13 +18,13 @@ export default function UseOrdersController(){
   const [type, setType] = useState<string>("Todos os tipos");
   const [query, setQuery] = useState("");
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
-  const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
-  const { play: playNotificationSound } = useNotificationSound();
+  // const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
+  // const { play: playNotificationSound } = useNotificationSound();
 
-  const socketRef = useRef<any>(null);
+  // const socketRef = useRef<any>(null);
   
   //Contexts
-  const { restaurant, orders, isLoading, setOrders, fetchOrders } = useRestaurant()
+  const { restaurant, orders, isLoading, setOrders, fetchOrders, orderToPrint, setOrderToPrint } = useRestaurant()
 
   const selectedOrder = orders?.find((o) => o.id === selectedOrderId) ?? null;
 
@@ -64,40 +64,14 @@ export default function UseOrdersController(){
   useEffect(() => {
     if (!restaurant) return;
     fetchOrders();
-    if (socketRef.current) return;
-    
-    const socket = createSocket(restaurant.id);
-
-    socketRef.current = socket;
-
-    socket.on("newOrder", (newOrder) => {
-      console.log("NOVO PEDIDO", newOrder.id);
-      setOrders((prev) => {
-        const exists = prev?.some(
-          (order) => order.id === newOrder.id
-        );
-        if (exists) {return prev}
-        return [newOrder, ...(prev ?? [])];
-      });
-      setOrderToPrint(newOrder);
-      playNotificationSound();
-    });
-
-    return () => {
-      socket.disconnect();
-      socketRef.current = null;
-    };
-
   }, [restaurant?.id]);
-
 
   useEffect(() => {
     if (orderToPrint) {
       const timeout = setTimeout(() => {
         window.print();
-        setOrderToPrint(null); // limpa depois de imprimir
+        setOrderToPrint(null);
       }, 200);
-
       return () => clearTimeout(timeout);
     }
   }, [orderToPrint]);

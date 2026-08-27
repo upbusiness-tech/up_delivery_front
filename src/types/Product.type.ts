@@ -26,6 +26,7 @@ export interface Product {
   id: string;
   productName: string;
   productDescription: string;
+  image: string;
   productActive: boolean;
   productCategory: ProductCategory;
   sizes: ProducSize[];
@@ -70,7 +71,8 @@ export interface ProductBag {
 export interface ProductDTO {
 	productName: string,
 	productCategory: string,
-	sizes: ProducSizeDTO[]
+	sizes: ProducSizeDTO[],
+  image?: string;
 }
 
 
