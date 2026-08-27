@@ -120,7 +120,7 @@ export default function PublicMenu() {
       {c.step === "paymentMethod" && c.orderCreated && (
         <PaymentMethodScreen
           order={c.orderCreated}
-          userEmail={c.costumerEmail}
+          // userEmail={c.costumerEmail}
           userName={c.costumerName}
           userPhone={c.costumerPhone}
           paymentMethod={c.paymentMethod}
