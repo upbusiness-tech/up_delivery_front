@@ -1,5 +1,4 @@
 import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
-import imagemGenerica from '../../../../assets/capa.avif'
 import { moneyMask } from "../../../../utils/masks/mask";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseMenuController from "./UseProductsTablesController";
@@ -49,7 +48,7 @@ export default function ProductsTable(){
                         <Stack direction='row' spacing={2} sx={{alignItems:'center'}}>
                           <Box
                             component='img'
-                            src={imagemGenerica}
+                            src={p.image}
                             alt={p.productName}
                             sx={{
                               width: 60,

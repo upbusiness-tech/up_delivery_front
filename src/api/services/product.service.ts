@@ -1,11 +1,17 @@
 import axios from "axios";
 import { api } from "../axios"
 import type { ProductDTO, Product, ProductCategory, ProducSizeDTO, AdditionalDTO } from "../../types/Product.type";
+import { uploadToCloudinary } from "../../lib/claudinary";
 
 export const ProductService = {
 
-  async createProduct(body: ProductDTO) {
+  async createProduct(body: ProductDTO, productImage?: File) {
     try {
+      if (productImage) {
+        const imageUrl = await uploadToCloudinary(productImage);
+        body.image = imageUrl;
+      }
+
       const { data } = await api.post<Product>("/product/create-product", body);
       return data;
     } catch (error) {
