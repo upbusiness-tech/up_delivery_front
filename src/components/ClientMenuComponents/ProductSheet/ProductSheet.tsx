@@ -1,7 +1,6 @@
 import { Box, Button, Card, CardActionArea, Dialog, DialogContent, Drawer, IconButton, Stack, TextField, Typography, Chip } from "@mui/material";
 import { Add, Close, Remove, CheckCircle } from "@mui/icons-material";
 import type { Additionals, Product, ProductCategory } from "../../../types/Product.type";
-import genericImage from "../../../assets/capa.avif"
 import UseProductSheetController from "./UseProductSheetController";
 import type { OrderItemBag } from "../../../types/Order.type";
 import { moneyMask } from "../../../utils/masks/mask";
@@ -28,7 +27,7 @@ export default function ProductSheet({ item, onClose, addProduct, category, addi
   const body = (
     <Box>
       <Box sx={{ position: "relative" }}>
-        <img src={genericImage}  alt={item.productName} style={{ width: "100%", height: 240, objectFit: "cover", display: "block" }} />
+        <img src={item.image}  alt={item.productName} style={{ width: "100%", height: 240, objectFit: "cover", display: "block" }} />
         <IconButton
           onClick={onClose}
           sx={{ position: "absolute", top: 8, right: 8, bgcolor: "rgba(0,0,0,0.5)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}
