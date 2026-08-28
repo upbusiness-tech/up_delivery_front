@@ -34,7 +34,8 @@ export default function UseProductSheetController(category: ProductCategory, add
       price: product.sizes[0].price,
       flavors: product.sizes.map((e) => e.id),
       observation: observation,
-      additionals: checkedAdditionals
+      additionals: checkedAdditionals,
+      image: product.image
     }
     // console.log("Produto simples adicionado: ", orderItem)
     return orderItem

@@ -46,8 +46,8 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
     }, 0);
 
     const productName = `${category.categoryName} ${size.name}`;
-
-    console.log("Adicionais: ", checkedAdditionals)
+    const image = selectedFlavors.find((product) => product !== null)?.image ?? '';
+    // console.log("Adicionais: ", checkedAdditionals)
 
     const orderItem: OrderItemBag = {
       id: crypto.randomUUID(),
@@ -56,7 +56,8 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
       price: maxPrice,
       flavors: getFlavors,
       observation: observation,
-      additionals: checkedAdditionals
+      additionals: checkedAdditionals,
+      image: image
     }
     console.log("Produto simples adicionado: ", orderItem)
     return orderItem

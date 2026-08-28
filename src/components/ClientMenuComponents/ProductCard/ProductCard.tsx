@@ -19,7 +19,7 @@ export default function ProductCard({ product, onClick }: props) {
     }}>
       <CardContent sx={{ flex: 1, py: 1.5 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>{product.productName}</Typography>
-        <Typography variant="subtitle1" color="primary" sx={{ mt: 1, fontWeight: 700 }}>
+        <Typography variant="subtitle1" color="primary" sx={{ mt: 0, fontWeight: 700 }}>
             <Typography component="span" color="success" sx={{ mr: 0.5, fontWeight: 600 }}>
               R${(product.sizes[0].price || 0).toFixed(2)}
             </Typography>
