@@ -59,6 +59,7 @@ export interface CreateOrderItem {
 export interface OrderItemBag {
   id: string;
   name: string;
+  image?: string;
   quantity: number;
   price: number;
   flavors: string[],

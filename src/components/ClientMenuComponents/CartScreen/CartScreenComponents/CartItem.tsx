@@ -2,7 +2,6 @@ import { Box, IconButton, Typography, Card, Button, Chip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
-import genericImage from "../../../../assets/capa.avif";
 import type { OrderItemBag } from "../../../../types/Order.type";
 import { moneyMask } from "../../../../utils/masks/mask";
 
@@ -18,12 +17,11 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
   const additionalsSum = hasAdditionals ? item.additionals?.reduce((sum, ad) => sum + ad.additionalPrice, 0) : 0;
   const subtotal = item.price + (additionalsSum || 0);
   const total = subtotal * item.quantity;
-
   return (
     <Card sx={{ p: 1.5, mb: 1, borderRadius: 4, boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "grey.200", transition: "box-shadow 0.2s ease, border-color 0.2s ease", "&:hover": { boxShadow: "0 6px 16px rgba(0,0,0,0.08)", borderColor: "grey.300" } }}>
       <Box sx={{ display: "flex", gap: 2 }}>
         <Box sx={{ position: "relative", flexShrink: 0 }}>
-          <Box component="img" src={genericImage} alt={item.name} sx={{ width: 84, height: 84, borderRadius: 3, objectFit: "cover", display: "block" }} />
+          <Box component="img" src={item.image} alt={item.name} sx={{ width: 84, height: 84, borderRadius: 3, objectFit: "cover", display: "block" }} />
           <Box sx={{ position: "absolute", top: -8, right: -8, minWidth: 22, height: 22, px: 0.5, borderRadius: "999px", bgcolor: "success.main", color: "success.contrastText", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, boxShadow: "0 0 0 1px #fff" }}>
             {item.quantity}
           </Box>
