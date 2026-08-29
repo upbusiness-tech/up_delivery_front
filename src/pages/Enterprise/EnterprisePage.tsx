@@ -4,13 +4,18 @@ import {
   Table, TableRow, TableCell, TableBody, Chip,
   useMediaQuery, useTheme, Tabs, Tab, Box,
   Button, FormGroup, FormControlLabel, Checkbox,
-  FormControl, FormLabel,
+  FormControl,
   Switch,
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import UseEnterpriseController from "./UseEnterpriseController";
 import { DAYS_LABEL, DAYS_ORDER } from "../../types/Restaurant.type";
 import { useRestaurantSettings } from "../../hooks/useRestaurantSettings";
+import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
+import { phoneMask } from "../../utils/masks/mask";
+import StorefrontIcon from '@mui/icons-material/Storefront';
+import PhoneIcon from '@mui/icons-material/Phone';
+import EmailIcon from '@mui/icons-material/Email';
 
 const TABS = {
   GENERAL: 0,
@@ -34,7 +39,7 @@ export function EnterprisePage() {
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
-  const { restaurant, loading, businessHours } = UseEnterpriseController();
+  const { restaurant, loading, businessHours, connectRestaurant } = UseEnterpriseController();
   const { 
     allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
     allowCardPayment, allowPixPayment
@@ -44,7 +49,7 @@ export function EnterprisePage() {
   if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={0}>
       <Paper sx={{ px: { xs: 1, md: 2 } }}>
         <Tabs
           value={tab}
@@ -52,10 +57,11 @@ export function EnterprisePage() {
           variant={isDesktop ? "standard" : "scrollable"}
           scrollButtons="auto"
           allowScrollButtonsMobile
+          
         >
-          <Tab label="Informações gerais" />
-          <Tab label="Pagamentos" />
-          <Tab label="Permissões" />
+          <Tab sx={{textTransform: 'none'}} label="Informações gerais" />
+          <Tab sx={{textTransform: 'none'}} label="Pagamentos" />
+          <Tab sx={{textTransform: 'none'}} label="Permissões" />
         </Tabs>
       </Paper>
 
@@ -68,25 +74,42 @@ export function EnterprisePage() {
             <Divider sx={{ mb: 2 }} />
 
             <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="caption" color="text.secondary">Nome</Typography>
-                <Typography>{restaurant.restaurantName}</Typography>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <StorefrontIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Nome</Typography>
+                    <Typography variant="body1" sx={{fontWeight: 600}}>{restaurant.restaurantName}</Typography>
+                  </Box>
+                </Box>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Typography variant="caption" color="text.secondary">Telefone</Typography>
-                <Typography>{restaurant.restaurantPhone}</Typography>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <PhoneIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Telefone</Typography>
+                    <Typography variant="body1">{phoneMask(restaurant.restaurantPhone)}</Typography>
+                  </Box>
+                </Box>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 5 }}>
-                <Typography variant="caption" color="text.secondary">E-mail de contato</Typography>
-                <Typography>{restaurant.restaurantEmail}</Typography>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <EmailIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
+                  <Box sx={{ minWidth: 0 }}>
+                    <Typography variant="caption" color="text.secondary">E-mail de contato</Typography>
+                    <Typography variant="body1" noWrap>{restaurant.restaurantEmail}</Typography>
+                  </Box>
+                </Box>
               </Grid>
 
-              <Grid size={{ xs: 12, md: 4 }}>
+              {/* <Grid size={{ xs: 12, md: 6 }}>
                 <Typography variant="caption" color="text.secondary">Descrição</Typography>
-                <Typography>{restaurant.description}</Typography>
-              </Grid>
+                <Typography variant="body2" sx={{ color: restaurant.description ? 'text.primary' : 'text.disabled', fontStyle: restaurant.description ? 'normal' : 'italic' }}>
+                  {restaurant.description || 'Nenhuma descrição cadastrada'}
+                </Typography>
+              </Grid> */}
             </Grid>
           </Paper>
 
@@ -172,8 +195,8 @@ export function EnterprisePage() {
                 </Stack>
               </Stack>
 
-              <Button variant="contained">
-                Clique aqui para integrar
+              <Button sx={{textTransform: 'none'}} endIcon={<AssuredWorkloadIcon/>} onClick={connectRestaurant} variant="contained">
+                Integrar conta
               </Button>
             </Stack>
           </Paper>
@@ -231,7 +254,6 @@ export function EnterprisePage() {
           <Divider sx={{ mb: 2 }} />
 
           <FormControl>
-            <FormLabel id="order-mode-label">Como os clientes podem receber os pedidos?</FormLabel>
             <FormControlLabel control={<Switch checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
             <FormControlLabel control={<Switch checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
           </FormControl>
