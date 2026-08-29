@@ -10,7 +10,7 @@ export interface PixData {
 export interface CreatePixPayment {
   amount: number;
   paymentMethod: 'pix';
-  // payerEmail: string;
+  payerEmail: string;
   description: string;
   orderInternalId: string;
 }

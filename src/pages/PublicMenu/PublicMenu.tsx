@@ -83,8 +83,8 @@ export default function PublicMenu() {
           phone={c.costumerPhone}
           setName={c.setCostumerName}
           setPhone={c.setCostumerPhone}
-          // email={c.costumerEmail}
-          // setEmail={c.setCostumerEmail}
+          email={c.costumerEmail}
+          setEmail={c.setCostumerEmail}
           onBack={c.previousStep}
           onNext={c.nextStep}
         />
@@ -121,7 +121,7 @@ export default function PublicMenu() {
       {c.step === "paymentMethod" && c.orderCreated && (
         <PaymentMethodScreen
           order={c.orderCreated}
-          // userEmail={c.costumerEmail}
+          userEmail={c.costumerEmail}
           userName={c.costumerName}
           userPhone={c.costumerPhone}
           paymentMethod={c.paymentMethod}

@@ -12,15 +12,15 @@ import { useEffect } from "react";
 interface Props {
   total: number;
   order: Order;
-  // userEmail: string;
+  userEmail: string;
   onNext: () => void;
   onBack: () => void;
   setDisabeHeader: (value: boolean) => void;
 }
 
-export default function PixScreen({total, order, onNext, setDisabeHeader}: Props) {
+export default function PixScreen({total, order, userEmail, onNext, setDisabeHeader}: Props) {
 
-  const c = UsePixScreenController({order, total})
+  const c = UsePixScreenController({order, total, userEmail})
 
   const isApproved = c.paymentStatus === "approved"
   const isRejected = c.paymentStatus === "rejected";
