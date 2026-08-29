@@ -109,6 +109,17 @@ export const RestaurantService = {
       }
     }
   },
+
+  async restaurantConnectMp(){
+    try{
+      const response = await api.get(`payment/oauth/connect`)
+      return response;
+    }catch(error){
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    }
+  },
   
   
   //--------------------------------------------------------ROTAS SLUGS

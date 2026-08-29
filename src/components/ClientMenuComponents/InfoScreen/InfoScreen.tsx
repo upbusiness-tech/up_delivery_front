@@ -5,18 +5,21 @@ import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions"
 import { phoneMask } from "../../../utils/masks/mask";
 import { BackHeader } from "../BackHeader/BackHeader";
 import { useInfoScreenValidation } from "../../../hooks/useInfoScreenValidation";
+import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 
 interface InfoScreenProps {
   name: string;
   setName: (v: string) => void;
   phone: string;
   setPhone: (v: string) => void;
+  email: string;
+  setEmail: (v: string) => void;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function InfoScreen({ name, setName, phone, setPhone, onBack, onNext }: InfoScreenProps) {
-  const { errors, isValid } = useInfoScreenValidation(name, phone);
+export default function InfoScreen({ name, setName, phone, setPhone, email, setEmail, onBack, onNext }: InfoScreenProps) {
+  const { errors, isValid } = useInfoScreenValidation(name, phone, email);
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -58,6 +61,19 @@ export default function InfoScreen({ name, setName, phone, setPhone, onBack, onN
             error={!!phone && !!errors.phoneError}
             helperText={!!phone && errors.phoneError}
             slotProps={{ input: { startAdornment: <InputAdornment position="start"><WhatsAppIcon sx={{ color: "green" }} /></InputAdornment> } }}
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
+          />
+
+          <TextField
+            label="E-mail"
+            fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="jose@email.com"
+            inputMode="email"
+            error={!!email && !!errors.emailError}
+            helperText={!!email && errors.emailError}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><EmailOutlinedIcon sx={{ color: "black" }} /></InputAdornment> } }}
             sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
           />
         </Stack>

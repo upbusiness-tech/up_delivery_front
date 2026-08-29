@@ -5,17 +5,20 @@ import type { Neighborhood } from "../types/Restaurant.type";
 const NAME_REGEX = /^[A-Za-zÀ-ÿ\s]{2,30}$/;
 const BR_PHONE_REGEX = /^\(\d{2}\)\s9\s\d{4}-\d{4}$/;
 const ONLY_DIGITS_REGEX = /^\d+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function useInfoScreenValidation(name: string, phone: string) {
+export function useInfoScreenValidation(name: string, phone: string, email: string) {
   const errors = useMemo(() => {
     const trimmedName = name.trim();
     const digitsPhone = phone.replace(/\D/g, "");
+    const trimmedEmail = email.trim();
     const nameError = !trimmedName ? "Informe seu nome" : trimmedName.length > 30 ? "Nome muito longo (máx. 30 caracteres)" : !NAME_REGEX.test(trimmedName) ? "Nome deve conter apenas letras" : "";
     const phoneError = !digitsPhone ? "Informe seu WhatsApp" : digitsPhone.length !== 11 ? "Telefone deve ter 11 dígitos (DDD + 9 dígitos)" : !BR_PHONE_REGEX.test(phone) ? "Formato inválido, use (88) 9 8149-6910" : "";
-    return { nameError, phoneError };
-  }, [name, phone]);
+    const emailError = !trimmedEmail ? "Informe seu e-mail" : !EMAIL_REGEX.test(trimmedEmail) ? "E-mail inválido" : "";
+    return { nameError, phoneError, emailError };
+  }, [name, phone, email]);
 
-  const isValid = !errors.nameError && !errors.phoneError;
+  const isValid = !errors.nameError && !errors.phoneError && !errors.emailError;
 
   return { errors, isValid };
 }

@@ -54,6 +54,9 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
     onClose()
   }
 
+  function imprimir() {
+    window.print();
+  }
 
   return {
     open,
@@ -62,6 +65,7 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
     handleOpenModalOrderCancel,
     handleCloseModalOrderCancel,
     openModalOrderCancel,
-    cancelOrder
+    cancelOrder,
+    imprimir
   };
 }
