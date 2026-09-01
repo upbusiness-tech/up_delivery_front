@@ -37,5 +37,16 @@ export const OrderService = {
       }
       throw error;
     }
-  }
+  },
+  async updateOrderPaymentMethod(orderId: string, paymentMethod: string) {
+    try {
+      const { data } = await api.post(`/order/${orderId}/payment-method`, { paymentMethod });
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    throw error;
+    }
+  },
 }

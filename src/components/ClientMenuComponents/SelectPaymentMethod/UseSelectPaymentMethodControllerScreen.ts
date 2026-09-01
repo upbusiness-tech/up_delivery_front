@@ -1,13 +1,12 @@
 import { AttachMoney, CreditCard, Pix as PixIcon } from "@mui/icons-material";
 
 interface UsePaymentControllerProps {
-  paymentMethod: string;
   setPaymentMethod: (method: string) => void;
   allowPixPayment: boolean;
   allowCardPayment: boolean;
 }
 
-export function UsePaymentController({ paymentMethod, setPaymentMethod, allowPixPayment, allowCardPayment }: UsePaymentControllerProps) {
+export function UsePaymentController({setPaymentMethod, allowPixPayment, allowCardPayment }: UsePaymentControllerProps) {
   const allOpts = [
     { id: "pix" as const, label: "Pix", desc: "Aprovação imediata", Icon: PixIcon, enabled: allowPixPayment },
     { id: "card" as const, label: "Cartão crédito/débito", desc: "Crédito ou débito", Icon: CreditCard, enabled: allowCardPayment },
@@ -18,7 +17,6 @@ export function UsePaymentController({ paymentMethod, setPaymentMethod, allowPix
 
   return {
     opts,
-    paymentMethod,
     setPaymentMethod
   };
 }

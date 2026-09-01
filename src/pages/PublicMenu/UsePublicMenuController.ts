@@ -3,6 +3,7 @@ import { type Address, type CreateOrder, type CreateOrderItem, type Order, type 
 import type { MenuData, Product, ProductCategory, Size } from '../../types/Product.type';
 import { RestaurantService } from "../../api/services/restaurant.service";
 import type { Neighborhood } from "../../types/Restaurant.type";
+import { OrderService } from "../../api/services/order.service";
 
 type CheckoutStep =
 | "menu"
@@ -146,8 +147,6 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   }
 
   async function createOrder() {
-    // Se já existe um pedido criado, não cria de novo
-    if (orderCreated) return;
 
     if(!restaurant) return
 
@@ -160,6 +159,12 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     }
 
     if (type === "delivery" && (!address || !neighborhood)) return;
+    
+    if (orderCreated) {
+      const updated = await OrderService.updateOrderPaymentMethod(orderCreated.id, paymentMethod)
+      setOrderCreated(updated)
+      return
+    }
 
     const orderItens = productsAdded.map((e) => {
       const item: CreateOrderItem = {
@@ -176,7 +181,6 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
       .filter(Boolean)
       .join(" | ");
     
-    console.log("TROCO: ", changeFor)
     const newOrder: CreateOrder = {
       type: type,
       paymentMethod: paymentMethod,
