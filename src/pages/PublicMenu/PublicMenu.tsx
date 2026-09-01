@@ -115,8 +115,8 @@ export default function PublicMenu() {
           onCreateOrder={c.createOrder}
           restaurant={restaurant}
           total={c.total}
-        />
-      )}
+          />
+        )}
 
       {c.step === "paymentMethod" && c.orderCreated && (
         <PaymentMethodScreen

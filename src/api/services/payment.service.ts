@@ -16,7 +16,7 @@ export const PaymentSevice = {
   },
 
   async  createCardPayment(restaurantId: string, payload: any) {
-    const { data } = await api.post(`/payment/create-card-payment/${restaurantId}`, payload);
+    const { data } = await api.post(`/payment/create-payment-card/${restaurantId}`, payload);
     return data;
   },
 

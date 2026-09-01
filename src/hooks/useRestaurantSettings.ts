@@ -29,11 +29,12 @@ export function useRestaurantSettings(restaurantId: string) {
     const res = await SettingsService.getSettings(restaurantId)
     if (!res) return;
     setSettings(res.data)
-    console.log(res)
+    // console.log(res)
     setLoading(false)
   }
 
   async function toggleSetting(key: string) {
+    // console.log("PING")
     const usage = settings.find((s) => s.setting.key === key);
     if (!usage) return;
     console.log(usage.id)

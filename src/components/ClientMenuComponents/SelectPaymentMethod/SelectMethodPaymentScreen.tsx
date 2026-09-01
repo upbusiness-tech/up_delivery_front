@@ -19,10 +19,9 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
 
   if(!restaurant) return null;
   const { allowPixPayment, allowCardPayment } = useRestaurantSettings(restaurant.id);
-  const c = UsePaymentController({ paymentMethod, setPaymentMethod, allowPixPayment, allowCardPayment });
+  const c = UsePaymentController({ setPaymentMethod, allowPixPayment, allowCardPayment });
   
   async function handleNext(){
-    //Se o pagamento for em dinheiro, o troco não é adicionado pq o pedido é criado e o troco é calculado depois
     onCreateOrder()
     onNext()
   }
@@ -35,7 +34,7 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
 
         <Stack spacing={1}>
           {c.opts.map((o) => {
-            const active = c.paymentMethod === o.id;
+            const active = paymentMethod === o.id;
             return (
               <Paper
                 key={o.id}
@@ -67,7 +66,7 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
           onBack={onBack}
           onNext={handleNext}
           nextLabel="Continuar"
-          nextDisabled={!c.paymentMethod}
+          nextDisabled={!paymentMethod}
         />
       </Container>
     </Box>
