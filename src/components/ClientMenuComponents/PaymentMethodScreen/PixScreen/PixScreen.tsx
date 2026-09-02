@@ -34,7 +34,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
     <>
     <Paper sx={{ mt: 1, p: 2, borderRadius: 4, border: "1px solid", borderColor: "grey.200", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", textAlign: "center" }}>
       {isApproved && (
-        <DoneScreen order={order} onNext={onNext}/>
+        <DoneScreen total={total} order={order} onNext={onNext}/>
       )}
       {!isApproved && (
         <Stack direction="row" sx={{mb: 2, position: "relative" }}>
