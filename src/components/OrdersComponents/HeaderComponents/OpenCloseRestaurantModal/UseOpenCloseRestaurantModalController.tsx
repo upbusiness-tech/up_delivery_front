@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { RestaurantService } from "../../../api/services/restaurant.service";
-import type { Restaurant } from "../../../types/Restaurant.type";
+import type { Restaurant } from "../../../../types/Restaurant.type";
+import { RestaurantService } from "../../../../api/services/restaurant.service";
 
 interface props {
   restaurant: Restaurant | undefined;

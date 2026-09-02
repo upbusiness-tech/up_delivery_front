@@ -1,6 +1,6 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Stack, Typography } from "@mui/material";
-import type { Restaurant } from "../../../types/Restaurant.type";
 import UseOpenCloseRestaurantModalController from "./UseOpenCloseRestaurantModalController";
+import type { Restaurant } from "../../../../types/Restaurant.type";
 
 interface props {
   open: boolean;

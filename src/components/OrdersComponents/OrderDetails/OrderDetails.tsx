@@ -50,7 +50,7 @@ export default function OrderDetail({ order, onClose, updateStatusOrder }: Order
         }
       `}</style>
 
-      <PrintOrder order={order} />
+      
 
       <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>
@@ -217,6 +217,8 @@ export default function OrderDetail({ order, onClose, updateStatusOrder }: Order
           </Stack>
         </DialogActions>
       </Dialog>
+
+      <PrintOrder order={order} />
     </>
   );
 }

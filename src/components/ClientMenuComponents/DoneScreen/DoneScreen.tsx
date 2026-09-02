@@ -6,11 +6,12 @@ import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 
 interface DoneScreenProps {
-  order: Order,
+  order: Order;
+  total: number;
   onNext: () => void
 }
 
-export default function DoneScreen({ order, onNext }: DoneScreenProps) {
+export default function DoneScreen({ order, onNext, total }: DoneScreenProps) {
   return (
     <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
       <Box sx={{ animation: "scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)", "@keyframes scaleIn": { "0%": { transform: "scale(0.6)", opacity: 0 }, "100%": { transform: "scale(1)", opacity: 1 } } }}>
@@ -29,7 +30,7 @@ export default function DoneScreen({ order, onNext }: DoneScreenProps) {
         <Box sx={{ px: 3, py: 2.5 }}>
           <Row label="Pagamento" value={paymentMethodMask(order.paymentMethod)} />
           <Divider sx={{ my: 1, borderColor: "#F1F5F9" }} />
-          <Row label="Total pago" value={moneyMask(order.orderTotal)} bold />
+          <Row label="Total pago" value={moneyMask(total) } bold />
         </Box>
 
         <Box sx={{ px: 3, py: 2, backgroundColor: "#F0FDF4", display: "flex", alignItems: "center", gap: 1.5 }}>

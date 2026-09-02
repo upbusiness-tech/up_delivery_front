@@ -49,4 +49,17 @@ export const OrderService = {
     throw error;
     }
   },
+  async getFullPendingOrders() {
+    try {
+      const { data } = await api.get<Order[]>(`/order/list-pending-orders-restaurant`)
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+    throw error;
+    }
+  },
+
+
 }

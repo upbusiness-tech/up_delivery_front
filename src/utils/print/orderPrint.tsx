@@ -73,7 +73,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
               <div style={{ whiteSpace: "nowrap", fontWeight: "bold" }}>R$ {formatMoney(itemTotal)}</div>
             </div>
 
-            <div style={{ fontSize: "11px", marginTop: 2 }}>{item.quantity} x R$ {formatMoney(item.price)}</div>
+            <div style={{ fontSize: "14px", marginTop: 2, fontWeight: 'bold'}}>{item.quantity} x R$ {formatMoney(item.price)}</div>
 
             {flavorLines.length > 0 && (
               <div style={{ marginTop: 4, marginLeft: 8, fontSize: "11px", lineHeight: 1.35 }}>
@@ -87,11 +87,20 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
       <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
 
-      <div style={{ fontSize: "12px", lineHeight: 1.5 }}>
+      <div style={{ fontSize: "14px", lineHeight: 1.5 }}>
+      
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>Subtotal:</span>
         <span>R$ {formatMoney(itemsTotal)}</span>
       </div>
+
+      {order.type === "delivery" && (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{fontWeight: "bold"}}>Taxa de entrega:</span>
+          <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood.deliveryFee)}</span>
+        </div>
+      )}
+
 
       {Number(order.discount) > 0 && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -115,7 +124,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "18px", fontWeight: "bold", marginTop: 5, paddingTop: 5, borderTop: "1px solid #000" }}>
           <span>TOTAL:</span>
-          <span>R$ {formatMoney(order.orderTotal)}</span>
+          <span>R$ {formatMoney(order.orderTotal + (order.neighborhood?.deliveryFee ?? 0))}</span>
         </div>
       </div>
     </div>

@@ -1,30 +1,26 @@
-import { useState } from "react";
 import type { SelectChangeEvent } from "@mui/material";
 import type { Order } from "../../../types/Order.type";
 import { STATUS } from "../../../utils/texts/status.enum";
 import { OrderService } from "../../../api/services/order.service";
+import { useRestaurant } from "../../../context/RestaurantContext";
+import { buildOrderMessage, sendWhatsAppMessage } from "../../../utils/whatsapp/orderMessage";
 
 interface UseOrderTableControllerProps {
   updateStatusOrder: (status: string, orderId: string) => Promise<void>;
 }
 
 export function useOrderTableController({ updateStatusOrder }: UseOrderTableControllerProps) {
-  const [printedOrders, setPrintedOrders] = useState<string[]>([]);
+  const { setOrders, restaurant } = useRestaurant();
 
-  const sendWhatsAppMessage = (order: Order, message: string) => {
-    const phone = order.costumerPhone.replace(/\D/g, "");
-    window.location.href = `whatsapp://send?phone=55${phone}&text=${encodeURIComponent(message)}`;
-  };
-
-  const isReceived = (order: Order) => order.printed || printedOrders.includes(order.id);
+  const isReceived = (order: Order) => order.printed;
 
   const handleReceived = async (e: React.MouseEvent, order: Order) => {
     e.stopPropagation();
     if (isReceived(order)) return;
     try {
       await OrderService.updatePrinted(order.id);
-      setPrintedOrders((prev) => [...prev, order.id]);
-      sendWhatsAppMessage(order, `Olá, ${order.costumerName}! 👋\n\nRecebemos seu pedido #${order.code} e já vamos começar o preparo.\n\nObrigado pela preferência! ❤️`);
+      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, printed: true } : o)));
+      sendWhatsAppMessage(order, buildOrderMessage(order));
     } catch {
       return;
     }
@@ -38,11 +34,11 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     await updateStatusOrder(newStatus, order.id);
 
     if (newStatus === STATUS.EM_ROTA) {
-      sendWhatsAppMessage(order, `Olá, ${order.costumerName}! 🚀\n\nSeu pedido #${order.code} saiu para entrega e está a caminho.\n\nEm breve ele chegará até você. Obrigado pela preferência!`);
+      sendWhatsAppMessage(order, `Seu pedido saiu para entrega e está a caminho.\nEm breve ele chegará até você. Obrigado pela preferência!`);
     }
 
     if (newStatus === STATUS.PRONTO_RETIRADA) {
-      sendWhatsAppMessage(order, `Olá, ${order.costumerName}! 🛍️\n\nSeu pedido #${order.code} está pronto para retirada.\n\nJá pode passar para buscar. Estamos te esperando!`);
+      sendWhatsAppMessage(order, `📦Seu pedido está pronto para retirada.\nJá pode passar para buscar. Estamos te esperando!😁\n📍${restaurant?.restaurantAddress}`);
     }
   };
 
