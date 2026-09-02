@@ -81,7 +81,7 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
 
   return (
     <>
-      {isApproved && <DoneScreen order={order} onNext={onNext} />}
+      {isApproved && <DoneScreen total={amount} order={order} onNext={onNext} />}
 
       {!isApproved && !isInProcess && !isRejected && (
       <Stack spacing={2} sx={{ py: 1 }}>
