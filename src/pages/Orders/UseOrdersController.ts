@@ -24,7 +24,7 @@ export default function UseOrdersController(){
   // const socketRef = useRef<any>(null);
   
   //Contexts
-  const { restaurant, orders, isLoading, setOrders, fetchOrders, orderToPrint, setOrderToPrint } = useRestaurant()
+  const { restaurant, orders, isLoading, setOrders, fetchOrders, orderToPrint, dequeuePrint } = useRestaurant()
 
   const selectedOrder = orders?.find((o) => o.id === selectedOrderId) ?? null;
 
@@ -70,7 +70,7 @@ export default function UseOrdersController(){
     if (orderToPrint) {
       const timeout = setTimeout(() => {
         window.print();
-        setOrderToPrint(null);
+        dequeuePrint();
       }, 200);
       return () => clearTimeout(timeout);
     }

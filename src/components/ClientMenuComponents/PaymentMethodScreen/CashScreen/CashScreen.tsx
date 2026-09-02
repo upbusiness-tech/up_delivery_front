@@ -144,7 +144,7 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
       )}
       
       {status && (
-        <DoneScreen onNext={onNext} order={order}/>
+        <DoneScreen total={total} onNext={onNext} order={order}/>
       )}
     </Paper>
   );

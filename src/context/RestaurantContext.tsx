@@ -34,12 +34,14 @@ interface RestaurantContextValue {
   addSize: (novoTamanho: Size) => void
 
   orderToPrint: Order | null;
-setOrderToPrint: Dispatch<SetStateAction<Order | null>>;
+  dequeuePrint: () => void;
+  // setOrderToPrint: Dispatch<SetStateAction<Order | null>>;
 }
 
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
 
 export function RestaurantProvider({children}: { children: ReactNode }){
+  setInterval(() => window.location.reload(), 3 * 60 * 1000);
   const { user, loading: authLoading } = useAuth();
   const [restaurant, setRestaurant] = useState<Restaurant | undefined>(undefined)
   const [orders, setOrders] = useState<Order[] | undefined>([])
@@ -50,7 +52,10 @@ export function RestaurantProvider({children}: { children: ReactNode }){
   const [additionals, setAdditionals] = useState<Additionals[]>([])
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([])
   const [sizes, setSizes] = useState<Size[]>([])
-  const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
+
+  const [printQueue, setPrintQueue] = useState<Order[]>([]);
+  const orderToPrint = printQueue[0] ?? null;
+  const dequeuePrint = () => setPrintQueue((prev) => prev.slice(1));
 
   //----------------Socket global para os pedidos--------------------------
   const socketRef = useRef<ReturnType<typeof createSocket> | null>(null);
@@ -69,7 +74,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
         if (exists) return prev;
         return [newOrder, ...(prev ?? [])];
       });
-      setOrderToPrint(newOrder);
+      setPrintQueue((prev) => [...prev, newOrder]);
       playNotificationSound();
     });
 
@@ -167,7 +172,7 @@ export function RestaurantProvider({children}: { children: ReactNode }){
     value={{restaurant, orders, setOrders, fetchOrders, isLoading, 
     categories, setCategories, products, setProducts, additionals,
     neighborhoods, sizes, addProduct,onUpdateProduct, removeProduct,
-    addCategory, addAdditional, addSize, orderToPrint, setOrderToPrint
+    addCategory, addAdditional, addSize, orderToPrint, dequeuePrint
   }}>
     {children}
   </RestaurantContext.Provider>
