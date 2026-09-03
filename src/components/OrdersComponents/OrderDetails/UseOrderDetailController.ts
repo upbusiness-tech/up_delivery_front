@@ -3,7 +3,7 @@ import type { Order, OrderItem } from "../../../types/Order.type";
 // import { STATUS } from "../../../utils/texts/status.enum";
 // import UseOrdersController from "../../../pages/Orders/UseOrdersController";
 import { useRestaurant } from "../../../context/RestaurantContext";
-import type { ProducSize } from "../../../types/Product.type";
+import type { ProducSize, Size } from "../../../types/Product.type";
 
 interface UseOrderDetailControllerParams {
   order: Order | null;
@@ -31,21 +31,26 @@ export function useOrderDetailController({ order, onClose }: UseOrderDetailContr
   }
   const open = Boolean(order);
 
-  function getItemFlavorLines(item: OrderItem): string[] {
-    console.log(item)
-    const limitFlavors = item.flavors.length;
+  function getSizeByFlavorId(flavorId: string): Size | undefined {
+  const product = products?.find((p) => p.sizes.some((ps) => ps.id === flavorId));
+  return product?.sizes.find((ps) => ps.id === flavorId)?.size;
+}
 
-    // Se for só 1 sabor permitido, mostra só o nome do produto
-    // if (limitFlavors <= 1) {
-    //   return [];
-    // }
-  
-    // Mais de 1 sabor, mostra os nomes dos sabores
-    return item.flavors.map((flavor, index) => {
-      const name = getProductNameByProductSize(flavor);
-      return `${index + 1}/${limitFlavors} ${name}`;
-    });
-  }
+function getItemFlavorLines(item: OrderItem): string[] {
+  if (item.flavors.length === 0) return [];
+
+  const firstSize = getSizeByFlavorId(item.flavors[0]);
+  const limitFlavors = firstSize?.limitFlavors ?? item.flavors.length;
+
+  const flavors = item.flavors.length === 1 && limitFlavors > 1
+    ? Array(limitFlavors).fill(item.flavors[0])
+    : item.flavors;
+
+  return flavors.map((flavor, index) => {
+    const name = getProductNameByProductSize(flavor);
+    return `${index + 1}/${limitFlavors} ${name}`;
+  });
+}
 
   async function cancelOrder(){
     if(!order) return;
