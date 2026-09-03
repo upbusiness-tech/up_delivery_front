@@ -19,9 +19,21 @@ export default function PrintOrder({ order }: PrintOrderProps) {
   }
 
   function getItemFlavorLines(item: OrderItem): string[] {
-    if (!item.flavors || item.flavors.length <= 1) return [];
-    const limitFlavors = item.flavors.length;
-    return item.flavors.map((flavor, index) => `${index + 1}/${limitFlavors} ${getProductNameByProductSize(flavor)}`);
+    if (!item.flavors || item.flavors.length === 0) return [];
+
+    const firstSize = getSizeByFlavorId(item.flavors[0]);
+    const limitFlavors = firstSize?.limitFlavors ?? item.flavors.length;
+
+    const flavors = item.flavors.length === 1 && limitFlavors > 1
+      ? Array(limitFlavors).fill(item.flavors[0])
+      : item.flavors;
+
+    return flavors.map((flavor, index) => `${index + 1}/${limitFlavors} ${getProductNameByProductSize(flavor)}`);
+  }
+
+  function getSizeByFlavorId(flavorId: string) {
+    const product = products?.find((p) => p.sizes.some((ps) => ps.id === flavorId));
+    return product?.sizes.find((ps) => ps.id === flavorId)?.size;
   }
 
   function formatMoney(value: number | string | undefined | null) {
@@ -77,8 +89,8 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
             {flavorLines.length > 0 && (
               <div style={{ marginTop: 4, marginLeft: 8, fontSize: "11px", lineHeight: 1.35 }}>
-                <div style={{ fontWeight: "bold", marginBottom: 2 }}>SABORES:</div>
-                {flavorLines.map((line, idx) => <div key={idx}>• {line}</div>)}
+                {/* <div style={{ fontWeight: "bold", marginBottom: 2 }}>SABORES:</div> */}
+                {flavorLines.map((line, idx) => <div style={{fontSize: "14px", fontWeight: "bold"}} key={idx}>• {line}</div>)}
               </div>
             )}
           </div>
