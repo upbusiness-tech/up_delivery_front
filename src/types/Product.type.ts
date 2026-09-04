@@ -7,6 +7,7 @@ export interface ProductRestaurant {
 export interface ProductCategory {
   id: string;
   categoryName: string;
+  sortOrder: number;
 }
 export interface Additionals {
   id: string;
