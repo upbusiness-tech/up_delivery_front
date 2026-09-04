@@ -3,7 +3,6 @@ import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import type { Additionals, Product, ProductCategory, Size } from "../../../types/Product.type";
 import { UseProductBySizeScreenController } from "./UseProductBySizeScreenController";
 import { moneyMask } from "../../../utils/masks/mask";
-import genericImage from "../../../assets/capa.avif"
 import type { OrderItemBag } from "../../../types/Order.type";
 
 interface ProductsBySizeScreenProps {
@@ -161,7 +160,7 @@ export default function ProductsBySizeScreen({size, products, category, addition
               <Card key={product.id} variant="outlined" sx={{ borderRadius: 3, borderColor: isSelected ? "success.main" : "divider", bgcolor: isSelected ? "primary.50" : "background.paper", transition: "border-color 120ms ease, background-color 120ms ease", display: "flex", alignItems: "center" }}>
                 <CardActionArea onClick={() => c.selectFlavor(product)} sx={{ display: "flex", alignItems: "center", gap: 2, p: 1.5, flex: 1 }}>
                   <Box sx={{ width: { xs: 75, sm: 80 }, height: { xs: 75, sm: 80 }, flexShrink: 0, borderRadius: 2, overflow: "hidden", bgcolor: "grey.100" }}>
-                    <CardMedia component="img" image={genericImage} alt={size.name} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <CardMedia component="img" image={product.image} alt={size.name} sx={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600 }} noWrap title={product.productName}>
@@ -188,7 +187,7 @@ export default function ProductsBySizeScreen({size, products, category, addition
           bgcolor: "background.default",
           borderTop: "1px solid",
           borderColor: "grey.200",
-          p: 2,
+          p: 2
         }}
       >
         <Button color="success" fullWidth variant="contained" size="large" disabled={!c.currentSelection} onClick={handleNext} 

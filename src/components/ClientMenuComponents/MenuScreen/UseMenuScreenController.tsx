@@ -11,8 +11,7 @@ interface UseMenuScreenControllerProps {
 export function UseMenuScreenController({ restaurant, categories, products }: UseMenuScreenControllerProps) {
   const PRODUCTS = products ?? [];
   const CATEGORIES = categories ?? [];
-  const visibleCategories = CATEGORIES.filter((cat) => produtosComuns(cat.id).length + tamanhosDaCategoria(cat.id).length > 0);
-  const [activeTab, setActiveTab] = useState(visibleCategories[0]?.id ?? false);
+  const visibleCategories = CATEGORIES.filter((cat) => produtosComuns(cat.id).length + tamanhosDaCategoria(cat.id).length > 0).sort((a, b) => a.sortOrder - b.sortOrder);  const [activeTab, setActiveTab] = useState(visibleCategories[0]?.id ?? false);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const isClickScrolling = useRef(false);
 
