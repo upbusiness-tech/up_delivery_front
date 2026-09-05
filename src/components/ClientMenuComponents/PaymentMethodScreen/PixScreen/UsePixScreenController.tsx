@@ -28,8 +28,13 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
 
   const socketStatus = usePaymentSocket(orderId);
 
+
   //prioriza o que chegar, seja via socket ou via polling
   const paymentStatus = socketStatus ?? restStatus;
+  useEffect(() => {
+    console.log("[PixPolling] status atual:", { socketStatus, restStatus, paymentStatus });
+  }, [socketStatus, restStatus, paymentStatus]);
+
 
   const isApproved = paymentStatus === "approved";
   const isRejected = paymentStatus === "rejected";
@@ -73,10 +78,15 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
   // Sincroniza o status via REST quando a aba volta a ficar visível (ex: usuário saiu para pagar pelo app do banco e o socket foi derrubado em segundo plano)
   useEffect(() => {
     const handleVisibilityChange = async () => {
+      console.log("[PixPolling] visibilitychange disparado, state atual:", document.visibilityState);
       if (document.visibilityState !== "visible") return;
+      console.log("[PixPolling] aba visível, checando condições:", { orderId, isApproved, expired });
       if (!orderId || isApproved || expired) return;
+      console.log("[PixPolling] abortado — orderId ausente, já aprovado ou expirado");
       try {
+        console.log("[PixPolling] chamando getStatusPaymentPolling", { restaurantId: order.restaurant.id, orderId });
         const status = await PaymentSevice.getStatusPaymentPolling(order.restaurant.id, orderId);
+        console.log("[PixPolling] resposta recebida:", status);
         if (status) setRestStatus(status);
       } catch (error) {
         console.error("Erro ao sincronizar status do pagamento:", error);
