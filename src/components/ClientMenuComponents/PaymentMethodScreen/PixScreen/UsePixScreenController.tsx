@@ -25,11 +25,15 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const paymentCreatedRef = useRef(false);
-  
+
   const socketStatus = usePaymentSocket(orderId);
-  
+
   //prioriza o que chegar, seja via socket ou via polling
   const paymentStatus = socketStatus ?? restStatus;
+
+  const isApproved = paymentStatus === "approved";
+  const isRejected = paymentStatus === "rejected";
+  const isCancelled = paymentStatus === "cancelled";
 
   const fetchPayment = useCallback(async () => {
     console.log("fetchPayment chamado", Date.now());
@@ -65,6 +69,22 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
     paymentCreatedRef.current = true;
     fetchPayment();
   }, [order.paymentMethod, fetchPayment]);
+
+  // Sincroniza o status via REST quando a aba volta a ficar visível (ex: usuário saiu para pagar pelo app do banco e o socket foi derrubado em segundo plano)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState !== "visible") return;
+      if (!orderId || isApproved || expired) return;
+      try {
+        const status = await PaymentSevice.getStatusPaymentPolling(order.restaurant.id, orderId);
+        if (status) setRestStatus(status);
+      } catch (error) {
+        console.error("Erro ao sincronizar status do pagamento:", error);
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [orderId, order.restaurant.id, isApproved, expired]);
 
   // Chamado pelo CardScreen depois que o pagamento com cartão foi criado
   const handleCardPaymentCreated = useCallback((paymentId: string) => {
@@ -125,6 +145,9 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
     copied,
     handleCopy,
     paymentStatus,
+    isApproved,
+    isRejected,
+    isCancelled,
     expired,
     handleRetry,
     handleCardPaymentCreated,

@@ -22,9 +22,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
 
   const c = UsePixScreenController({order, total, userEmail})
 
-  const isApproved = c.paymentStatus === "approved"
-  const isRejected = c.paymentStatus === "rejected";
-  const isCancelled = c.paymentStatus === "cancelled";
+  const { isApproved, isRejected, isCancelled } = c;
 
   useEffect(() => {
     if (isApproved) setDisabeHeader(true);
@@ -68,7 +66,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
           </Button>
         </Stack>
       )}
-      
+
       {/* Se não tiver carregando, se não tiver expirado, se tiver sido rejeitado */}
       {!c.loading && !c.expired && isRejected && (
         <Stack sx={{ alignItems: "center", justifyContent: "center", py: 6, gap: 2.5 }}>
@@ -102,8 +100,8 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
             </Stack>
           </Stack>
           <LinearProgress color="success" variant="determinate" value={c.progress} sx={{ height: 6, borderRadius: 999, mb: 2.5}} />
-    
-    
+
+
           {c.loading ? (
             <Stack sx={{ alignItems: "center", justifyContent: "center", py: 3 }}>
               <Typography variant="body2" color="text.secondary">Gerando QR Code...</Typography>
@@ -115,14 +113,14 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
               </Stack>
             )
           )}
-    
+
           <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>
             Valor a pagar
           </Typography>
           <Typography color="success" variant="h5" sx={{ fontWeight: 800, mb: 2.5, textAlign: "center" }}>
             {moneyMask(total)}
           </Typography>
-    
+
           <Paper variant="outlined" sx={{ p: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 1.5, borderRadius: 3, bgcolor: "grey.50", borderColor: "grey.200" }}>
             <Typography variant="body1" sx={{ flex: 1, textAlign: "center", fontFamily: "monospace", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {c.qrCode ? c.truncatedCode : "Carregando código..."}
@@ -131,7 +129,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
               {c.copied ? "Copiado" : "Copiar"}
             </Button>
           </Paper>
-          
+
           <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5, textAlign: "center" }}>
             Após o pagamento, a confirmação pode levar alguns instantes.
           </Typography>
