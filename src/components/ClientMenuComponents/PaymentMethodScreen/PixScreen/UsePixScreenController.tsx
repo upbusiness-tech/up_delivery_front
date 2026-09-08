@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { Order } from "../../../../types/Order.type";
-import { usePaymentSocket } from "../../../../api/services/socket";
 import { MethodPayment, type CreatePixPayment } from "../../../../types/Payment.type";
 import { PaymentSevice } from "../../../../api/services/payment.service";
+import { usePaymentStatus } from "../../../../hooks/usePaymentQuery";
 
 interface Props {
   order: Order;
@@ -19,35 +19,21 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
   const [expiresAt, setExpiresAt] = useState("");
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const [orderId, setOrderId] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
-  const [restStatus, setRestStatus] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const paymentCreatedRef = useRef(false);
 
-  const socketStatus = usePaymentSocket(orderId);
+  const { data: paymentData } = usePaymentStatus(order.id);
 
-
-  const paymentStatus =
-  [socketStatus, restStatus].find((s) => s && s !== "pending") ??
-  socketStatus ??
-  restStatus;
-
-  useEffect(() => {
-    console.log("[PixPolling] status atual:", { socketStatus, restStatus, paymentStatus });
-  }, [socketStatus, restStatus, paymentStatus]);
-
-
-  const isApproved = paymentStatus === "approved";
-  const isRejected = paymentStatus === "rejected";
-  const isCancelled = paymentStatus === "cancelled";
+  const isApproved = paymentData?.isPaid === true;
+  const isRejected = paymentData?.paymentStatus === "FAILED";
+  const isCancelled = paymentData?.paymentStatus === "CANCELLED";
+  const paymentStatus = paymentData?.paymentStatus ?? null;
 
   const fetchPayment = useCallback(async () => {
-    console.log("fetchPayment chamado", Date.now());
     setLoading(true);
     setExpired(false);
-    setRestStatus(null);
     try {
       const payment: CreatePixPayment = {
         amount: total,
@@ -61,14 +47,13 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
         setQrCodeBase64(data.qrCodeBase64);
         setQrCode(data.qrCode);
         setExpiresAt(data.expiresAt);
-        setOrderId(data.orderId);
       }
     } catch (error) {
       console.error("Erro ao criar pagamento:", error);
     } finally {
       setLoading(false);
     }
-  }, [order.id, total]);
+  }, [order.id, order.restaurant.id, total, userEmail]);
 
   // cria o pagamento PIX
   useEffect(() => {
@@ -78,31 +63,9 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
     fetchPayment();
   }, [order.paymentMethod, fetchPayment]);
 
-  // Sincroniza o status via REST quando a aba volta a ficar visível (ex: usuário saiu para pagar pelo app do banco e o socket foi derrubado em segundo plano)
-  useEffect(() => {
-    const handleVisibilityChange = async () => {
-      console.log("[PixPolling] visibilitychange disparado, state atual:", document.visibilityState);
-      if (document.visibilityState !== "visible") return;
-      console.log("[PixPolling] aba visível, checando condições:", { orderId, isApproved, expired });
-      if (!orderId || isApproved || expired) return;
-      console.log("[PixPolling] abortado — orderId ausente, já aprovado ou expirado");
-      try {
-        console.log("[PixPolling] chamando getStatusPaymentPolling", { restaurantId: order.restaurant.id, orderId });
-        const status = await PaymentSevice.getStatusPaymentPolling(order.restaurant.id, orderId);
-        console.log("[PixPolling] resposta recebida:", status);
-        if (status) setRestStatus(status);
-      } catch (error) {
-        console.error("Erro ao sincronizar status do pagamento:", error);
-      }
-    };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [orderId, order.restaurant.id, isApproved, expired]);
-
   // Chamado pelo CardScreen depois que o pagamento com cartão foi criado
-  const handleCardPaymentCreated = useCallback((paymentId: string) => {
+  const handleCardPaymentCreated = useCallback(() => {
     setSubmitError(null);
-    setOrderId(paymentId);
   }, []);
 
   const handleCardSubmitError = useCallback((message: string) => {
@@ -145,7 +108,7 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
     fetchPayment();
   };
 
-  const truncatedCode = qrCode.length > 40 ? `${qrCode.slice(0, 20)}...${qrCode.slice(-15)}`  : qrCode;
+  const truncatedCode = qrCode.length > 40 ? `${qrCode.slice(0, 20)}...${qrCode.slice(-15)}` : qrCode;
 
   return {
     loading,
