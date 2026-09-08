@@ -28,5 +28,10 @@ export const PaymentSevice = {
   async getStatusPaymentPolling(restaurantId: string, orderId: string){
     const { data } = await api.get(`/payment/payment-status-polling/${restaurantId}/${orderId}`)
     return data.status
-  }
+  },
+
+  async getPaymentStatus(orderId: string) {
+    const { data } = await api.get<{ isPaid: boolean; paymentStatus: string }>(`/payment/${orderId}/payment-status`);
+    return data;
+  },
 }
