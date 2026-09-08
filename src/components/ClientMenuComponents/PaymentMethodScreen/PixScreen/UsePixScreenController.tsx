@@ -29,8 +29,11 @@ export function UsePixScreenController({ order, total, userEmail }: Props) {
   const socketStatus = usePaymentSocket(orderId);
 
 
-  //prioriza o que chegar, seja via socket ou via polling
-  const paymentStatus = socketStatus ?? restStatus;
+  const paymentStatus =
+  [socketStatus, restStatus].find((s) => s && s !== "pending") ??
+  socketStatus ??
+  restStatus;
+
   useEffect(() => {
     console.log("[PixPolling] status atual:", { socketStatus, restStatus, paymentStatus });
   }, [socketStatus, restStatus, paymentStatus]);
