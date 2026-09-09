@@ -21,7 +21,7 @@ export function HeadarOrders({restaurant}: props) {
         <Button
           sx={{bgcolor: c.restaurantOpen ? "success.main" : "error.main", color:  "#fff",  textTransform: 'none' }}
           endIcon={<StorefrontIcon/>}
-          onClick={c.handleOpenModalStatusRestaurant}
+          // onClick={c.handleOpenModalStatusRestaurant}
         >
         {c.restaurantOpen ? "Aberto" : "Fechado"}
         </Button>
