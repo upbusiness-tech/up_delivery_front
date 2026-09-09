@@ -98,6 +98,12 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       })}
 
       <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />
+      {order.observation && (
+        <div style={{ border: "1px solid #000", padding: 6, marginTop: 8, pageBreakInside: "avoid" }}>
+          <div style={{ fontWeight: "bold", fontSize: "11px", marginBottom: 3 }}>OBSERVAÇÃO</div>
+          <div style={{ fontSize: "12px", lineHeight: 1.35 }}>{order.observation}</div>
+        </div>
+      )}
 
       <div style={{ fontSize: "14px", lineHeight: 1.5 }}>
       
@@ -141,14 +147,9 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       </div>
     </div>
 
-      {order.observation && (
-        <div style={{ border: "1px solid #000", padding: 6, marginTop: 8, pageBreakInside: "avoid" }}>
-          <div style={{ fontWeight: "bold", fontSize: "11px", marginBottom: 3 }}>OBSERVAÇÃO</div>
-          <div style={{ fontSize: "12px", lineHeight: 1.35 }}>{order.observation}</div>
-        </div>
-      )}
+      
 
-      <div style={{ textAlign: "center", marginTop: 12, paddingTop: 7, borderTop: "1px dashed #000", fontSize: "9px", lineHeight: 1.4 }}>
+      <div style={{ textAlign: "center", marginTop: 12, paddingTop: 7, paddingBottom: 7, borderTop: "1px dashed #000", fontSize: "9px", lineHeight: 1.4 }}>
         <div style={{ fontWeight: "bold" }}>PEDIDO GERADO VIA UPDELIVERY</div>
       </div>
     </div>

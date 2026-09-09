@@ -7,6 +7,7 @@ import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import STATUS_COLOR from "../../../utils/colors/colors";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import { useOrderTableController } from "./UseOrderTableController";
+import InventoryIcon from '@mui/icons-material/Inventory';
 
 interface Props {
   orders: Order[] | undefined;
@@ -97,9 +98,24 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                     <TableCell>
                       <Chip
                         size="small"
-                        icon={<LocalShippingIcon sx={{ fontSize: 15 }} />}
+                        icon={order.type === "pickup" ? <InventoryIcon /> : <LocalShippingIcon />}
                         label={order.type === "pickup" ? "Retirada" : "Delivery"}
-                        sx={{ fontWeight: 600, fontSize: "0.75rem", backgroundColor: order.type === "pickup" ? "#F1F5F9" : "#EFF6FF", color: order.type === "pickup" ? "#475569" : "#2563EB", border: "none" }}
+                        sx={{
+                          height: 26,
+                          fontWeight: 600,
+                          fontSize: "0.72rem",
+                          borderRadius: "7px",
+                          backgroundColor: order.type === "pickup" ? "#fff1e3" : "#e8f7e6",
+                          color: order.type === "pickup" ? "#e56f00" : "#168b08",
+                          "& .MuiChip-icon": {
+                            color: "inherit",
+                            fontSize: 16,
+                            ml: "5px",
+                          },
+                          "& .MuiChip-label": {
+                            px: "7px",
+                          },
+                        }}
                       />
                     </TableCell>
 
