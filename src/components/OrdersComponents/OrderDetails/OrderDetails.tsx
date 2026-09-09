@@ -1,5 +1,4 @@
 import PrintIcon from "@mui/icons-material/Print";
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import {
@@ -12,16 +11,12 @@ import {
   Divider,
   Grid,
   IconButton,
-  MenuItem,
   Paper,
-  Select,
   Stack,
   Typography,
 } from "@mui/material";
 import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
-import STATUS_COLOR from "../../../utils/colors/colors";
-import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import PrintOrder from "../../../utils/print/orderPrint";
 
@@ -31,8 +26,8 @@ interface OrderDetailProps {
   updateStatusOrder: (status: string, orderId: string) => void;
 }
 
-export default function OrderDetail({ order, onClose, updateStatusOrder }: OrderDetailProps) {
-  const { open, openModalOrderCancel, handleOpenModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines, imprimir } = useOrderDetailController({ order, onClose });
+export default function OrderDetail({ order, onClose }: OrderDetailProps) {
+  const { open, openModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines, imprimir } = useOrderDetailController({ order, onClose });
 
   if (!order) return null;
 
@@ -161,31 +156,27 @@ export default function OrderDetail({ order, onClose, updateStatusOrder }: Order
           </Grid>
         </DialogContent>
 
-        <DialogActions sx={{ justifyContent: "space-between" }}>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => handleOpenModalOrderCancel()}>
+        <DialogActions>
+          {/* <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => handleOpenModalOrderCancel()}>
             Cancelar
-          </Button>
+          </Button> */}
 
           <Stack direction="row" spacing={1}>
-            <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium" startIcon={<WhatsAppIcon />}>
-              WhatsApp
-            </Button>
-            <Button onClick={() => imprimir()} sx={{ textTransform: "none" }} variant="contained" color="primary" size="medium" startIcon={<PrintIcon />}>
+            <Button onClick={() => imprimir()} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
               Imprimir
             </Button>
-            <Select
+            {/* <Select
               value={order.status}
-              size="small"
               onChange={(e) => updateStatusOrder(e.target.value, order.id)}
               onClick={(e) => e.stopPropagation()}
-              sx={{ color: "black", backgroundColor: STATUS_COLOR(order.status), "& .MuiSelect-icon": { color: "black" }, "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" } }}
+              sx={{ minWidth: 135, height: 40, color: "#fff", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2, backgroundColor: STATUS_COLOR(order.status), "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSelect-icon": { color: "#fff" } }}
             >
               {Object.values(STATUS)
                 .filter((status) => status !== STATUS.CANCELADO)
                 .map((status) => (
                   <MenuItem key={status} value={status}>{STATUS_LABEL[status]}</MenuItem>
                 ))}
-            </Select>
+            </Select> */}
           </Stack>
         </DialogActions>
       </Dialog>
