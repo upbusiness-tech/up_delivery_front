@@ -18,8 +18,8 @@ export function usePaymentSocket(orderId: string | null) {
     const socket: Socket = io(`${SOCKET_URL}/payment`);
 
     socket.on('connect', () => {
-      console.log('WebSocket conectado:', socket.id);
-      console.log('Acompanhando pedido:', orderId);
+      console.log('[FRONT] WebSocket conectado:', socket.id);
+      console.log('[FRONT] Acompanhando pedido:', orderId);
 
       socket.emit('watchPayment', {
         orderId,
@@ -32,11 +32,13 @@ export function usePaymentSocket(orderId: string | null) {
         orderId: string;
         status: string;
         isPaid: boolean;
+        sala: string;
       }) => {
-        console.log('Status atualizado:', data);
+        console.log('[FRONT] Sala conectada:', data.sala);
+        console.log('[FRONT] Status atualizado:', data);
 
         if (data.orderId !== orderId) {
-          console.log('Evento de outro pedido, ignorando');
+          console.log('[FRONT] Evento de outro pedido, ignorando');
           return;
         }
 
@@ -45,15 +47,15 @@ export function usePaymentSocket(orderId: string | null) {
     );
 
     socket.on('paymentError', (data: { message: string }) => {
-      console.error('Erro no pagamento:', data.message);
+      console.error('[FRONT] Erro no pagamento:', data.message);
     });
 
     socket.on('connect_error', (error) => {
-      console.error('Erro ao conectar WebSocket:', error);
+      console.error('[FRONT] Erro ao conectar WebSocket:', error);
     });
 
     socket.on('disconnect', (reason) => {
-      console.log('WebSocket desconectado:', reason);
+      console.log('[FRONT] WebSocket desconectado:', reason);
     });
 
     return () => {
