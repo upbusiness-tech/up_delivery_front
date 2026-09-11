@@ -21,9 +21,9 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import icon from '../../../public/icon-512.png'
 
 import LogoutIcon from "@mui/icons-material/Logout";
-import TwoWheelerIcon from "@mui/icons-material/TwoWheeler";
 import { useNavigate } from "react-router-dom";
 import { ROUTES_ENUM } from "../../routes/routes.enum";
 
@@ -55,25 +55,15 @@ export default function AppShell({ children }: { children: ReactNode }) {
   const drawerContent = (
     <>
       <Toolbar sx={{ px: collapsed ? 1 : 2.5, gap: 1.25, minHeight: 64, justifyContent: collapsed ? "center" : "flex-start" }}>
-        <Box
-          sx={{
-            width: 34,
-            height: 34,
-            borderRadius: 1.5,
-            bgcolor: "#e3bc37",
-            display: "grid",
-            placeItems: "center",
-            flexShrink: 0,
-          }}
-        >
-          <TwoWheelerIcon fontSize="small" />
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, flexShrink: 0 }}>
+          <img src={icon} alt="UpDelivery" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
         </Box>
         {!collapsed && (
-          <Box>
-            <Typography variant="h6" sx={{ lineHeight: 1, letterSpacing: -0.2 }}>
-              UpDelivery
+          <Box sx={{ overflow: "hidden" }}>
+            <Typography variant="h6" noWrap sx={{ lineHeight: 1, letterSpacing: -0.2, fontWeight: "bold" }}>
+              <Box component="span" sx={{ color: "#e3bc37" }}>Up</Box>Delivery
             </Typography>
-            <Typography variant="caption" sx={{ color: "#94A3B8" }}>
+            <Typography variant="caption" noWrap sx={{ color: "#94A3B8" }}>
               Gestão de pedidos
             </Typography>
           </Box>
