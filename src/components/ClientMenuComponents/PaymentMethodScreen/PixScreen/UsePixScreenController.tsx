@@ -33,12 +33,9 @@ export function UsePixScreenController({
   const paymentCreatedRef = useRef(false);
 
   // WebSocket
-  const socketStatus = usePaymentSocket(orderId);
+  const { status: paymentStatus, isPaid: paymentConfirmed } = usePaymentSocket(orderId);
 
-  // Status vindo exclusivamente pelo WebSocket
-  const paymentStatus = socketStatus;
-
-  const isApproved = paymentStatus === "approved";
+  const isApproved = paymentConfirmed;
   const isRejected = paymentStatus === "rejected";
   const isCancelled = paymentStatus === "cancelled";
 
