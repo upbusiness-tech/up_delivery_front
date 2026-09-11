@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function UseCardScreenController({ order }: Props) {
-  const socketStatus = usePaymentSocket(order.id);
+  const { status: socketStatus, isPaid: socketIsPaid } = usePaymentSocket(order.id);
   const [localStatus, setLocalStatus] = useState<string | null>(null);
   const [statusDetail, setStatusDetail] = useState<string | null>(null);
   const [attempts, setAttempts] = useState(0);
@@ -15,6 +15,7 @@ export function UseCardScreenController({ order }: Props) {
   // prioriza o socket (confirmação definitiva via webhook),
   // mas usa o status local como feedback imediato até o socket responder
   const paymentStatus = socketStatus ?? localStatus;
+  const isPaid = socketIsPaid || localStatus === 'approved';
 
   function handlePaymentResult(result: { status: string; status_detail?: string }) {
     setLocalStatus(result.status);
@@ -31,6 +32,7 @@ export function UseCardScreenController({ order }: Props) {
 
   return {
     paymentStatus,
+    isPaid,
     statusDetail,
     attempts,
     brickKey,

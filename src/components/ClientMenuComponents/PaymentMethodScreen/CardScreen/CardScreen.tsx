@@ -39,7 +39,7 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
 
   const c = UseCardScreenController({order})
 
-  const isApproved = c.paymentStatus === 'approved';
+  const isApproved = c.isPaid;
   const isInProcess = c.paymentStatus === 'in_process' || c.paymentStatus === 'pending';
   const isRejected = c.paymentStatus === 'rejected';
   const reachedMaxAttempts = c.attempts >= MAX_ATTEMPTS;
