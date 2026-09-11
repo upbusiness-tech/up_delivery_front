@@ -11,6 +11,7 @@ export const createSocket = (restaurantId: string) => {
 
 export function usePaymentSocket(orderId: string | null) {
   const [status, setStatus] = useState<string | null>(null);
+  const [isPaid, setIsPaid] = useState(false);
 
   useEffect(() => {
     if (!orderId) return;
@@ -43,6 +44,7 @@ export function usePaymentSocket(orderId: string | null) {
         }
 
         setStatus(data.status);
+        setIsPaid(data.isPaid);
       },
     );
 
@@ -63,5 +65,5 @@ export function usePaymentSocket(orderId: string | null) {
     };
   }, [orderId]);
 
-  return status;
+  return { status, isPaid };
 }
