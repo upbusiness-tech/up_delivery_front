@@ -6,7 +6,7 @@ import type { Address, OrderMode } from "../../../types/Order.type";
 import { moneyMask } from "../../../utils/masks/mask";
 import type { Neighborhood, Restaurant } from "../../../types/Restaurant.type";
 import { BackHeader } from "../BackHeader/BackHeader";
-import { useAddressValidation } from "../../../hooks/useInfoScreenValidation";
+import { useAddressValidation, useNumberAddressField } from "../../../hooks/useInfoScreenValidation";
 import { useRestaurantSettings } from "../../../hooks/useRestaurantSettings";
 
 interface AddressScreenProps {
@@ -37,6 +37,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
   const updateField = (field: keyof Address) => (e: React.ChangeEvent<HTMLInputElement>) => {
     setAddress({ ...address, [field]: e.target.value });
   };
+
+  const numberField = useNumberAddressField(address.number, (v) => setAddress({ ...address, number: v === "" ? 0 : Number(v) }));
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
@@ -118,6 +120,7 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               label="Cidade"
               fullWidth
               value={address.city}
+              disabled
               onChange={updateField("city")}
               error={!!address.city && !!errors.cityError}
               helperText={!!address.city && errors.cityError}
@@ -138,18 +141,22 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               <TextField
                 label="Número"
                 sx={{ flex: 1, "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
-                value={address.number}
-                onChange={updateField("number")}
+                value={numberField.value}
+                onChange={numberField.onChange}
                 inputMode="numeric"
                 error={!!address.number && !!errors.numberError}
                 helperText={!!address.number && errors.numberError}
-                slotProps={{
-                  input: {
-                    startAdornment: <InputAdornment position="start">#</InputAdornment>,
-                  },
-                }}
+                slotProps={{ input: { startAdornment: <InputAdornment position="start">#</InputAdornment> } }}
               />
             </Stack>
+
+            <TextField
+              label="Complemento (opcional)"
+              fullWidth
+              value={address.complement ?? ""}
+              onChange={updateField("complement")}
+              sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
+            />
           </Stack>
         )}
       </Container>

@@ -5,6 +5,7 @@ export interface Address {
   city: string;
   number: number;
   streetName: string;
+  complement: string;
 }
 
 export interface OrderItem {
