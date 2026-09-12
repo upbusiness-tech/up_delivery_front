@@ -31,7 +31,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   const [costumerName, setCostumerName] = useState("");
   const [costumerPhone, setCostumerPhone] = useState("");
   const [costumerEmail, setCostumerEmail] = useState("");
-  const [address, setAddress] = useState<Address>({ city: "Quixadá-CE", number: 0, streetName: "" });
+  const [address, setAddress] = useState<Address>({ city: "Quixadá-CE", number: 0, streetName: "", complement: "" });
   const [neighborhood, setNeighborhood] = useState<Neighborhood>();
   const [orderCreated, setOrderCreated] = useState<Order>()
 
