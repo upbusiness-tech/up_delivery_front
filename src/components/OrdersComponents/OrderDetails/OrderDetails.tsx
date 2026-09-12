@@ -113,10 +113,11 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                     <>
                       <Typography variant="subtitle2" gutterBottom>Endereço</Typography>
                       <Box>
+                        <Typography variant="body2" color="text.secondary"><strong>Cidade:</strong> {order.costumerAddress?.city}</Typography>
                         <Typography variant="body2" color="text.secondary"><strong>Bairro:</strong> {order.neighborhood?.neighborhoodName}</Typography>
                         <Typography variant="body2" color="text.secondary"><strong>Rua:</strong> {order.costumerAddress?.streetName}</Typography>
                         <Typography variant="body2" color="text.secondary"><strong>Número:</strong> {order.costumerAddress?.number}</Typography>
-                        <Typography variant="body2" color="text.secondary"><strong>Cidade:</strong> {order.costumerAddress?.city}</Typography>
+                        <Typography variant="body2" color="text.secondary"><strong>Complemento:</strong> {order.costumerAddress?.complement}</Typography>
                       </Box>
                     </>
                   ) : (
@@ -136,12 +137,14 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                 </Paper>
                 <Divider sx={{ my: 1 }} />
                 <Paper elevation={0} sx={{ p: 1 }}>
-                  {isDelivery && (
-                    <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                      <Typography variant="subtitle1">Taxa entrega</Typography>
-                      <Typography variant="subtitle1" sx={{ fontWeight: "600" }}>{moneyMask(deliveryFee)}</Typography>
-                    </Stack>
-                  )}
+                  <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                    {isDelivery && (
+                      <>
+                        <Typography variant="subtitle1">Taxa entrega</Typography>
+                        <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(deliveryFee)}</Typography>
+                      </>
+                    )}
+                  </Stack>
                   <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="subtitle1">Subtotal</Typography>
                     <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(order.orderTotal)}</Typography>
@@ -149,6 +152,14 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                   <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="subtitle1">Total</Typography>
                     <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(Number(order.orderTotal) + deliveryFee)}</Typography>
+                  </Stack>
+                  <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                  {order.paymentMethod == 'cash' && (
+                    <>
+                      <Typography variant="subtitle1">Troco para</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(order.changeFor)}</Typography>
+                    </>
+                    )}
                   </Stack>
                 </Paper>
               </Stack>

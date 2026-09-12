@@ -62,12 +62,13 @@ export default function PrintOrder({ order }: PrintOrderProps) {
         <div style={{ fontWeight: "bold", fontSize: "17px" }}>Nome: {order.costumerName}</div>
         <div style={{ fontWeight: "bold", fontSize: "17px" }}>Telefone: {order.costumerPhone}</div>
 
-        {order.type === "delivery" && (
-          <>
-            <div style={{ marginTop: 3, fontWeight: "bold", fontSize: "17px" }}>Rua: {order.costumerAddress?.streetName}, {order.costumerAddress?.number}</div>
-            {order.neighborhood?.neighborhoodName && <div style={{ fontSize: "17px", fontWeight: "bold"}}>Bairro: {order.neighborhood.neighborhoodName}</div>}
-          </>
-        )}
+       {order.type === "delivery" && (
+        <>
+          <div style={{ marginTop: 3, fontWeight: "bold", fontSize: "17px" }}>Rua: {order.costumerAddress?.streetName}, {order.costumerAddress?.number}</div>
+          {order.neighborhood?.neighborhoodName && <div style={{ fontSize: "17px", fontWeight: "bold" }}>Bairro: {order.neighborhood.neighborhoodName}</div>}
+          {order.costumerAddress?.complement && <div style={{ fontSize: "17px", fontWeight: "bold" }}>Complemento: {order.costumerAddress.complement}</div>}
+        </>
+      )}
       </div>
 
       <div style={{ borderTop: "1px dashed #000", margin: "8px 0" }} />

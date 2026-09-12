@@ -38,3 +38,11 @@ export function useAddressValidation(type: OrderMode, address: Address, neighbor
 
   return { errors, isValid };
 }
+
+export function useNumberAddressField(value: number | string, onChange: (value: string) => void) {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const digitsOnly = e.target.value.replace(/\D/g, "");
+    onChange(digitsOnly);
+  };
+  return { value: String(value), onChange: handleChange };
+}
