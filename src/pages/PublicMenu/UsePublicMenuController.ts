@@ -169,6 +169,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     const orderItens = productsAdded.map((e) => {
       const item: CreateOrderItem = {
         name: e.name,
+        observation: e.observation,
         quantity: e.quantity,
         flavors: e.flavors,
         additionals: e.additionals?.map((ad) => ad.id)
@@ -176,17 +177,19 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
       return item;
     })
 
-    const observations = productsAdded
-      .map((e) => e.observation)
-      .filter(Boolean)
-      .join(" | ");
+    console.log("PRDUTOS: ", orderItens)
+
+    // const observations = productsAdded
+    //   .map((e) => e.observation)
+    //   .filter(Boolean)
+    //   .join(" | ");
     
     const newOrder: CreateOrder = {
       type: type,
       paymentMethod: paymentMethod,
       changeFor: changeFor,
       items: orderItens,
-      observation: observations,
+      // observation: observations,
       costumerName: costumerName,
       costumerPhone: costumerPhone,
       ...(type === "delivery" && { address, neighborhoodId: neighborhood!.id }),
