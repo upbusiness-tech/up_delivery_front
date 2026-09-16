@@ -10,6 +10,7 @@ export interface Address {
 
 export interface OrderItem {
   name: string;
+  observation?: string;
   quantity: number;
   price: number;
   additionals: Additionals[];
@@ -41,7 +42,7 @@ export interface CreateOrder {
   paymentMethod: string;
   changeFor: number;
   items: CreateOrderItem[];
-  observation: string;
+  observation?: string;
   costumerName: string;
   costumerPhone: string;
   address?: Address;
@@ -51,6 +52,7 @@ export interface CreateOrder {
 //Tranforma um OrderItemBag em um OrderItem para a requisição sem o id
 export interface CreateOrderItem {
   name: string;
+  observation?: string;
   quantity: number;
   flavors: string[];
   additionals?: string[];

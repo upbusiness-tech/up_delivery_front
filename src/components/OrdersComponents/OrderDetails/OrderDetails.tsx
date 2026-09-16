@@ -71,6 +71,11 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                         <Typography sx={{ fontWeight: 600, color: "black" }}>
                           {item.quantity}x {item.name}
                         </Typography>
+                        {item.observation &&(
+                          <Typography key={i} variant="body2" color="success" sx={{ ml: 2 }}>
+                            {item.observation}
+                          </Typography>
+                        )}
 
                         {getItemFlavorLines(item).map((line, idx) => (
                           <Typography key={idx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>

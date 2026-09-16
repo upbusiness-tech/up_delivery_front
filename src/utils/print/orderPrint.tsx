@@ -94,6 +94,10 @@ export default function PrintOrder({ order }: PrintOrderProps) {
                 {flavorLines.map((line, idx) => <div style={{fontSize: "14px", fontWeight: "bold"}} key={idx}>• {line}</div>)}
               </div>
             )}
+
+            {item.observation && (
+              <div style={{fontSize: "14px", fontWeight: "bold"}} key={i}>*{item.observation}*</div>
+            )}
           </div>
         );
       })}
