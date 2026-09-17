@@ -139,7 +139,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     setProductsAdded((prev) =>
       prev.map((item) =>
         item.id === id
-        ? { ...item, quantity: Math.max(1, item.quantity - 1)}
+        ? { ...item, quantity: Math.max(item.minQuantity ?? 1, item.quantity - 1)}
         : item
       )
     );
