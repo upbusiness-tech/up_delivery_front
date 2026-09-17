@@ -4,11 +4,10 @@ import { useState } from "react";
 import type { Additionals, Product, ProductCategory } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
 
-export default function UseProductSheetController(category: ProductCategory, additionals: Additionals[]){
-  // console.log(category)
+export default function UseProductSheetController(item: Product | undefined, category: ProductCategory, additionals: Additionals[]) {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(item?.minQuantity ?? 1);
   const [observation, setObservation] = useState("");
   const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>([]);
   const ADDITIONALS = additionals ?? []

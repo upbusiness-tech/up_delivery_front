@@ -30,6 +30,7 @@ export interface Product {
   image: string;
   productActive: boolean;
   productCategory: ProductCategory;
+  minQuantity: number;
   sizes: ProducSize[];
   restaurant: ProductRestaurant;
   created_at: Date;
