@@ -15,7 +15,7 @@ interface ProductSheetProps {
 }
 
 export default function ProductSheet({ item, onClose, addProduct, category, additionals }: ProductSheetProps) {
-  const c = UseProductSheetController(category, additionals)
+  const c = UseProductSheetController(item, category, additionals)
 
   if (!item) {return null}
 
@@ -38,6 +38,10 @@ export default function ProductSheet({ item, onClose, addProduct, category, addi
       <Box sx={{ p: 2, pb: 5}}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>{item?.productName}</Typography>
         <Typography variant="caption">{item?.productDescription}</Typography>
+        <Typography variant="caption">{item?.productDescription}</Typography>
+        {item.minQuantity > 1 && (
+          <Typography variant="body2" sx={{ fontWeight: 700 }}>A partir de 200g</Typography>
+        )}
         <Typography variant="h6" color="success" sx={{ fontWeight: 700, mb: 2 }}>
           R$ {basePrice.toFixed(2)}
         </Typography>
@@ -118,7 +122,7 @@ export default function ProductSheet({ item, onClose, addProduct, category, addi
       <Box sx={{ position: "sticky", bottom: 0, bgcolor: "#fff", borderTop: "1px solid #E5E7EB", p: 2 }}>
         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
           <Stack direction="row" sx={{ border: "1px solid #E5E7EB", borderRadius: 2, alignItems: "center" }}>
-            <IconButton size="small" onClick={() => c.setQty(q => Math.max(1, q - 1))}><Remove fontSize="small" /></IconButton>
+            <IconButton size="small" onClick={() => c.setQty(q => Math.max(item.minQuantity ?? 1, q - 1))}><Remove fontSize="small" /></IconButton>
             <Typography sx={{ px: 1.5, fontWeight: 700, minWidth: 24, textAlign: "center" }}>{c.qty}</Typography>
             <IconButton size="small" onClick={() => c.setQty(q => q + 1)}><Add fontSize="small" /></IconButton>
           </Stack>
