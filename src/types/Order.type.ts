@@ -66,6 +66,7 @@ export interface OrderItemBag {
   quantity: number;
   price: number;
   flavors: string[],
+  minQuantity?: number;
   observation: string,
   additionals?: Additionals[]
 }

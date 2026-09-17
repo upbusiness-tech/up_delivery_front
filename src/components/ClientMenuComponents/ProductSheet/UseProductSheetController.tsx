@@ -40,7 +40,8 @@ export default function UseProductSheetController(item: Product | undefined, cat
       flavors: product.sizes.map((e) => e.id),
       observation: observation,
       additionals: checkedAdditionals,
-      image: product.image
+      image: product.image,
+      minQuantity: product.minQuantity ?? 1
     }
     // console.log("Produto simples adicionado: ", orderItem)
     return orderItem

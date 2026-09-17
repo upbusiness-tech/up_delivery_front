@@ -70,7 +70,7 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
         <Button size="small" onClick={removeItem} startIcon={<DeleteOutlineIcon fontSize="small" />} sx={{ color: "#910404", textTransform: "none" }} />
 
         <Box sx={{ display: "flex", alignItems: "center", bgcolor: "grey.100", borderRadius: 999, p: 0.5, gap: 0.5 }}>
-          <IconButton size="small" onClick={decreaseQuantity} sx={{ bgcolor: "background.paper", width: 30, height: 30, boxShadow: "0 1px 2px rgba(0,0,0,0.1)", "&:hover": { bgcolor: "grey.200" } }}>
+          <IconButton size="small" onClick={decreaseQuantity} disabled={item.quantity <= (item.minQuantity ?? 1)} sx={{ bgcolor: "background.paper", width: 30, height: 30, boxShadow: "0 1px 2px rgba(0,0,0,0.1)", "&:hover": { bgcolor: "grey.200" } }}>
             <RemoveIcon fontSize="small" />
           </IconButton>
 
