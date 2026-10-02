@@ -6,6 +6,10 @@ import ProductCard from "../ProductCard/ProductCard";
 import type { Product, ProductCategory, Size } from "../../../types/Product.type";
 import type { Restaurant } from "../../../types/Restaurant.type";
 import RestauranteClosedModal from "./RestauranteClosedModal";
+import { InputAdornment, IconButton, TextField } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
+import { UseProductSearch } from "../../../hooks/useProductSearch";
 
 interface MenuScreenProps {
   restaurant: Restaurant | undefined;
@@ -19,7 +23,8 @@ interface MenuScreenProps {
 }
 
 export default function MenuScreen({ restaurant, products, categories, onSelectSize, onSelectProduct, onSelectCategory, restaurantClosedModal, handleCloseRestauranteClosed }: MenuScreenProps) {
-  const c = UseMenuScreenController({ restaurant, categories, products });
+  const s = UseProductSearch(products);
+  const c = UseMenuScreenController({ restaurant, categories, products: s.filteredProducts });
   
   return (
     <Box sx={{minHeight: "100vh" }}>
@@ -27,6 +32,10 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
       <RestaurantInfo restaurant={c.restaurant} />
 
       <Box sx={{ position: "sticky", top: 0, zIndex: 10, bgcolor: "background.paper", borderBottom: "1px solid", borderColor: "grey.200", boxShadow: "0 2px 6px rgba(0,0,0,0.04)" }}>
+        <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 }, pt: 1 }}>
+          <TextField fullWidth size="small" placeholder="Buscar no cardápio..." value={s.search} onChange={(e) => s.setSearch(e.target.value)} sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 } }}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>, endAdornment: s.search && <InputAdornment position="end"><IconButton size="small" aria-label="Limpar busca" onClick={() => s.setSearch("")}><CloseIcon fontSize="small" /></IconButton></InputAdornment> } }} />
+        </Container>
         <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 } }}>
           <Tabs
             value={c.activeTab}
