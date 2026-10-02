@@ -7,6 +7,7 @@ import { OrderService } from "../../api/services/order.service";
 
 type CheckoutStep =
 | "menu"
+| "flavorCount"
 | "sizeProducts"
 | "cart"
 | "customer"
@@ -14,9 +15,16 @@ type CheckoutStep =
 | "payment"
 | "paymentMethod"
 
-export function UsePublicMenuController({ restaurant, products }: MenuData) {
+const STORAGE_KEY = "updelivery:customer";
+const DEFAULT_ADDRESS: Address = { city: "Quixadá-CE", number: 0, streetName: "", complement: "" };
+const loadCustomer = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"); } catch { return {}; } };
+
+export function UsePublicMenuController({ restaurant, products, neighborhoods }: MenuData) {
+
+  const [saved] = useState(loadCustomer);
 
   const [step, setStep] = useState<CheckoutStep>("menu");
+  const [flavorCount, setFlavorCount] = useState(1);
   const [selectedSize, setSelectedSize] = useState<Size>();
   const [productsBySize, setProductsBySize] = useState<Product[]>([]);
   const [category, setCategory] = useState<ProductCategory>();
@@ -28,10 +36,10 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   const [paymentMethod, setPaymentMethod] = useState("");
   const [changeFor, setChangeFor] = useState<number>(0);
   const [observation, setObservation] = useState("");
-  const [costumerName, setCostumerName] = useState("");
-  const [costumerPhone, setCostumerPhone] = useState("");
-  const [costumerEmail, setCostumerEmail] = useState("");
-  const [address, setAddress] = useState<Address>({ city: "Quixadá-CE", number: 0, streetName: "", complement: "" });
+  const [costumerName, setCostumerName] = useState<string>(saved.costumerName ?? "");
+  const [costumerPhone, setCostumerPhone] = useState<string>(saved.costumerPhone ?? "");
+  const [costumerEmail, setCostumerEmail] = useState<string>(saved.costumerEmail ?? "");
+  const [address, setAddress] = useState<Address>({ ...DEFAULT_ADDRESS, ...saved.address });
   const [neighborhood, setNeighborhood] = useState<Neighborhood>();
   const [orderCreated, setOrderCreated] = useState<Order>()
 
@@ -39,7 +47,14 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
   const handleOpenRestauranteClosed = () => setRestauranteClosed(true)
   const handleCloseRestauranteClosed = () => setRestauranteClosed(false)
 
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ costumerName, costumerPhone, costumerEmail, address, neighborhoodId: neighborhood?.id ?? saved.neighborhoodId })); } catch { /* storage indisponível */ }
+  }, [costumerName, costumerPhone, costumerEmail, address, neighborhood, saved.neighborhoodId]);
 
+  useEffect(() => {
+    if (neighborhood || !saved.neighborhoodId) return;
+    setNeighborhood(neighborhoods?.find((n) => n.id === saved.neighborhoodId));
+  }, [neighborhoods]);
 
   useEffect(() => {
     setOrderCreated(undefined);
@@ -47,16 +62,15 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
 
   const openSize = (size: Size) => {
     setSelectedSize(size);
-    console.log("Tamanho: ", size.name, "id: ", size.id)
-    if(!products) return;
-
-    const productsS = products.filter(product =>
-      product.sizes.some(s => s.size.id === size.id)
-    );
-
-    setProductsBySize(productsS);
-    setStep("sizeProducts");
+    if (!products) return;
+    setProductsBySize(products.filter(product => product.sizes.some(s => s.size.id === size.id)));
+    setFlavorCount(1);
+    setStep(size.limitFlavors > 1 ? "flavorCount" : "sizeProducts");
   };
+
+  const chooseFlavorCount = (n: number) => { setFlavorCount(n); setStep("sizeProducts"); };
+  const goToMenu = () => setStep("menu");
+  const sizeWithFlavors = selectedSize ? { ...selectedSize, limitFlavors: flavorCount } : undefined;
 
   function nextStep() {
     switch (step) {
@@ -65,6 +79,9 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
         break;
       case "sizeProducts":
         setStep("menu");
+        break;
+      case "flavorCount": 
+        setStep("sizeProducts"); 
         break;
       case "cart":
         setStep("customer");
@@ -89,8 +106,11 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
       case "cart":
         setStep("menu");
         break;
-      case "sizeProducts":
-        setStep("menu");
+      case "sizeProducts": 
+        setStep((selectedSize?.limitFlavors ?? 1) > 1 ? "flavorCount" : "menu"); 
+        break;
+      case "flavorCount": 
+        setStep("menu"); 
         break;
       case "customer":
         setStep("cart");
@@ -209,6 +229,7 @@ export function UsePublicMenuController({ restaurant, products }: MenuData) {
     costumerPhone, setCostumerPhone, address, setAddress,
     neighborhood, setNeighborhood, type, setType, paymentMethod,
     setPaymentMethod, changeFor, setChangeFor, createOrder, handleCloseRestauranteClosed, restauranteClosed,
-    subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail
+    subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail,
+    flavorCount, chooseFlavorCount, goToMenu, sizeWithFlavors,
   };
 }

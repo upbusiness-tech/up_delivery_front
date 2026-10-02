@@ -10,6 +10,7 @@ import PaymentScreen from "../../components/ClientMenuComponents/SelectPaymentMe
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentMethodScreen";
 import { UsePublicMenuController } from "./UsePublicMenuController";
+import FlavorCountScreen from "../../components/ClientMenuComponents/ProductBySizeScreen/FlavorCountScreen";
 
 export default function PublicMenu() {
   const { restaurant, products, categories, additionals, neighborhoods, isLoading, notFound } = usePublicRestaurant();
@@ -54,12 +55,17 @@ export default function PublicMenu() {
         </>
       )}
 
-      {c.step === "sizeProducts" && c.selectedSize && c.category && (
+      {c.step === "flavorCount" && c.selectedSize && (
+        <FlavorCountScreen size={c.selectedSize} categoryName={c.category?.categoryName} onBack={c.previousStep} onChoose={c.chooseFlavorCount} />
+      )}
+
+      {c.step === "sizeProducts" && c.sizeWithFlavors && c.category && (
         <ProductsBySizeScreen
-          size={c.selectedSize}
+          size={c.sizeWithFlavors}
           products={c.productsBySize}
           additionals={additionals}
           onBack={c.previousStep}
+          onFinish={c.goToMenu}
           addProduct={c.addProduct}
           category={c.category}
         />
