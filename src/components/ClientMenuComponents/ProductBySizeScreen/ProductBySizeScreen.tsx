@@ -11,10 +11,11 @@ interface ProductsBySizeScreenProps {
   category: ProductCategory;
   additionals: Additionals[];
   onBack: () => void;
+  onFinish: () => void;
   addProduct: (orderItem: OrderItemBag) => void;
 }
 
-export default function ProductsBySizeScreen({size, products, category, additionals, onBack, addProduct}: ProductsBySizeScreenProps) {
+export default function ProductsBySizeScreen({size, products, category, additionals, onBack, onFinish, addProduct}: ProductsBySizeScreenProps) {
   const c = UseProductBySizeScreenController(size, category, additionals);
 
   const handleNext = () => {
@@ -29,7 +30,7 @@ export default function ProductsBySizeScreen({size, products, category, addition
     const orderItem = c.toOrderItem();
     console.log("Item montado:", orderItem);
     addProduct(orderItem);
-    onBack();
+    onFinish();
   };
 
   if (c.screenStep === "extras") {

@@ -4,6 +4,7 @@ import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import type { OrderItemBag } from "../../../../types/Order.type";
 import { moneyMask } from "../../../../utils/masks/mask";
+import { UseCartItemController } from "./UseCartItemController";
 
 interface Props {
   item: OrderItemBag;
@@ -17,6 +18,10 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
   const additionalsSum = hasAdditionals ? item.additionals?.reduce((sum, ad) => sum + ad.additionalPrice, 0) : 0;
   const subtotal = item.price + (additionalsSum || 0);
   const total = subtotal * item.quantity;
+
+  const c = UseCartItemController();
+  const flavorLines = c.getFlavorLines(item.flavors, item.name);
+
   return (
     <Card sx={{ p: 1.5, mb: 1, borderRadius: 4, boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "grey.200", transition: "box-shadow 0.2s ease, border-color 0.2s ease", "&:hover": { boxShadow: "0 6px 16px rgba(0,0,0,0.08)", borderColor: "grey.300" } }}>
       <Box sx={{ display: "flex", gap: 2 }}>
@@ -41,6 +46,17 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
           </Typography>
         </Box>
       </Box>
+
+      {flavorLines.length > 0 && (
+        <Box sx={{ mt: 1.5, pt: 1.5, borderTop: "1px dashed", borderColor: "grey.200" }}>
+          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 0.75 }}>Detalhes:</Typography>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
+            {flavorLines.map((line, index) => (
+              <Typography key={`${line}-${index}`} sx={{ color: "success.dark", fontWeight: 600, fontSize: 14, mb: 0.5 }}>{line}</Typography>
+            ))}
+          </Box>
+        </Box>
+      )}
 
       {hasAdditionals && (
         <Box sx={{ mt: 1.5, pt: 1.5, borderTop: "1px dashed", borderColor: "grey.200" }}>

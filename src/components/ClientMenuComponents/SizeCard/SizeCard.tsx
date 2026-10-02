@@ -28,7 +28,7 @@ export default function SizeCard({ size, onClick, selectCategory, cat }: SizeCar
           <Stack direction="row" spacing={2} sx={{flexWrap: "wrap", gap: 1, alignItems: "center" }}>
           <Stack sx={{ flex: 1 }}>
             <Typography variant="body1" sx={{ fontWeight: 700 }}>{cat} {size.name}</Typography>
-            <Typography variant="body2">0{size.limitFlavors} opções de sabores</Typography>
+            <Typography variant="body1">0{size.limitFlavors} opções de sabores</Typography>
           </Stack>
         </Stack>
       </CardActionArea>
