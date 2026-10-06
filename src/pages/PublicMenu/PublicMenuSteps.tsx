@@ -9,6 +9,9 @@ import PaymentScreen from "../../components/ClientMenuComponents/SelectPaymentMe
 import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentMethodScreen";
 import { usePublicMenuOutlet } from "./usePublicMenuOutlet";
 import FlavorCountScreen from "../../components/ClientMenuComponents/ProductBySizeScreen/FlavorCountScreen";
+import { Navigate, useParams } from "react-router-dom";
+
+export function RedirectToMenu() { const { slug } = useParams(); return <Navigate to={`/${slug}`} replace />; }
 
 export function MenuStep() {
   const { c, restaurant, products, categories, additionals } = usePublicMenuOutlet();

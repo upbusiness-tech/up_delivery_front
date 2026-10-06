@@ -1,5 +1,5 @@
 import { Box, Card, CardActionArea, CardMedia, Stack, Typography } from "@mui/material";
-import genericImage from "../../../assets/capa.avif"
+import genericImage from "../../../assets/capa.jpg"
 import type { Size } from "../../../types/Product.type";
 
 interface SizeCardProps {

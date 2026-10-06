@@ -55,6 +55,8 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
   const closeProduct = () => { if (sheetOpen) navigate(-1); else setSelectedProduct(undefined); };
 
   useEffect(() => { if (!sheetOpen) setSelectedProduct(undefined); }, [sheetOpen]);
+
+  useEffect(() => { if (step !== "menu" || sheetOpen) navigate(`/${slug}`, { replace: true }); }, []);
   
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ costumerName, costumerPhone, costumerEmail, address, neighborhoodId: neighborhood?.id ?? saved.neighborhoodId })); } catch { /* storage indisponível */ }
@@ -104,7 +106,7 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
       case "payment":
         setStep("paymentMethod");
         break;
-      case "paymentMethod": navigate(-5); break;
+      case "paymentMethod": setProductsAdded([]); setSelectedSize(undefined); navigate(-5); break;
     }
   }
 
@@ -156,7 +158,7 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
     const restaurantIsOpen = await RestaurantService.restaurantOpen(restaurant.id)
     if(!restaurantIsOpen?.data){
       console.log('RESTAURANTE FECHADO AGR')
-      navigate(-4)
+      navigate(-5)
       handleOpenRestauranteClosed()
       return
     }

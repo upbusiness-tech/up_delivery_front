@@ -8,7 +8,7 @@ import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
 import PublicMenu from '../pages/PublicMenu/PublicMenu'
 import { ProtectedRoute } from './ProtectedRoute'
 import Menu from '../pages/Menu/Menu'
-import { AddressStep, CartStep, CustomerStep, FlavorCountStep, MenuStep, PaymentMethodStep, PaymentStep, SizeProductsStep } from '../pages/PublicMenu/PublicMenuSteps'
+import { AddressStep, CartStep, CustomerStep, FlavorCountStep, MenuStep, PaymentMethodStep, PaymentStep, RedirectToMenu, SizeProductsStep } from '../pages/PublicMenu/PublicMenuSteps'
 
 export default function ReactRouter() {
   return (
@@ -24,6 +24,7 @@ export default function ReactRouter() {
             <Route path="address" element={<AddressStep />} />
             <Route path="payment" element={<PaymentStep />} />
             <Route path="paymentMethod" element={<PaymentMethodStep />} />
+            <Route path="*" element={<RedirectToMenu />} />
           </Route>
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>

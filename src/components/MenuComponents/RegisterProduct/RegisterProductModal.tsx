@@ -1,6 +1,6 @@
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, MenuItem, Select, Stack, Switch, TextField, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import imagemGenerica from '../../../assets/capa.avif'
+import imagemGenerica from '../../../assets/imgNull.png'
 import UseModalRegisterProduct from "./UseModalRegisterProduct";
 
 
