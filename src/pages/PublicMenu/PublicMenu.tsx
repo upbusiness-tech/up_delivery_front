@@ -1,16 +1,7 @@
 import { Box, CircularProgress, Stack, Typography } from "@mui/material";
-import MenuScreen from "../../components/ClientMenuComponents/MenuScreen/MenuScreen";
-import ProductsBySizeScreen from "../../components/ClientMenuComponents/ProductBySizeScreen/ProductBySizeScreen";
-import ProductSheet from "../../components/ClientMenuComponents/ProductSheet/ProductSheet";
-import { CartBar } from "../../components/ClientMenuComponents/CartBar/CartBar";
-import { CartScreen } from "../../components/ClientMenuComponents/CartScreen/CartScreen";
-import InfoScreen from "../../components/ClientMenuComponents/InfoScreen/InfoScreen";
-import AddressScreen from "../../components/ClientMenuComponents/AddressScreen/AddressScren";
-import PaymentScreen from "../../components/ClientMenuComponents/SelectPaymentMethod/SelectMethodPaymentScreen";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
-import PaymentMethodScreen from "../../components/ClientMenuComponents/PaymentMethodScreen/PaymentMethodScreen";
 import { UsePublicMenuController } from "./UsePublicMenuController";
-import FlavorCountScreen from "../../components/ClientMenuComponents/ProductBySizeScreen/FlavorCountScreen";
+import { Outlet } from "react-router-dom";
 
 export default function PublicMenu() {
   const { restaurant, products, categories, additionals, neighborhoods, isLoading, notFound } = usePublicRestaurant();
@@ -35,108 +26,7 @@ export default function PublicMenu() {
 
   return (
     <Box sx={{ minHeight: "100dvh" }}>
-      {c.step === "menu" && (
-        <>
-          <MenuScreen
-            restaurant={restaurant}
-            products={products}
-            categories={categories}
-            onSelectSize={c.openSize}
-            onSelectProduct={c.setSelectedProduct}
-            onSelectCategory={c.setCategory}
-            handleCloseRestauranteClosed={c.handleCloseRestauranteClosed}
-            restaurantClosedModal={c.restauranteClosed}
-          />
-          {c.category && (
-           <ProductSheet item={c.selectedProduct} category={c.category} additionals={additionals} addProduct={c.addProduct} onClose={() => c.setSelectedProduct(undefined)} />
-          )}
-          
-          <CartBar itemCount={c.productsAdded.length} total={c.subtotal} onClick={c.nextStep} />
-        </>
-      )}
-
-      {c.step === "flavorCount" && c.selectedSize && (
-        <FlavorCountScreen size={c.selectedSize} categoryName={c.category?.categoryName} onBack={c.previousStep} onChoose={c.chooseFlavorCount} />
-      )}
-
-      {c.step === "sizeProducts" && c.sizeWithFlavors && c.category && (
-        <ProductsBySizeScreen
-          size={c.sizeWithFlavors}
-          products={c.productsBySize}
-          additionals={additionals}
-          onBack={c.previousStep}
-          onFinish={c.goToMenu}
-          addProduct={c.addProduct}
-          category={c.category}
-        />
-      )}
-
-      {c.step === "cart" && (
-        <CartScreen
-          items={c.productsAdded}
-          onBack={c.previousStep}
-          onNext={c.nextStep}
-          removeItem={c.removeItem}
-          increaseQuantity={c.increaseQuantity}
-          decreaseQuantity={c.decreaseQuantity}
-          total={c.total}
-        />
-      )}
-
-      {c.step === "customer" && (
-        <InfoScreen
-          name={c.costumerName}
-          phone={c.costumerPhone}
-          setName={c.setCostumerName}
-          setPhone={c.setCostumerPhone}
-          email={c.costumerEmail}
-          setEmail={c.setCostumerEmail}
-          onBack={c.previousStep}
-          onNext={c.nextStep}
-        />
-      )}
-
-      {c.step === "address" && (
-        <AddressScreen
-          type={c.type}
-          setType={c.setType}
-          address={c.address}
-          setAddress={c.setAddress}
-          neighborhood={c.neighborhood}
-          setNeighborhood={c.setNeighborhood}
-          neighborhoods={neighborhoods}
-          restaurant={restaurant}
-          onBack={c.previousStep}
-          onNext={c.nextStep}
-        />
-      )}
-
-      {/* Tela para selecionar o metodo de pagamento */}
-      {c.step === "payment" && (
-        <PaymentScreen
-          onBack={c.previousStep}
-          onNext={c.nextStep}
-          paymentMethod={c.paymentMethod}    
-          setPaymentMethod={c.setPaymentMethod}
-          onCreateOrder={c.createOrder}
-          restaurant={restaurant}
-          total={c.total}
-          />
-        )}
-
-      {c.step === "paymentMethod" && c.orderCreated && (
-        <PaymentMethodScreen
-          order={c.orderCreated}
-          userEmail={c.costumerEmail}
-          userName={c.costumerName}
-          userPhone={c.costumerPhone}
-          paymentMethod={c.paymentMethod}
-          total={c.total}
-          onNext={c.nextStep}
-          onBack={c.previousStep}
-
-        />
-      )}
+      <Outlet context={{ c, restaurant, products, categories, additionals, neighborhoods }} />
     </Box>
   );
 }

@@ -8,20 +8,23 @@ import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
 import PublicMenu from '../pages/PublicMenu/PublicMenu'
 import { ProtectedRoute } from './ProtectedRoute'
 import Menu from '../pages/Menu/Menu'
+import { AddressStep, CartStep, CustomerStep, FlavorCountStep, MenuStep, PaymentMethodStep, PaymentStep, SizeProductsStep } from '../pages/PublicMenu/PublicMenuSteps'
 
 export default function ReactRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES_ENUM.LOGIN} element={<Login />} />
-        <Route
-          path={ROUTES_ENUM.PUBLIC_MENU}
-          element={
-            <PublicRestaurantProvider>
-              <PublicMenu />
-            </PublicRestaurantProvider>
-          }
-        />
+          <Route path={ROUTES_ENUM.PUBLIC_MENU} element={<PublicRestaurantProvider><PublicMenu /></PublicRestaurantProvider>}>
+            <Route index element={<MenuStep />} />
+            <Route path="flavorCount" element={<FlavorCountStep />} />
+            <Route path="sizeProducts" element={<SizeProductsStep />} />
+            <Route path="cart" element={<CartStep />} />
+            <Route path="customer" element={<CustomerStep />} />
+            <Route path="address" element={<AddressStep />} />
+            <Route path="payment" element={<PaymentStep />} />
+            <Route path="paymentMethod" element={<PaymentMethodStep />} />
+          </Route>
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
