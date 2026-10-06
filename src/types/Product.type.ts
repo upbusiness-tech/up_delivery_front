@@ -13,7 +13,8 @@ export interface Additionals {
   id: string;
   additionalName: string;
   additionalPrice: number;
-  category: ProductCategory
+  category: ProductCategory;
+  additionalType: 'single' | 'multiple';
 }
 
 export interface AdditionalDTO {

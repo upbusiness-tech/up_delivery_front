@@ -41,7 +41,7 @@ interface RestaurantContextValue {
 export const RestaurantContext  = createContext<RestaurantContextValue | undefined>(undefined)
 
 export function RestaurantProvider({children}: { children: ReactNode }){
-  setInterval(() => window.location.reload(), 3 * 60 * 1000);
+  setInterval(() => window.location.reload(), 5 * 60 * 1000);
   const { user, loading: authLoading } = useAuth();
   const [restaurant, setRestaurant] = useState<Restaurant | undefined>(undefined)
   const [orders, setOrders] = useState<Order[] | undefined>([])
