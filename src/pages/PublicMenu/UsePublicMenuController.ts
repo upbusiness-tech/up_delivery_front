@@ -4,6 +4,7 @@ import type { MenuData, Product, ProductCategory, Size } from '../../types/Produ
 import { RestaurantService } from "../../api/services/restaurant.service";
 import type { Neighborhood } from "../../types/Restaurant.type";
 import { OrderService } from "../../api/services/order.service";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 
 type CheckoutStep =
 | "menu"
@@ -23,7 +24,11 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
 
   const [saved] = useState(loadCustomer);
 
-  const [step, setStep] = useState<CheckoutStep>("menu");
+  const navigate = useNavigate(); const { slug } = useParams(); const { pathname } = useLocation();
+  const step = (pathname.split("/")[2] || "menu") as CheckoutStep;
+  const setStep = (s: CheckoutStep) => navigate(s === "menu" ? `/${slug}` : `/${slug}/${s}`);
+  const sheetOpen = Boolean(useLocation().state?.sheet);
+
   const [flavorCount, setFlavorCount] = useState(1);
   const [selectedSize, setSelectedSize] = useState<Size>();
   const [productsBySize, setProductsBySize] = useState<Product[]>([]);
@@ -46,7 +51,11 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
   const [restauranteClosed, setRestauranteClosed] = useState(false)
   const handleOpenRestauranteClosed = () => setRestauranteClosed(true)
   const handleCloseRestauranteClosed = () => setRestauranteClosed(false)
+  const openProduct = (p: Product) => { setSelectedProduct(p); navigate(pathname, { state: { sheet: true } }); };
+  const closeProduct = () => { if (sheetOpen) navigate(-1); else setSelectedProduct(undefined); };
 
+  useEffect(() => { if (!sheetOpen) setSelectedProduct(undefined); }, [sheetOpen]);
+  
   useEffect(() => {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ costumerName, costumerPhone, costumerEmail, address, neighborhoodId: neighborhood?.id ?? saved.neighborhoodId })); } catch { /* storage indisponível */ }
   }, [costumerName, costumerPhone, costumerEmail, address, neighborhood, saved.neighborhoodId]);
@@ -69,7 +78,7 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
   };
 
   const chooseFlavorCount = (n: number) => { setFlavorCount(n); setStep("sizeProducts"); };
-  const goToMenu = () => setStep("menu");
+  const goToMenu = () => navigate((selectedSize?.limitFlavors ?? 1) > 1 ? -2 : -1);
   const sizeWithFlavors = selectedSize ? { ...selectedSize, limitFlavors: flavorCount } : undefined;
 
   function nextStep() {
@@ -95,37 +104,11 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
       case "payment":
         setStep("paymentMethod");
         break;
-      case "paymentMethod":
-        setStep("menu")
-        break
+      case "paymentMethod": navigate(-5); break;
     }
   }
 
-  function previousStep() {
-    switch (step) {
-      case "cart":
-        setStep("menu");
-        break;
-      case "sizeProducts": 
-        setStep((selectedSize?.limitFlavors ?? 1) > 1 ? "flavorCount" : "menu"); 
-        break;
-      case "flavorCount": 
-        setStep("menu"); 
-        break;
-      case "customer":
-        setStep("cart");
-        break;
-      case "address":
-        setStep("customer");
-        break;
-      case "payment":
-        setStep("address");
-        break;
-      case "paymentMethod":
-        setStep("payment")
-        break
-    }
-  }
+  const previousStep = () => navigate(-1);
 
   const subtotal = productsAdded.reduce((tot, item) => {
     const additionalsSum = (item.additionals ?? []).reduce((sum, ad) => sum + ad.additionalPrice, 0);
@@ -173,7 +156,7 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
     const restaurantIsOpen = await RestaurantService.restaurantOpen(restaurant.id)
     if(!restaurantIsOpen?.data){
       console.log('RESTAURANTE FECHADO AGR')
-      setStep('menu')
+      navigate(-4)
       handleOpenRestauranteClosed()
       return
     }
@@ -230,6 +213,6 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
     neighborhood, setNeighborhood, type, setType, paymentMethod,
     setPaymentMethod, changeFor, setChangeFor, createOrder, handleCloseRestauranteClosed, restauranteClosed,
     subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail,
-    flavorCount, chooseFlavorCount, goToMenu, sizeWithFlavors,
+    flavorCount, chooseFlavorCount, goToMenu, sizeWithFlavors, openProduct, closeProduct
   };
 }
