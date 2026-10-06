@@ -22,12 +22,13 @@ export default function UseProductSheetController(item: Product | undefined, cat
     return ADDITIONALS.filter((a) => a.category.id === category.id);
   }
 
+  const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);
+
   const toggleAdditional = (additional: Additionals) => {
-    setCheckedAdditionals((prev) =>
-      prev.some((a) => a.id === additional.id)
-        ? prev.filter((a) => a.id !== additional.id)
-        : [...prev, additional]
-    );
+    setCheckedAdditionals((prev) => {
+      if (prev.some((a) => a.id === additional.id)) return prev.filter((a) => a.id !== additional.id);
+      return additional.additionalType === 'single' ? [...prev.filter((a) => a.additionalType !== 'single'), additional] : [...prev, additional];
+    });
   };
 
   //Essa função so vai ser usada em produtos com 1 unico tamanho 
@@ -57,6 +58,7 @@ export default function UseProductSheetController(item: Product | undefined, cat
     setCheckedAdditionals,
     additionalsByCategory,
     toggleAdditional,
-    checkedAdditionals
+    checkedAdditionals,
+    additionalsByType
   }
 }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Additionals, Product, ProductCategory, Size } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
 
@@ -9,7 +9,9 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
   const [currentFlavorIndex, setCurrentFlavorIndex] = useState(0);
   const [observation, setObservation] = useState("");
   const [screenStep, setScreenStep] = useState<"flavors" | "extras">("flavors");
-  const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>([]);
+  const [checkedSingle, setCheckedSingle] = useState<Additionals | null>(null);
+  const [checkedMultiple, setCheckedMultiple] = useState<Additionals[]>([]);
+  const checkedAdditionals = useMemo(() => (checkedSingle ? [checkedSingle, ...checkedMultiple] : checkedMultiple), [checkedSingle, checkedMultiple]);
   const FLAVOR_LABELS = ["1º Sabor", "2º Sabor", "3º Sabor", "4º Sabor"];
   const OBSERVATION_SUGGESTIONS = ["Sem cebola", "Sem pimenta", "Bem passado", "Molho à parte", "Cortar ao meio"];
   const ADDITIONALS = additionals ?? []
@@ -18,14 +20,10 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
     return ADDITIONALS.filter((a) => a.category.id === category.id);
   }
 
-  const toggleAdditional = (additional: Additionals) => {
-    setCheckedAdditionals((prev) =>
-      prev.some((a) => a.id === additional.id)
-        ? prev.filter((a) => a.id !== additional.id)
-        : [...prev, additional]
-    );
-  };
-  
+  const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);
+  const toggleSingle = (a: Additionals) => setCheckedSingle((prev) => (prev?.id === a.id ? null : a));
+  const toggleMultiple = (a: Additionals) => setCheckedMultiple((prev) => (prev.some((x) => x.id === a.id) ? prev.filter((x) => x.id !== a.id) : [...prev, a]));
+    
   const addSuggestion = (text: string) => {
     setObservation((prev) => (prev.includes(text) ? prev : prev.trim().length ? `${prev.trim()}, ${text}` : text));
   };
@@ -103,7 +101,11 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
     screenStep,
     setScreenStep,
     checkedAdditionals,
-    toggleAdditional,
+    additionalsByType, 
+    checkedSingle, 
+    checkedMultiple, 
+    toggleSingle, 
+    toggleMultiple,
     FLAVOR_LABELS,
     OBSERVATION_SUGGESTIONS,
     ADDITIONALS,
