@@ -74,7 +74,7 @@ export function UsePublicMenuController({ restaurant, products, neighborhoods }:
   const openSize = (size: Size) => {
     setSelectedSize(size);
     if (!products) return;
-    setProductsBySize(products.filter(product => product.sizes.some(s => s.size.id === size.id)));
+    setProductsBySize(products.filter(product => product.productActive && product.sizes.some(s => s.size.id === size.id)));
     setFlavorCount(1);
     setStep(size.limitFlavors > 1 ? "flavorCount" : "sizeProducts");
   };

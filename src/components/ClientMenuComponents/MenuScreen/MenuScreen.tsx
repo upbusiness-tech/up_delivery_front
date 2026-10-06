@@ -77,14 +77,16 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
                   // Clica no ProductCard -> Abre o ProductSheet -> 
                   // Se o usuario confirmar -> Tranforma o Product em um OrderItemBag ->
                   // Adicona o produto como OrderItemBag no array de itens para requisição
-                  <ProductCard
-                    key={product.id}
-                    product={product}
-                    onClick={() => {
-                      onSelectCategory(cat);
-                      onSelectProduct(product);
-                    }}
-                  />
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    unavailable={!product.productActive} 
+                    onClick={() => { 
+                      if (!product.productActive) 
+                        return; 
+                      onSelectCategory(cat); 
+                      onSelectProduct(product); 
+                    }} />
                 ))}
 
                 {/* APROVEITAR ESSE SIZE QUE TA SENDO PASSADO AQUI */}
