@@ -1,20 +1,9 @@
-import { useEffect, useState } from "react";
-import type { BusinessHours } from "../../types/Restaurant.type";
-import { useRestaurant } from "../../context/RestaurantContext";
 import { RestaurantService } from "../../api/services/restaurant.service";
+import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
 
 export default function UseEnterpriseController() {
-  //Recebendo os dados do restaurante via contexto
-  const {restaurant} = useRestaurant()
-  const [businessHours, setBusinessHours] = useState<BusinessHours>({});
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    if (restaurant) {setBusinessHours(restaurant.businessHours || {})
-      setLoading(false);
-    }
-  }, []);
+  const { data: restaurantInfos, isLoading } = useRestaurantData(RestaurantService.getMe, QueryCacheName.RESTAURANT)
 
   async function connectRestaurant() {
     try{
@@ -30,9 +19,8 @@ export default function UseEnterpriseController() {
   }
 
   return {
-    restaurant,
-    loading,
-    businessHours,
+    restaurantInfos,
+    isLoading,
     connectRestaurant
   }
 }

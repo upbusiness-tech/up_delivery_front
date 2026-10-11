@@ -14,7 +14,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   additionals: Additionals[];
-  flavors: string[];
+  flavors: OrderFlavor[];
 }
 
 export interface Order {
@@ -35,6 +35,23 @@ export interface Order {
   costumerAddress: Address;
   neighborhood: Neighborhood;
   restaurant: { id: string };
+}
+
+export interface OrderFlavor {
+  id: string;
+  price: number;
+  product: {
+    id: string;
+    productName: string;
+  };
+  size: {
+    id: string;
+    name: string;
+    limitFlavors: number;
+    price: number;
+    created_at: string;
+  };
+  created_at: string;
 }
 
 export interface CreateOrder {

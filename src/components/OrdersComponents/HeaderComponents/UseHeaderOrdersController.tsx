@@ -1,62 +1,31 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
 import { RestaurantService } from "../../../api/services/restaurant.service";
-import type { Restaurant } from "../../../types/Restaurant.type";
-import { OrderService } from "../../../api/services/order.service";
 import type { Order } from "../../../types/Order.type";
-import { STATUS } from "../../../utils/texts/status.enum";
-import { useRestaurant } from "../../../context/RestaurantContext";
-import { buildOrderMessage, sendWhatsAppMessage } from "../../../utils/whatsapp/orderMessage";
 
-interface props {
-  restaurant: Restaurant | undefined
-}
+interface props { orders?: Order[] }
 
-export default function UseHeaderOrdersController({restaurant}: props){
-  const { orders, setOrders } = useRestaurant();
-  const [restaurantOpen, setRestaurantOpen] = useState<boolean>()
-  const [modalStatusRestaurant, setModalStatusRestaurant] = useState(false);
+export default function UseHeaderOrdersController({ orders }: props) {
   const [modalPendingOrders, setModalPendingOrders] = useState(false);
-  const handleOpenModalStatusRestaurant = () => setModalStatusRestaurant(true)
-  const handleCloseModalStatusRestaurant = () => setModalStatusRestaurant(false)
+  const handleOpenModalPendingOrders = () => setModalPendingOrders(true);
+  const handleCloseModalPendingOrders = () => setModalPendingOrders(false);
 
-  const handleOpenModalPendingOrders = () => {setModalPendingOrders(true); };
-  const handleCloseModalPendingOrders = () => {setModalPendingOrders(false);};
+  const { data: restaurantIsOpen } = useRestaurantData(RestaurantService.restaurantIsopen, QueryCacheName.RESTAURANT_ISOPEN);
+  const { data: restaurantInfos } = useRestaurantData(RestaurantService.getMe, QueryCacheName.RESTAURANT);
 
-  const pendingOrders = (orders ?? []).filter((o) => o.status !== STATUS.CANCELADO && !o.printed);
+  const pendingOrders = orders?.filter(order => !order.printed);
 
-  useEffect(() => {
-    restaurantIsOpen()
-  }, [restaurant?.id])
-
-  async function restaurantIsOpen(){
-    if(!restaurant) return;
-    const restaurantIsOpen = await RestaurantService.restaurantOpen(restaurant.id)
-    if(!restaurantIsOpen?.data){
-      setRestaurantOpen(false)
-      return
-    }
-    setRestaurantOpen(true)
-  }
-
-  async function handleReceiveOrder(order: Order){
-    try {
-      await OrderService.updatePrinted(order.id);
-      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, printed: true } : o)));
-      sendWhatsAppMessage(order, buildOrderMessage(order));
-    } catch {
-      return;
-    }
-  }
+  const menuUrl = `${import.meta.env.VITE_MENU_BASE_URL}/${restaurantInfos?.slug}`;
+  const handleCopyMenuLink = () => navigator.clipboard.writeText(menuUrl);
 
   return {
-    restaurantOpen,
-    modalStatusRestaurant,
-    handleCloseModalStatusRestaurant,
-    handleOpenModalStatusRestaurant,
     handleCloseModalPendingOrders,
     handleOpenModalPendingOrders,
     modalPendingOrders,
+    restaurantIsOpen,
+    restaurantInfos,
     pendingOrders,
-    handleReceiveOrder
+    menuUrl,
+    handleCopyMenuLink
   }
 }

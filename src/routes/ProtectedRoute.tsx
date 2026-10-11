@@ -5,13 +5,9 @@ import { ROUTES_ENUM } from "./routes.enum";
 export function ProtectedRoute() {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return <div>Carregando...</div>;
-  }
+  if (loading) {return <div>Carregando...</div>;}
 
-  if (!user) {
-    return <Navigate to={ROUTES_ENUM.LOGIN} replace />;
-  }
+  if (!user) {return <Navigate to={ROUTES_ENUM.LOGIN} replace />;}
 
   return <Outlet />;
 }

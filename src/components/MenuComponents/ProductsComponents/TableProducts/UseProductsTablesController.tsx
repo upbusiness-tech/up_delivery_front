@@ -1,16 +1,17 @@
 import { useState } from "react";
 import type { Product } from "../../../../types/Product.type";
-import { useRestaurant } from "../../../../context/RestaurantContext";
-import { ProductService } from "../../../../api/services/product.service";
+import { QueryCacheName, useRestaurantData } from "../../../../hooks/useRestaurantData";
+import { RestaurantService } from "../../../../api/services/restaurant.service";
 
 
-export default function UseMenuController(){
+export default function UseProductsTablesController(){
+
+  const { data: products = [] } = useRestaurantData(RestaurantService.restaurantProducts, QueryCacheName.PRODUCTS);
+  const { data: categories = [] } = useRestaurantData(RestaurantService.restaurantCategories, QueryCacheName.CATEGORIES);
+  const { data: additionals = [] } = useRestaurantData(RestaurantService.restaurantAdditionals, QueryCacheName.ADDITIONALS);
+  const { data: sizes = [] } = useRestaurantData(RestaurantService.restaurantSizes, QueryCacheName.SIZES);
+
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const {additionals, categories, products, setProducts, sizes} = useRestaurant()
-  const CATEGORIAS  = categories ?? []
-  const PRODUCTS = products ?? []
-  const ADDITIONALS = additionals ?? []
-  const SIZES = sizes ?? []
   
   function openProductDetail(product: Product) {
     setSelectedProduct(product);
@@ -21,35 +22,23 @@ export default function UseMenuController(){
   }
   
   function produtosPorCategoria(catId: string) {
-    return PRODUCTS.filter((p) => p.productCategory.id === catId);
+    return products.filter((p) => p.productCategory.id === catId);
   }
   function additionalsByCategory(catId: string) {
-    return ADDITIONALS.filter((a) => a.category.id === catId);
-  }
-
-  async function updateActiveProduct(productId: string){
-    const response = await ProductService.updateActiveProduct(productId)
-    setProducts((prev) =>
-    prev.map((p) =>
-      p.id === productId
-        ? { ...p, productActive: response.productActive }
-        : p
-    ))
-    return response
+    return additionals.filter((a) => a.category?.id === catId);
   }
 
 
   
   return {
-    CATEGORIAS,
-    PRODUCTS,
-    ADDITIONALS,
+    categories,
+    products,
+    additionals,
     selectedProduct,
-    SIZES,
+    sizes,
     produtosPorCategoria,
     additionalsByCategory,
     closeProductDetail,
     openProductDetail,
-    updateActiveProduct
   }
 }

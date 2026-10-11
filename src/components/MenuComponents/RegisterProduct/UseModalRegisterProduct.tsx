@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { useRestaurant } from "../../../context/RestaurantContext";
 import type {ProducSizeDTO, ProductDTO } from "../../../types/Product.type";
 import { ProductService } from "../../../api/services/product.service";
+import { useRestaurantData } from "../../../hooks/useRestaurantData";
+import { RestaurantService } from "../../../api/services/restaurant.service";
 
 export default function UseModalRegisterProduct(){
+  const { data: categories = [] } = useRestaurantData(RestaurantService.restaurantCategories, 'categories');
+  const { data: sizesData = [] } = useRestaurantData(RestaurantService.restaurantSizes, 'sizes');
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -14,6 +18,7 @@ export default function UseModalRegisterProduct(){
   const [productSizes, setProductSizes] = useState<ProducSizeDTO[]>([])
   const [sizePrices, setSizePrices] = useState<Record<string, number>>({});
   const [commonPrice, setCommonPrice] = useState<number>(0);
+
 
   const handleSetSizePrice = (sizeId: string, price: number) => {
     setSizePrices(prev => ({
@@ -26,10 +31,6 @@ export default function UseModalRegisterProduct(){
     setManySizes(prev => !prev)
   }
 
-  const {sizes, categories, addProduct} = useRestaurant()
-  const SIZES = sizes ?? [];
-  const CATEGORIES = categories ?? [];
-  
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
@@ -52,7 +53,7 @@ export default function UseModalRegisterProduct(){
     try {
     let sizes: ProducSizeDTO[] = [];
       if (manySizes) {
-      sizes = SIZES
+      sizes = sizesData
         .filter(size => sizePrices[size.id] !== undefined)
         .map(size => ({
           size: size.id,
@@ -75,7 +76,7 @@ export default function UseModalRegisterProduct(){
 
     const productCreated = await ProductService.createProduct(product, imageFile ?? undefined)
     console.log(productCreated)
-    addProduct(productCreated);
+    // addProduct(productCreated);
     resetForm();
     } catch (e) {
       console.log(e);
@@ -98,8 +99,8 @@ export default function UseModalRegisterProduct(){
     imagePreview,
     imageFile,
     manySizes,
-    SIZES,
-    CATEGORIES,
+    sizesData,
+    categories,
     handleSetManySizes,
     setManySizes,
     handleImageClick,

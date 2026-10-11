@@ -12,7 +12,27 @@ interface props {
 
 export default function RegisterProductModal({open, onClose }: props) {
 
-  const c = UseModalRegisterProduct()
+  const {
+    fileInputRef,
+    imagePreview,
+    manySizes,
+    sizesData,
+    categories,
+    handleSetManySizes,
+    handleImageClick,
+    handleImageChange,
+    productName,
+    setProductName,
+    productCategory,
+    setProductCategory,
+    setProductDescription,
+    productDescription,
+    createProduct,
+    handleSetSizePrice,
+    commonPrice,
+    setCommonPrice,
+    sizePrices
+  } = UseModalRegisterProduct()
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -43,14 +63,14 @@ export default function RegisterProductModal({open, onClose }: props) {
               <input
                 type="file"
                 accept="image/*"
-                ref={c.fileInputRef}
-                onChange={c.handleImageChange}
+                ref={fileInputRef}
+                onChange={handleImageChange}
                 style={{ display: "none" }}
               />
               <Box
                 component="img"
-                src={c.imagePreview || imagemGenerica}
-                onClick={c.handleImageClick}
+                src={imagePreview || imagemGenerica}
+                onClick={handleImageClick}
                 sx={{
                   width: 137,
                   height: 137,
@@ -67,7 +87,7 @@ export default function RegisterProductModal({open, onClose }: props) {
               />
               <Typography
                 variant="caption"
-                onClick={c.handleImageClick}
+                onClick={handleImageClick}
                 sx={{ color: "#6b7280", cursor: "pointer" }}
               >
                 Selecione uma imagem
@@ -80,8 +100,8 @@ export default function RegisterProductModal({open, onClose }: props) {
                   Nome
                 </Typography>
                 <TextField
-                  value={c.productName}
-                  onChange={(e) => c.setProductName(e.target.value)}
+                  value={productName}
+                  onChange={(e) => setProductName(e.target.value)}
                   size="small"
                   fullWidth
                   placeholder="Ex: X-Burguer Especial"
@@ -93,8 +113,8 @@ export default function RegisterProductModal({open, onClose }: props) {
                   Descrição
                 </Typography>
                 <TextField
-                  value={c.productDescription}
-                  onChange={(e) => c.setProductDescription(e.target.value)}
+                  value={productDescription}
+                  onChange={(e) => setProductDescription(e.target.value)}
                   size="small"
                   fullWidth
                   placeholder="Ex: Pão brioche, hambúrguer 180g, queijo e molho especial"
@@ -107,18 +127,18 @@ export default function RegisterProductModal({open, onClose }: props) {
                 </Typography>
                 <Select
                   size="small"
-                  value={c.productCategory ?? ""}
+                  value={productCategory ?? ""}
                   displayEmpty
-                  onChange={(event) => c.setProductCategory(event.target.value)}
+                  onChange={(event) => setProductCategory(event.target.value)}
                   renderValue={(selected) => {
                     if (!selected) {
                       return <Typography sx={{ color: "#9ca3af" }}>Selecione uma categoria</Typography>;
                     }
-                    const found = c.CATEGORIES.find((cat) => cat.id === selected);
+                    const found = categories.find((cat) => cat.id === selected);
                     return found?.categoryName;
                   }}
                   >
-                  {c.CATEGORIES.map((cat) => (
+                  {categories.map((cat) => (
                     <MenuItem key={cat.id} value={cat.id}>
                       {cat.categoryName}
                     </MenuItem>
@@ -144,7 +164,7 @@ export default function RegisterProductModal({open, onClose }: props) {
                 <Typography variant="subtitle2" gutterBottom>
                   Esse produto vai aceitar mais de um tamanho?
                 </Typography>
-                <Switch checked={c.manySizes} onChange={c.handleSetManySizes}/>
+                <Switch checked={manySizes} onChange={handleSetManySizes}/>
               </Stack>
 
               <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}>
@@ -158,23 +178,23 @@ export default function RegisterProductModal({open, onClose }: props) {
                 </Box>
               </Stack>
                 
-              {!c.manySizes && (
+              {!manySizes && (
                 <Stack direction="row" spacing={1} sx={{mt: 1, alignItems: 'center'}}>
                   <TextField value="COMUM" size="small" sx={{width: 160}} disabled />
-                  <TextField value={c.commonPrice} onChange={(e) => c.setCommonPrice(Number(e.target.value))} placeholder="R$ 0,00" size="small" sx={{width: 120}}
+                  <TextField value={commonPrice} onChange={(e) => setCommonPrice(Number(e.target.value))} placeholder="R$ 0,00" size="small" sx={{width: 120}}
                   />
                 </Stack>
               )}
 
-              {c.manySizes && (
+              {manySizes && (
                 <Stack spacing={1} sx={{mt: 1}}>
-                  {c.SIZES.filter((s) => s.name !== "COMUM").map((s, index) => (
+                  {sizesData.filter((s) => s.name !== "COMUM").map((s, index) => (
                     <Stack key={index} direction="row" spacing={1} sx={{alignItems: 'center'}}>
                       <TextField value={s.name} size="small" sx={{width: 160}} disabled />
                       <TextField placeholder="R$ 0,00" size="small" sx={{width: 120}}
-                        value={c.sizePrices[s.id] ?? ""}
+                        value={sizePrices[s.id] ?? ""}
                         onChange={(e) => 
-                          c.handleSetSizePrice(
+                          handleSetSizePrice(
                             s.id,
                             Number(e.target.value)
                           )
@@ -195,7 +215,7 @@ export default function RegisterProductModal({open, onClose }: props) {
             Cancelar
           </Button>
           <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium"
-            onClick={c.createProduct}
+            onClick={createProduct}
           >
             Salvar Produto
           </Button>

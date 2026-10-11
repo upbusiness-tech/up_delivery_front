@@ -1,40 +1,37 @@
 import { Stack } from "@mui/material";
 
 import UseOrdersController from "./UseOrdersController";
-import OrderDetail from "../../components/OrdersComponents/OrderDetails/OrderDetails";
-import PrintOrder from "../../utils/print/orderPrint";
 import { OrderTable } from "../../components/OrdersComponents/OrderTable/OrderTable";
-import { HeadarOrders } from "../../components/OrdersComponents/HeaderComponents/HeaderOrders";
+import OrderDetail from "../../components/OrdersComponents/OrderDetails/OrderDetails";
+import { HeaderOrders } from "../../components/OrdersComponents/HeaderComponents/HeaderOrders";
 
 export default function Orders() {
 
   const {
-    isDesktop, orders, loading, restaurant,
-    selectedOrder, openOrderDetail, closeOrderDetail,
-    orderToPrint, updateStatusOrder, deliveryFee 
+    isDesktop, 
+    orders, 
+    isLoading,
+    openOrderDetail, 
+    selectedOrder,
+    closeOrderDetail
   } = UseOrdersController()
 
   return (
     <Stack spacing={2}>
-      <HeadarOrders
-        restaurant={restaurant}
-      />
+      <HeaderOrders orders={orders} />
       <OrderTable 
         orders={orders} 
         isDesktop={isDesktop} 
-        loading={loading} 
+        loading={isLoading} 
         openOrderDetail={openOrderDetail} 
-        updateStatusOrder={updateStatusOrder} 
-        deliveryFee={deliveryFee}
       />
 
       <OrderDetail
         order={selectedOrder}
         onClose={closeOrderDetail}
-        updateStatusOrder={updateStatusOrder}
       />
 
-      <PrintOrder order={orderToPrint} />
+      {/* <PrintOrder order={orderToPrint} /> */}
     </Stack>
   );
 }

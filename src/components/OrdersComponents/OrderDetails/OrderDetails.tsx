@@ -1,6 +1,6 @@
-import PrintIcon from "@mui/icons-material/Print";
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import PrintIcon from "@mui/icons-material/Print";
 import {
   Box,
   Button,
@@ -15,19 +15,18 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
-import PrintOrder from "../../../utils/print/orderPrint";
+import { useOrderDetailController } from "./UseOrderDetailController";
+import PrintOrder from "../../../utils/print/PrintOrder";
 
 interface OrderDetailProps {
   order: Order | null;
   onClose: () => void;
-  updateStatusOrder: (status: string, orderId: string) => void;
 }
 
 export default function OrderDetail({ order, onClose }: OrderDetailProps) {
-  const { open, openModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines, imprimir } = useOrderDetailController({ order, onClose });
+  const { openModalOrderCancel, handleCloseModalOrderCancel, imprimir  } = useOrderDetailController();
 
   if (!order) return null;
 
@@ -45,9 +44,7 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         }
       `}</style>
 
-      
-
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>
           <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
             <Box>
@@ -77,11 +74,20 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                           </Typography>
                         )}
 
-                        {getItemFlavorLines(item).map((line, idx) => (
-                          <Typography key={idx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                            {line}
-                          </Typography>
-                        ))}
+                          <Box sx={{ ml: 2 }}>
+                            {item.flavors.map((flavor) =>
+                              item.flavors.length >= 1 && flavor.size.name !== "COMUM" ? (
+                                <Typography
+                                  key={flavor.id}
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  1/{item.flavors.length} {flavor.product.productName}
+                                </Typography>
+                              ) : null
+                            )}
+                          </Box>
+
                         {item.additionals && item.additionals.length > 0 && (
                           <Typography variant="body2" color="success" sx={{ ml: 2 }}>
                             + {item.additionals.map((e) => e.additionalName).join(", ")}
@@ -178,6 +184,8 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
           </Button> */}
 
           <Stack direction="row" spacing={1}>
+          </Stack>
+          <Stack direction="row" spacing={1}>
             <Button onClick={() => imprimir()} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
               Imprimir
             </Button>
@@ -218,9 +226,9 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
             <Button sx={{ textTransform: "none" }} disableElevation variant="contained" color="inherit" size="medium" onClick={() => handleCloseModalOrderCancel()}>
               Voltar
             </Button>
-            <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => cancelOrder()}>
+            {/* <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => cancelOrder()}>
               Cancelar
-            </Button>
+            </Button> */}
           </Stack>
         </DialogActions>
       </Dialog>

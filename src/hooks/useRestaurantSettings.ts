@@ -1,6 +1,7 @@
-import { useEffect, useState, useMemo } from "react";
-
+import { useMemo } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SettingsService } from "../api/services/settings.service";
+import { QueryCacheName } from "./useRestaurantData";
 
 type RestaurantSettingUsage = {
   id: number;
@@ -16,129 +17,103 @@ type RestaurantSettingUsage = {
   };
 };
 
-type ResolvedSettings = Record<
-  string,
-  Record<string, boolean>
->;
+type ResolvedSettings = Record<string, Record<string, boolean>>;
 
 export function useRestaurantSettings(restaurantId: string) {
-  const [settings, setSettings] = useState<RestaurantSettingUsage[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    if (!restaurantId) {
-      setLoading(false);
-      return;
-    }
+  const queryKey = [QueryCacheName.SETTINGS, restaurantId];
 
-    fetchSettings();
-  }, [restaurantId]);
-
-  async function fetchSettings() {
-    if (!restaurantId) {
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-
-    try {
+  const {
+    data: settings = [],
+    isLoading,
+    refetch,
+  } = useQuery<RestaurantSettingUsage[]>({
+    queryKey,
+    queryFn: async () => {
       const res = await SettingsService.getSettings(restaurantId);
+      return res?.data ?? [];
+    },
+    enabled: !!restaurantId,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 
-      if (!res) {
-        setSettings([]);
-        return;
-      }
+  const toggleSetting = async (key: string) => {
+    const currentSettings =
+      queryClient.getQueryData<RestaurantSettingUsage[]>(queryKey) ?? [];
 
-      setSettings(res.data);
-    } catch (error) {
-      console.error("Erro ao carregar configurações:", error);
-      setSettings([]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function toggleSetting(key: string) {
-    const usage = settings.find(
-      (s) => s.setting.key === key,
+    const usage = currentSettings.find(
+      (s) => s.setting.key === key
     );
 
     if (!usage) return;
 
-    console.log(usage.id);
+    try {
+      await SettingsService.toggleActive(String(usage.id));
 
-    await SettingsService.toggleActive(String(usage.id));
+      queryClient.setQueryData<RestaurantSettingUsage[]>(
+        queryKey,
+        (oldSettings) =>
+          oldSettings?.map((s) =>
+            s.id === usage.id
+              ? { ...s, isActive: !s.isActive }
+              : s
+          )
+      );
+    } catch (error) {
+      console.error("Erro ao alterar configuração:", error);
+      throw error;
+    }
+  };
 
-    await fetchSettings();
-  }
+  const resolved = useMemo<ResolvedSettings>(
+    () =>
+      settings.reduce((acc, usage) => {
+        const { module, key, default: defaultValue } = usage.setting;
 
-  async function togglePaymentMode(
+        acc[module] = {
+          ...acc[module],
+          [key]: usage.isActive ?? defaultValue,
+        };
+
+        return acc;
+      }, {} as ResolvedSettings),
+    [settings]
+  );
+
+  const togglePaymentMode = async (
     key: string,
-    otherKey: string,
-  ) {
+    otherKey: string
+  ) => {
     const current = resolved.Payment?.[key] ?? false;
     const other = resolved.Payment?.[otherKey] ?? false;
 
-    if (!current && other) {
+    if (current) {
+      await toggleSetting(key);
+      return;
+    }
+
+    if (other) {
       await toggleSetting(otherKey);
     }
 
     await toggleSetting(key);
-  }
-
-  const resolved = useMemo<ResolvedSettings>(
-    () =>
-      settings.reduce(
-        (acc, usage) => {
-          const {
-            module,
-            key,
-            default: defaultValue,
-          } = usage.setting;
-
-          acc[module] = {
-            ...acc[module],
-            [key]: usage.isActive ?? defaultValue,
-          };
-
-          return acc;
-        },
-        {} as ResolvedSettings,
-      ),
-    [settings],
-  );
-
-  const allowDelivery =
-    resolved.Restaurant?.allow_delivery ?? false;
-
-  const allowPickup =
-    resolved.Restaurant?.allow_pickup ?? false;
-
-  const separetePayments =
-    resolved.Payment?.separete_payments ?? false;
-
-  const paymentsPlatform =
-    resolved.Payment?.payments_via_the_platform ?? false;
-
-  const allowPixPayment =
-    resolved.Payment?.allow_pix_payment ?? false;
-
-  const allowCardPayment =
-    resolved.Payment?.allow_card_payment ?? false;
+  };
 
   return {
     settings,
     resolved,
-    allowDelivery,
-    allowPickup,
-    separetePayments,
-    paymentsPlatform,
-    allowCardPayment,
-    allowPixPayment,
-    loading,
+    allowDelivery: resolved.Restaurant?.allow_delivery ?? false,
+    allowPickup: resolved.Restaurant?.allow_pickup ?? false,
+    separetePayments: resolved.Payment?.separete_payments ?? false,
+    paymentsPlatform: resolved.Payment?.payments_via_the_platform ?? false,
+    allowPixPayment: resolved.Payment?.allow_pix_payment ?? false,
+    allowCardPayment: resolved.Payment?.allow_card_payment ?? false,
+    loading: isLoading,
     toggleSetting,
-    refetch: fetchSettings,
+    refetch: () => refetch(),
     togglePaymentMode,
   };
 }

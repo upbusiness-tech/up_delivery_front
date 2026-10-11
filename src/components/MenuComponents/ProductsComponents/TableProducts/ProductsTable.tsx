@@ -1,20 +1,26 @@
 import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
 import { moneyMask } from "../../../../utils/masks/mask";
-import ProductDetail from "../ProductDetailModal/ProductDetail";
-import UseMenuController from "./UseProductsTablesController";
+// import ProductDetail from "../ProductDetailModal/ProductDetail";
+import UseProductsTablesController from "./UseProductsTablesController";
 // import StopCircleIcon from '@mui/icons-material/StopCircle';
-import SizeComponent from "../SizeComponent/SizeComponent";
+// import SizeComponent from "../SizeComponent/SizeComponent";
 
 
 export default function ProductsTable(){
-  const c = UseMenuController()
+  const {
+    categories,
+    // sizes,
+    additionalsByCategory,
+    openProductDetail,
+    produtosPorCategoria,
+  } = UseProductsTablesController()
 
   return (
     <Box >
-      <SizeComponent sizes={c.SIZES}/>
-      {c.CATEGORIAS.map((cat) => {
-        const produtos = c.produtosPorCategoria(cat.id)
-        const adicionais = c.additionalsByCategory(cat.id)
+      {/* <SizeComponent sizes={sizes}/> */}
+      {categories.map((cat) => {
+        const produtos = produtosPorCategoria(cat.id)
+        const adicionais = additionalsByCategory(cat.id)
         return (
           <Paper elevation={1} sx={{p: 2, mb: 4}}>
             <Stack direction="row" spacing={1.5} sx={{ mb: 1.5, alignItems: "center", justifyContent: "space-between" }}>
@@ -42,7 +48,7 @@ export default function ProductsTable(){
                     <TableRow 
                       key={p.id} 
                       sx={{ '&:last-child td': { borderBottom: 0 }, cursor: 'pointer' }}
-                      onClick={() => c.openProductDetail(p)}
+                      onClick={() => openProductDetail(p)}
                       >
                       <TableCell sx={{ py: 2 }}>
                         <Stack direction='row' spacing={2} sx={{alignItems:'center'}}>
@@ -99,7 +105,7 @@ export default function ProductsTable(){
                             checked={p.productActive}
                             onClick={(e) => {
                               e.stopPropagation();
-                              c.updateActiveProduct(p.id);
+                              // updateActiveProduct(p.id);
                             }}
                           />
                         </Stack>
@@ -148,10 +154,10 @@ export default function ProductsTable(){
           </Paper>
         )
       })}
-      <ProductDetail
-        product={c.selectedProduct}
-        onClose={c.closeProductDetail}
-      />
+      {/* <ProductDetail
+        product={selectedProduct}
+        onClose={closeProductDetail}
+      /> */}
     </Box>
   );
 }

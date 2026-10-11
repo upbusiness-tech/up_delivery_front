@@ -6,20 +6,19 @@ import PrintIcon from "@mui/icons-material/PrintOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import STATUS_COLOR from "../../../utils/colors/colors";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import { useOrderTableController } from "./UseOrderTableController";
+// import { useOrderTableController } from "./UseOrderTableController";
 import InventoryIcon from '@mui/icons-material/Inventory';
+import { useOrderTableController } from "./UseOrderTableController";
 
 interface Props {
   orders: Order[] | undefined;
   loading: boolean;
   isDesktop: boolean;
   openOrderDetail: (order: Order) => void;
-  deliveryFee: (order: Order) => number;
-  updateStatusOrder: (status: string, orderId: string) => Promise<void>;
 }
 
-export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deliveryFee, openOrderDetail }: Props) {
-  const { isReceived, handleReceived, handleStatusChange } = useOrderTableController({ updateStatusOrder });
+export function OrderTable({ orders, loading, isDesktop, openOrderDetail }: Props) {
+  const { isReceived, handleReceived, handleStatusChange } = useOrderTableController();
 
   if (loading) {
     return (
@@ -67,11 +66,8 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
             </TableHead>
             <TableBody>
               {orders.map((order) => {
-                console.log("PEDIDO:", order);
-                console.log("PRINTED:", order.printed);
-
                 const isCancelled = order.status === STATUS.CANCELADO;
-                const total = Number(order.orderTotal) + deliveryFee(order);
+                const total = Number(order.orderTotal);
                 const change = Number(order.changeFor) - total;
                 const received = isReceived(order);
 
@@ -189,8 +185,8 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
     <Stack spacing={1.5}>
       {orders.map((order) => {
         const isCancelled = order.status === STATUS.CANCELADO;
-        const total = Number(order.orderTotal) + deliveryFee(order);
-        const received = isReceived(order);
+        const total = Number(order.orderTotal);
+        // const received = isReceived(order);
 
         return (
           <Paper
@@ -237,18 +233,18 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
               <Stack direction="row" spacing={1}>
                 <Button
                   endIcon={<WhatsAppIcon sx={{ fontSize: "17px !important" }} />}
-                  variant={received ? "outlined" : "contained"}
+                  // variant={received ? "outlined" : "contained"}
                   size="small"
-                  onClick={(e) => handleReceived(e, order)}
-                  sx={{ minWidth: 95, height: 34, textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: received ? "transparent" : "#25D366", color: received ? "#64748B" : "#fff", borderColor: received ? "#CBD5E1" : "#25D366", "&:hover": { backgroundColor: received ? "#F8FAFC" : "#20BD5A", borderColor: received ? "#94A3B8" : "#20BD5A" } }}
+                  // onClick={(e) => handleReceived(e, order)}
+                  // sx={{ minWidth: 95, height: 34, textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: received ? "transparent" : "#25D366", color: received ? "#64748B" : "#fff", borderColor: received ? "#CBD5E1" : "#25D366", "&:hover": { backgroundColor: received ? "#F8FAFC" : "#20BD5A", borderColor: received ? "#94A3B8" : "#20BD5A" } }}
                 >
-                  {received ? "Recebido" : "Receber"}
+                  {/* {received ? "Recebido" : "Receber"} */}
                 </Button>
 
                 <Select
                   value={order.status}
                   size="small"
-                  onChange={(e) => handleStatusChange(e, order)}
+                  // onChange={(e) => handleStatusChange(e, order)}
                   onClick={(e) => e.stopPropagation()}
                   sx={{ flex: 1, height: 36, color: "#fff", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2, backgroundColor: STATUS_COLOR(order.status), "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSelect-icon": { color: "#fff" } }}
                 >

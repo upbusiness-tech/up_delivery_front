@@ -34,10 +34,6 @@ const NAV = [
   { label: "Pedidos", route: ROUTES_ENUM.ORDERS , icon: ReceiptLongIcon },
   { label: "Empresa", route: ROUTES_ENUM.ENTERPRISE, icon: RestaurantMenuIcon },
   { label: "Cardápio", route: ROUTES_ENUM.CARDAPIO, icon: MenuBookIcon },
-  // { label: "Empresa", route: , icon: StoreIcon },
-  // { label: "Finanças", route: , icon: PaidIcon },
-  // { label: "Faturas", route: , icon: DescriptionIcon },
-  // { label: "Conta", route: , icon: PersonIcon },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {

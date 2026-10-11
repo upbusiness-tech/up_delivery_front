@@ -9,18 +9,11 @@ initMercadoPago(import.meta.env.VITE_MP_PUBLIC_KEY, {
   locale: 'pt-BR',
 });
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: true,
-      retry: 1,
-    },
-  },
-});
+const client = new QueryClient();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={client}>
       <App />
     </QueryClientProvider>
   </StrictMode>,

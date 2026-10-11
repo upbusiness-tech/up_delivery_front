@@ -39,14 +39,14 @@ export function EnterprisePage() {
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
-  const { restaurant, loading, businessHours, connectRestaurant } = UseEnterpriseController();
+  const { restaurantInfos, isLoading, connectRestaurant } = UseEnterpriseController();
   const { 
     allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
     allowCardPayment, allowPixPayment
-   } = useRestaurantSettings(restaurant?.id ?? "");
+   } = useRestaurantSettings(restaurantInfos?.id ?? "");
 
-  if (loading) { return <Typography>Carregando...</Typography>; }
-  if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
+  if (isLoading) { return <Typography>Carregando...</Typography>; }
+  if (!restaurantInfos) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
 
   return (
     <Stack spacing={0}>
@@ -79,7 +79,7 @@ export function EnterprisePage() {
                   <StorefrontIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">Nome</Typography>
-                    <Typography variant="body1" sx={{fontWeight: 600}}>{restaurant.restaurantName}</Typography>
+                    <Typography variant="body1" sx={{fontWeight: 600}}>{restaurantInfos.restaurantName}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -89,7 +89,7 @@ export function EnterprisePage() {
                   <PhoneIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">Telefone</Typography>
-                    <Typography variant="body1">{phoneMask(restaurant.restaurantPhone)}</Typography>
+                    <Typography variant="body1">{phoneMask(restaurantInfos.restaurantPhone)}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -99,7 +99,7 @@ export function EnterprisePage() {
                   <EmailIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="caption" color="text.secondary">E-mail de contato</Typography>
-                    <Typography variant="body1" noWrap>{restaurant.restaurantEmail}</Typography>
+                    <Typography variant="body1" noWrap>{restaurantInfos.restaurantEmail}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -127,8 +127,8 @@ export function EnterprisePage() {
                       <TableCell sx={{ fontWeight: 600 }}>{DAYS_LABEL[day]}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-                          {(businessHours[day] || []).length > 0 ? (
-                            businessHours[day].map((interval, idx) => (
+                          {(restaurantInfos.businessHours[day] || []).length > 0 ? (
+                            restaurantInfos.businessHours[day].map((interval, idx) => (
                               <Chip
                                 key={idx}
                                 label={`${interval.openTime ?? "--"} — ${interval.closeTime ?? "--"}`}
@@ -151,8 +151,8 @@ export function EnterprisePage() {
                   <Paper key={day} sx={{ p: 2 }} variant="outlined">
                     <Typography sx={{ fontWeight: 700, mb: 1 }}>{DAYS_LABEL[day]}</Typography>
                     <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-                      {(businessHours[day] || []).length > 0 ? (
-                        businessHours[day].map((interval, idx) => (
+                      {(restaurantInfos.businessHours[day] || []).length > 0 ? (
+                        restaurantInfos.businessHours[day].map((interval, idx) => (
                           <Chip
                             key={idx}
                             label={`${interval.openTime ?? "--"} — ${interval.closeTime ?? "--"}`}

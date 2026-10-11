@@ -9,10 +9,10 @@ interface props {
   open: boolean;
   onClose: () => void;
   orders: Order[];
-  onReceive: (order: Order) => void;
+  // onReceive: (order: Order) => void;
 }
 
-export default function PendingOrdersModal({ onClose, open, orders, onReceive }: props) {
+export default function PendingOrdersModal({ onClose, open, orders }: props) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xl" fullWidth sx={{ sx: { borderRadius: 3, maxHeight: "90vh" } }}>
       <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E7EB", py: 2 }}>
@@ -89,7 +89,7 @@ export default function PendingOrdersModal({ onClose, open, orders, onReceive }:
                     </TableCell>
 
                     <TableCell align="right">
-                      <Button size="small" variant="contained" onClick={() => onReceive(order)} sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: "#25D366", "&:hover": { backgroundColor: "#20BD5A" } }}>
+                      <Button size="small" variant="contained" sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: "#25D366", "&:hover": { backgroundColor: "#20BD5A" } }}>
                         Receber
                       </Button>
                     </TableCell>

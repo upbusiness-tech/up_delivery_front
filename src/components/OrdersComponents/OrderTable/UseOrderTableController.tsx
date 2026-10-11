@@ -2,15 +2,33 @@ import type { SelectChangeEvent } from "@mui/material";
 import type { Order } from "../../../types/Order.type";
 import { STATUS } from "../../../utils/texts/status.enum";
 import { OrderService } from "../../../api/services/order.service";
-import { useRestaurant } from "../../../context/RestaurantContext";
 import { buildOrderMessage, sendWhatsAppMessage } from "../../../utils/whatsapp/orderMessage";
+import { QueryCacheName } from "../../../hooks/useRestaurantData";
+import type { Restaurant } from "../../../types/Restaurant.type";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface UseOrderTableControllerProps {
-  updateStatusOrder: (status: string, orderId: string) => Promise<void>;
-}
+export function useOrderTableController() {
+  
+  const queryClient = useQueryClient();
 
-export function useOrderTableController({ updateStatusOrder }: UseOrderTableControllerProps) {
-  const { setOrders, restaurant } = useRestaurant();
+  const updateOrderCache = (
+    orderId: string,
+    changes: Partial<Order>
+  ) => {
+    queryClient.setQueryData<Order[]>(
+      [QueryCacheName.ORDERS],
+      (oldOrders) =>
+        oldOrders?.map((order) =>
+          order.id === orderId
+            ? { ...order, ...changes }
+            : order
+        )
+    );
+  };
+
+  const updateStatusOrder = async (status: string, orderId: string) => {
+    await OrderService.updateStatusOrder(status, orderId)
+  }   
 
   const isReceived = (order: Order) => order.printed;
 
@@ -19,7 +37,7 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     if (isReceived(order)) return;
     try {
       await OrderService.updatePrinted(order.id);
-      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, printed: true } : o)));
+      updateOrderCache(order.id, { printed: true });
       sendWhatsAppMessage(order, buildOrderMessage(order));
     } catch {
       return;
@@ -30,14 +48,19 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     e.stopPropagation();
     const newStatus = e.target.value;
     if (newStatus === order.status) return;
-
-    await updateStatusOrder(newStatus, order.id);
+    try {
+      await updateStatusOrder(newStatus, order.id)
+      updateOrderCache(order.id, { status: newStatus });
+    } catch {
+      return;
+    }
 
     if (newStatus === STATUS.EM_ROTA) {
       sendWhatsAppMessage(order, `Seu pedido saiu para entrega e está a caminho.\nEm breve ele chegará até você. Obrigado pela preferência!`);
     }
 
     if (newStatus === STATUS.PRONTO_RETIRADA) {
+      const restaurant = queryClient.getQueryData<Restaurant>([QueryCacheName.RESTAURANT]);
       sendWhatsAppMessage(order, `📦Seu pedido está pronto para retirada.\nJá pode passar para buscar. Estamos te esperando!😁\n📍${restaurant?.restaurantAddress}`);
     }
   };

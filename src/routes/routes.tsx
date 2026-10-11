@@ -3,12 +3,12 @@ import { ROUTES_ENUM } from './routes.enum'
 import Orders from '../pages/Orders/Orders'
 import Login from '../pages/Login/Login'
 import Layout from '../layout/Layout'
-import { EnterprisePage } from '../pages/Enterprise/EnterprisePage'
 import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
 import PublicMenu from '../pages/PublicMenu/PublicMenu'
 import { ProtectedRoute } from './ProtectedRoute'
 import Menu from '../pages/Menu/Menu'
 import { AddressStep, CartStep, CustomerStep, FlavorCountStep, MenuStep, PaymentMethodStep, PaymentStep, RedirectToMenu, SizeProductsStep } from '../pages/PublicMenu/PublicMenuSteps'
+import { EnterprisePage } from '../pages/Enterprise/EnterprisePage'
 
 export default function ReactRouter() {
   return (
