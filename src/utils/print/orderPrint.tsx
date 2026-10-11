@@ -42,7 +42,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
       <div style={{ border: "2px solid #000", padding: "6px 5px", textAlign: "center", marginBottom: 9 }}>
         <div style={{ fontSize: "11px", fontWeight: "bold" }}>NOVO PEDIDO!</div>
-        <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: 3 }}>{order.type === "DELIVERY" ? "ENTREGA" : "RETIRADA"}</div>
+        <div style={{ fontSize: "13px", fontWeight: "bold", marginTop: 3 }}>{order.type === "delivery" ? "ENTREGA" : "RETIRADA"}</div>
       </div>
 
       <div style={{ marginBottom: 8 }}>
