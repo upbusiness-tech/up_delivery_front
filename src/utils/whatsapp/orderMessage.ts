@@ -3,7 +3,7 @@ import { moneyMask, paymentMethodMask } from "../masks/mask";
 
 const formatCurrency = (v: number) => `R$${v.toFixed(2).replace(".", ",")}`;
 
-export const buildOrderMessage = (order: Order, avgTime = 20) => {
+export const buildOrderMessage = (order: Order, avgTime = 40) => {
   const items = order.items.map((i) => `${i.quantity}x ${i.name}`).join("\n");
   const troco = order.paymentMethod === "Dinheiro" ? `\nTroco: ${formatCurrency(order.changeFor)}` : "";
   const deliveryInfo = order.type === "pickup" ? "📦Retirada no local" : "🛵Entrega";
