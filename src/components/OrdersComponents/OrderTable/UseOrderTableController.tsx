@@ -37,8 +37,16 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
       sendWhatsAppMessage(order, `Seu pedido saiu para entrega e está a caminho.\nEm breve ele chegará até você. Obrigado pela preferência!`);
     }
 
+    if (newStatus === STATUS.EM_PREPARO) {
+      sendWhatsAppMessage(order, `Oba😋 Seu pedido já está sendo preparado!\n Assim que estiver prontinho, avisaremos você por aqui.❤️`);
+    }
+
     if (newStatus === STATUS.PRONTO_RETIRADA) {
       sendWhatsAppMessage(order, `📦Seu pedido está pronto para retirada.\nJá pode passar para buscar. Estamos te esperando!😁\n📍${restaurant?.restaurantAddress}`);
+    }
+
+    if (newStatus === STATUS.FINALIZADO) {
+      sendWhatsAppMessage(order, `Seu pedido foi finalizado com sucesso! 🎉 Agradecemos pela preferência e esperamos que você tenha uma ótima experiência. Será um prazer receber seu próximo pedido! ❤️`); 
     }
   };
 
