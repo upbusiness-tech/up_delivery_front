@@ -8,14 +8,7 @@ export interface Address {
   complement: string;
 }
 
-export interface OrderItem {
-  name: string;
-  observation?: string;
-  quantity: number;
-  price: number;
-  additionals: Additionals[];
-  flavors: OrderFlavor[];
-}
+
 
 export interface Order {
   id: string;
@@ -64,9 +57,10 @@ export interface CreateOrder {
   costumerPhone: string;
   address?: Address;
   neighborhoodId?: string;
+
 }
 
-//Tranforma um OrderItemBag em um OrderItem para a requisição sem o id
+//Transformação para enviar à API
 export interface CreateOrderItem {
   name: string;
   observation?: string;
@@ -75,7 +69,7 @@ export interface CreateOrderItem {
   additionals?: string[];
 }
 
-//Usar o CreateOrderItem para tranformar isso em um OrderItem
+// Produto completo no carrinho
 export interface OrderItemBag {
   id: string;
   name: string;
@@ -87,5 +81,16 @@ export interface OrderItemBag {
   observation: string,
   additionals?: Additionals[]
 }
+
+// Estrutura do produto no pedido
+export interface OrderItem {
+  name: string;
+  observation?: string;
+  quantity: number;
+  price: number;
+  additionals: Additionals[];
+  flavors: OrderFlavor[];
+}
+
 
 export type OrderMode =  "delivery" | "pickup";

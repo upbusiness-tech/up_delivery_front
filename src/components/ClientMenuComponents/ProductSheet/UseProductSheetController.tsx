@@ -1,15 +1,22 @@
 import { useTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
-import type { Additionals, Product, ProductCategory } from "../../../types/Product.type";
+import type { Additionals, Product } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
+import { RestaurantService } from "../../../api/services/restaurant.service";
+import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
+import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
 
-export default function UseProductSheetController(item: Product | undefined, category: ProductCategory, additionals: Additionals[]){
+export default function UseProductSheetController(item: Product | undefined){
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [qty, setQty] = useState(item?.minQuantity ?? 1);
   const [observation, setObservation] = useState("");
   const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>([]);
+
+  const { slug } = usePublicRestaurant()
+  const { data: additionals = []} = useRestaurantData(() => RestaurantService.restaurantAdditionalsPublic(slug!), QueryCacheName.ADDITIONALS_PUBLIC)
+  
   const ADDITIONALS = additionals ?? []
 
   useEffect(() => {
@@ -19,7 +26,7 @@ export default function UseProductSheetController(item: Product | undefined, cat
   }, [item?.id]);
 
   function additionalsByCategory() {
-    return ADDITIONALS.filter((a) => a.category.id === category.id);
+    return ADDITIONALS.filter((a) => a.category.id === item?.productCategory.id);
   }
 
   const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);
@@ -47,6 +54,7 @@ export default function UseProductSheetController(item: Product | undefined, cat
     // console.log("Produto simples adicionado: ", orderItem)
     return orderItem
   }
+
 
   return {
     isDesktop,

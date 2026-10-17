@@ -102,61 +102,60 @@ export const RestaurantService = {
   },
   
   
-  //--------------------------------------------------------ROTAS SLUGS
-
   
-  async getPublicRestaurant(slug: string) {
+  //-------------------------------------------------------- ROTAS SLUGS
+
+  async restaurantIsopenSlug(slug: string) {
     try {
-      const { data } = await api.get(`/restaurant/public/${slug}`);
+      const { data } = await api.get<boolean>(`/restaurant/${slug}/restaurant-isopen`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
     }
   },
 
-  async restaurantProductsPublic(restaurantId: string) {
+  async getPublicRestaurantInfos(slug: string) {
     try {
-      const { data } = await api.get<Product[]>(`/product/public/${restaurantId}`);
+      const { data } = await api.get<Restaurant>(`/restaurant/public/${slug}`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
     }
   },
 
-  async restaurantCategoriesPublic(restaurantId: string) {
+  async restaurantProductsPublic(slug: string) {
     try {
-      const { data } = await api.get<ProductCategory[]>(`/product_category/public/${restaurantId}`);
+      const { data } = await api.get<Product[]>(`/product/public/${slug}`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
     }
   },
 
-  async restaurantAdditionalsPublic(restaurantId: string) {
+  async restaurantCategoriesPublic(slug: string) {
     try {
-      const { data } = await api.get<Additionals[]>(`/additional/public/${restaurantId}`);
+      const { data } = await api.get<ProductCategory[]>(`/product_category/public/${slug}`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
     }
   },
 
-  async restaurantNeighborhoodsPublic(restaurantId: string) {
+  async restaurantAdditionalsPublic(slug: string) {
     try {
-      const { data } = await api.get<Neighborhood[]>(`/neighborhood/public/${restaurantId}`);
+      const { data } = await api.get<Additionals[]>(`/additional/public/${slug}`);
       return data;
     } catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
+    }
+  },
+
+  async restaurantNeighborhoodsPublic(slug: string) {
+    try {
+      const { data } = await api.get<Neighborhood[]>(`/neighborhood/public/${slug}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
     }
   }
 }

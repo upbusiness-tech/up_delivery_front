@@ -2,15 +2,23 @@ import { useQuery } from "@tanstack/react-query";
 
 
 export enum QueryCacheName {
-  RESTAURANT = "restaurant-infos",
-  RESTAURANT_ISOPEN = "restaurant-open",
-  SETTINGS = "restaurant-settings",
+  RESTAURANT = "restaurant_infos",
+  RESTAURANT_ISOPEN = "restaurant_open",
+  SETTINGS = "restaurant_settings",
   ORDERS = "orders",
   PRODUCTS = "products",
   CATEGORIES = "categories",
   ADDITIONALS = "additionals",
-  SIZES = "sizes"
-
+  SIZES = "sizes",
+  
+  RESTAURANT_PUBLIC_ISOPEN = "restaurant_public_open",
+  RESTAURANT_PUBLIC_INFOS = "restaurant_public_infos",
+  PRODUCTS_PUBLIC = "products_public",
+  CATEGORIES_PUBLIC = "categories_public",
+  ADDITIONALS_PUBLIC = "additionals_public",
+  SIZES_PUBLIC = "sizes_public",
+  NEIGHBORHOODS_PUBLIC = "neighborhoods_public"
+  
 }
 
 export function useRestaurantData<T>(fecthFunction: () => Promise<T>, queryKey: QueryCacheName) {

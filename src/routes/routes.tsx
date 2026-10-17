@@ -3,29 +3,26 @@ import { ROUTES_ENUM } from './routes.enum'
 import Orders from '../pages/Orders/Orders'
 import Login from '../pages/Login/Login'
 import Layout from '../layout/Layout'
-import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
-import PublicMenu from '../pages/PublicMenu/PublicMenu'
 import { ProtectedRoute } from './ProtectedRoute'
 import Menu from '../pages/Menu/Menu'
-import { AddressStep, CartStep, CustomerStep, FlavorCountStep, MenuStep, PaymentMethodStep, PaymentStep, RedirectToMenu, SizeProductsStep } from '../pages/PublicMenu/PublicMenuSteps'
 import { EnterprisePage } from '../pages/Enterprise/EnterprisePage'
+import MenuScreen from '../components/ClientMenuComponents/MenuScreen/MenuScreen'
+import { PublicRestaurantProvider } from '../context/PublicRestaurantContext'
+import { CartScreen } from '../components/ClientMenuComponents/CartScreen/CartScreen'
+// import AddressScreen from '../components/ClientMenuComponents/AddressScreen/AddressScren'
 
 export default function ReactRouter() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES_ENUM.LOGIN} element={<Login />} />
-          <Route path={ROUTES_ENUM.PUBLIC_MENU} element={<PublicRestaurantProvider><PublicMenu /></PublicRestaurantProvider>}>
-            <Route index element={<MenuStep />} />
-            <Route path="flavorCount" element={<FlavorCountStep />} />
-            <Route path="sizeProducts" element={<SizeProductsStep />} />
-            <Route path="cart" element={<CartStep />} />
-            <Route path="customer" element={<CustomerStep />} />
-            <Route path="address" element={<AddressStep />} />
-            <Route path="payment" element={<PaymentStep />} />
-            <Route path="paymentMethod" element={<PaymentMethodStep />} />
-            <Route path="*" element={<RedirectToMenu />} />
-          </Route>
+
+        <Route element={<PublicRestaurantProvider />}>
+          <Route path={ROUTES_ENUM.PUBLIC_MENU} element={<MenuScreen />} />
+          <Route path={ROUTES_ENUM.PUBLIC_CART} element={<CartScreen />} />
+          {/* <Route path={ROUTES_ENUM.PUBLIC_ADDRESS} element={<AddressScreen />} /> */}
+        </Route>
+
         <Route element={<ProtectedRoute />}>
           <Route element={<Layout />}>
             <Route path={ROUTES_ENUM.HOME} element={<Orders />} />
@@ -34,7 +31,9 @@ export default function ReactRouter() {
             <Route path={ROUTES_ENUM.CARDAPIO} element={<Menu />} />
           </Route>
         </Route>
+        
       </Routes>
+
     </BrowserRouter>
   )
 }

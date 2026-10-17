@@ -1,50 +1,54 @@
 import { Box, Container, Typography, Tabs, Tab } from "@mui/material";
 import { UseMenuScreenController } from "./UseMenuScreenController";
 import RestaurantInfo from "../RestaurantInfo/RestaurantInfo";
-import SizeCard from "../SizeCard/SizeCard";
 import ProductCard from "../ProductCard/ProductCard";
-import type { Product, ProductCategory, Size } from "../../../types/Product.type";
-import type { Restaurant } from "../../../types/Restaurant.type";
-import RestauranteClosedModal from "./RestauranteClosedModal";
 import { InputAdornment, IconButton, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import { UseProductSearch } from "../../../hooks/useProductSearch";
+import ProductSheet from "../ProductSheet/ProductSheet";
+import { CartBar } from "../CartBar/CartBar";
+import { useNavigate } from "react-router-dom";
+import { useCart } from "../../../context/CartContext";
 
-interface MenuScreenProps {
-  restaurant: Restaurant | undefined;
-  products: Product[];
-  categories: ProductCategory[];
-  onSelectSize: (size: Size) => void;
-  onSelectProduct: (product: Product) => void;
-  onSelectCategory: (category: ProductCategory) => void;
-  restaurantClosedModal: boolean,
-  handleCloseRestauranteClosed: () => void;
-}
+export default function MenuScreen() {
 
-export default function MenuScreen({ restaurant, products, categories, onSelectSize, onSelectProduct, onSelectCategory, restaurantClosedModal, handleCloseRestauranteClosed }: MenuScreenProps) {
-  const s = UseProductSearch(products);
-  const c = UseMenuScreenController({ restaurant, categories, products: s.filteredProducts });
-  
+  const {
+    activeTab,
+    handleTabClick,
+    produtosComuns,
+    sectionRefs,
+    tamanhosDaCategoria,
+    visibleCategories,
+    PRODUCTS,
+    onSelectProduct,
+    productSelected,
+    handleCloseProductSheet
+  } = UseMenuScreenController();
+
+  const { search, setSearch } = UseProductSearch(PRODUCTS);
+  const { products } = useCart()
+  const navigate = useNavigate();
+
   return (
     <Box sx={{minHeight: "100vh" }}>
       
-      <RestaurantInfo restaurant={c.restaurant} />
+      <RestaurantInfo />
 
       <Box sx={{ position: "sticky", top: 0, zIndex: 10, bgcolor: "background.paper", borderBottom: "1px solid", borderColor: "grey.200", boxShadow: "0 2px 6px rgba(0,0,0,0.04)" }}>
         <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 }, pt: 1 }}>
-          <TextField fullWidth size="small" placeholder="Buscar no cardápio..." value={s.search} onChange={(e) => s.setSearch(e.target.value)} sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 } }}
-            slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>, endAdornment: s.search && <InputAdornment position="end"><IconButton size="small" aria-label="Limpar busca" onClick={() => s.setSearch("")}><CloseIcon fontSize="small" /></IconButton></InputAdornment> } }} />
+          <TextField fullWidth size="small" placeholder="Buscar no cardápio..." value={search} onChange={(e) => setSearch(e.target.value)} sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 } }}
+            slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon fontSize="small" /></InputAdornment>, endAdornment: search && <InputAdornment position="end"><IconButton size="small" aria-label="Limpar busca" onClick={() => setSearch("")}><CloseIcon fontSize="small" /></IconButton></InputAdornment> } }} />
         </Container>
         <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 } }}>
           <Tabs
-            value={c.activeTab}
-            onChange={(_, value) => c.handleTabClick(value)}
+            value={activeTab}
+            onChange={(_, value) => handleTabClick(value)}
             variant="scrollable"
             scrollButtons={false}
             slotProps={{ indicator: { sx: { height: 3, borderRadius: 999, bgcolor: "success.main" } } }}
           >
-            {c.visibleCategories.map((cat) => (
+            {visibleCategories.map((cat) => (
               <Tab key={cat.id} value={cat.id} label={cat.categoryName} sx={{ textTransform: "none", fontWeight: 600, minHeight: 48, "&.Mui-selected": { color: "success.main" } }} />
             ))}
           </Tabs>
@@ -52,14 +56,14 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
       </Box>
 
       <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 }, py: 3 }}>
-        {c.visibleCategories.map((cat, index) => {
-          const produtos = c.produtosComuns(cat.id);
-          const tamanhos = c.tamanhosDaCategoria(cat.id);
+        {visibleCategories.map((cat, index) => {
+          const produtos = produtosComuns(cat.id);
+          const tamanhos = tamanhosDaCategoria(cat.id);
           const totalItens = produtos.length + tamanhos.length;
-          const isLast = index === c.visibleCategories.length - 1;
+          const isLast = index === visibleCategories.length - 1;
 
           return (
-            <Box key={cat.id} id={cat.id} ref={(el: HTMLDivElement | null) => { c.sectionRefs.current[cat.id] = el; }} sx={{ mb: 3, pb: 3, scrollMarginTop: 64, borderBottom: isLast ? "none" : "1px dashed", borderColor: "grey.200" }}>
+            <Box key={cat.id} id={cat.id} ref={(el: HTMLDivElement | null) => { sectionRefs.current[cat.id] = el; }} sx={{ mb: 3, pb: 3, scrollMarginTop: 64, borderBottom: isLast ? "none" : "1px dashed", borderColor: "grey.200" }}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
                 <Box sx={{ width: 4, height: 22, borderRadius: 999, bgcolor: "success.main", flexShrink: 0 }} />
                 <Typography variant="body1" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
@@ -82,23 +86,21 @@ export default function MenuScreen({ restaurant, products, categories, onSelectS
                     product={product} 
                     unavailable={!product.productActive} 
                     onClick={() => { 
-                      if (!product.productActive) 
-                        return; 
-                      onSelectCategory(cat); 
+                      if (!product.productActive) return; 
                       onSelectProduct(product); 
                     }} />
                 ))}
-
                 {/* APROVEITAR ESSE SIZE QUE TA SENDO PASSADO AQUI */}
-                {tamanhos.map((size) => (
+                {/* {tamanhos.map((size) => (
                   <SizeCard key={size.id} size={size} cat={cat.categoryName} onClick={onSelectSize} selectCategory={() => onSelectCategory(cat)} />
-                ))}
+                ))} */}
               </Box>
             </Box>
           );
         })}
       </Container>
-      <RestauranteClosedModal open={restaurantClosedModal} close={handleCloseRestauranteClosed}/>
+      <ProductSheet item={productSelected} onClose={handleCloseProductSheet}/>
+      <CartBar itemCount={products.length}  onClick={() => navigate("/cart")}/>
     </Box>
   );
 }

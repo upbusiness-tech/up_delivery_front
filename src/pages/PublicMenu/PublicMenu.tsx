@@ -1,32 +1,24 @@
-import { Box, CircularProgress, Stack, Typography } from "@mui/material";
-import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
-import { UsePublicMenuController } from "./UsePublicMenuController";
+import { Box } from "@mui/material";
 import { Outlet } from "react-router-dom";
+import { UsePublicMenuController } from "./UsePublicMenuController";
 
 export default function PublicMenu() {
-  const { restaurant, products, categories, additionals, neighborhoods, isLoading, notFound } = usePublicRestaurant();
-  const c = UsePublicMenuController({ restaurant, products, categories, additionals, neighborhoods });
+  const c = UsePublicMenuController();
 
-  if (isLoading) {
-    return (
-      <Stack sx={{ minHeight: "100dvh", alignItems: "center", justifyContent: "center" }}>
-        <CircularProgress />
-      </Stack>
-    );
-  }
+  if (c.isLoading) return <Box>Carregando cardápio...</Box>;
 
-  if (notFound) {
-    return (
-      <Stack sx={{ minHeight: "100dvh", alignItems: "center", justifyContent: "center", px: 3, textAlign: "center" }}>
-        <Typography variant="h6" sx={{ fontWeight: 700 }}>Restaurante não encontrado</Typography>
-        <Typography variant="body2" color="text.secondary">Confira se o link está correto.</Typography>
-      </Stack>
-    );
-  }
+  if (!c.restaurant) return <Box>Restaurante não encontrado.</Box>;
 
   return (
     <Box sx={{ minHeight: "100dvh" }}>
-      <Outlet context={{ c, restaurant, products, categories, additionals, neighborhoods }} />
+      <Outlet context={{
+        c,
+        restaurant: c.restaurant,
+        products: c.products,
+        categories: c.categories,
+        additionals: c.additionals,
+        neighborhoods: c.neighborhoods
+      }} />
     </Box>
   );
 }

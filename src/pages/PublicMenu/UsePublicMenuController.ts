@@ -1,220 +1,264 @@
-import {useEffect, useState } from "react";
-import { type Address, type CreateOrder, type CreateOrderItem, type Order, type OrderItemBag, type OrderMode } from "../../types/Order.type";
-import type { MenuData, Product, ProductCategory, Size } from '../../types/Product.type';
-import { RestaurantService } from "../../api/services/restaurant.service";
-import type { Neighborhood } from "../../types/Restaurant.type";
-import { OrderService } from "../../api/services/order.service";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+// import {useEffect, useState } from "react";
+// import { type Address, type CreateOrder, type CreateOrderItem, type Order, type OrderItemBag, type OrderMode } from "../../types/Order.type";
+// import type { Product, ProductCategory, Size } from '../../types/Product.type';
+// import { RestaurantService } from "../../api/services/restaurant.service";
+// import type { Neighborhood } from "../../types/Restaurant.type";
+// import { OrderService } from "../../api/services/order.service";
+// import { useLocation, useNavigate, useParams } from "react-router-dom";
+// import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
+// import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 
-type CheckoutStep =
-| "menu"
-| "flavorCount"
-| "sizeProducts"
-| "cart"
-| "customer"
-| "address"
-| "payment"
-| "paymentMethod"
+// type CheckoutStep =
+// | "menu"
+// | "flavorCount"
+// | "sizeProducts"
+// | "cart"
+// | "customer"
+// | "address"
+// | "payment"
+// | "paymentMethod"
 
-const STORAGE_KEY = "updelivery:customer";
-const DEFAULT_ADDRESS: Address = { city: "Quixadá-CE", number: 0, streetName: "", complement: "" };
-const loadCustomer = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"); } catch { return {}; } };
+// const STORAGE_KEY = "updelivery:customer";
+// const DEFAULT_ADDRESS: Address = { city: "Quixadá-CE", number: 0, streetName: "", complement: "" };
+// const loadCustomer = () => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"); } catch { return {}; } };
 
-export function UsePublicMenuController({ restaurant, products, neighborhoods }: MenuData) {
+export function UsePublicMenuController() {
 
-  const [saved] = useState(loadCustomer);
+  // const [saved] = useState(loadCustomer);
 
-  const navigate = useNavigate(); const { slug } = useParams(); const { pathname } = useLocation();
-  const step = (pathname.split("/")[2] || "menu") as CheckoutStep;
-  const setStep = (s: CheckoutStep) => navigate(s === "menu" ? `/${slug}` : `/${slug}/${s}`);
-  const sheetOpen = Boolean(useLocation().state?.sheet);
+  // const navigate = useNavigate(); const { slugNavigate } = useParams(); const { pathname } = useLocation();
+  // const step = (pathname.split("/")[2] || "menu") as CheckoutStep;
+  // const setStep = (s: CheckoutStep) => navigate(s === "menu" ? `/${slugNavigate}` : `/${slugNavigate}/${s}`);
+  // const sheetOpen = Boolean(useLocation().state?.sheet);
 
-  const [flavorCount, setFlavorCount] = useState(1);
-  const [selectedSize, setSelectedSize] = useState<Size>();
-  const [productsBySize, setProductsBySize] = useState<Product[]>([]);
-  const [category, setCategory] = useState<ProductCategory>();
-  //Produto selecionado
-  const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
+  // const [restauranteClosed, setRestauranteClosed] = useState(false)
+  // const handleOpenRestauranteClosed = () => setRestauranteClosed(true)
+  // const handleCloseRestauranteClosed = () => setRestauranteClosed(false)
+
+  // const [flavorCount, setFlavorCount] = useState(1);
+  // const [selectedSize, setSelectedSize] = useState<Size>();
+  // const [productsBySize, setProductsBySize] = useState<Product[]>([]);
+  // const [category, setCategory] = useState<ProductCategory>();
+  // //Produto selecionado
+  // const [selectedProduct, setSelectedProduct] = useState<Product | undefined>();
+
+  //States para criação do pedido
   //Produtos adicionados no pedido, o produto tem que ser adicionado ja com os flavors escolhidos 
-  const [productsAdded, setProductsAdded] = useState<OrderItemBag[]>([])
-  const [type, setType] = useState<OrderMode>("delivery");
-  const [paymentMethod, setPaymentMethod] = useState("");
-  const [changeFor, setChangeFor] = useState<number>(0);
-  const [observation, setObservation] = useState("");
-  const [costumerName, setCostumerName] = useState<string>(saved.costumerName ?? "");
-  const [costumerPhone, setCostumerPhone] = useState<string>(saved.costumerPhone ?? "");
-  const [costumerEmail, setCostumerEmail] = useState<string>(saved.costumerEmail ?? "");
-  const [address, setAddress] = useState<Address>({ ...DEFAULT_ADDRESS, ...saved.address });
-  const [neighborhood, setNeighborhood] = useState<Neighborhood>();
-  const [orderCreated, setOrderCreated] = useState<Order>()
+  // const [productsAdded, setProductsAdded] = useState<OrderItemBag[]>([])
+  // const [type, setType] = useState<OrderMode>("delivery");
+  // const [paymentMethod, setPaymentMethod] = useState("");
+  // const [changeFor, setChangeFor] = useState<number>(0);
+  // const [observation, setObservation] = useState("");
+  // const [costumerName, setCostumerName] = useState<string>(saved.costumerName ?? "");
+  // const [costumerPhone, setCostumerPhone] = useState<string>(saved.costumerPhone ?? "");
+  // const [costumerEmail, setCostumerEmail] = useState<string>(saved.costumerEmail ?? "");
+  // const [address, setAddress] = useState<Address>({ ...DEFAULT_ADDRESS, ...saved.address });
+  // const [neighborhood, setNeighborhood] = useState<Neighborhood>();
+  // const [orderCreated, setOrderCreated] = useState<Order>()
 
-  const [restauranteClosed, setRestauranteClosed] = useState(false)
-  const handleOpenRestauranteClosed = () => setRestauranteClosed(true)
-  const handleCloseRestauranteClosed = () => setRestauranteClosed(false)
-  const openProduct = (p: Product) => { setSelectedProduct(p); navigate(pathname, { state: { sheet: true } }); };
-  const closeProduct = () => { if (sheetOpen) navigate(-1); else setSelectedProduct(undefined); };
+  // const openProduct = (p: Product) => { setSelectedProduct(p); navigate(pathname, { state: { sheet: true } }); };
+  // const closeProduct = () => { if (sheetOpen) navigate(-1); else setSelectedProduct(undefined); };
 
-  useEffect(() => { if (!sheetOpen) setSelectedProduct(undefined); }, [sheetOpen]);
+  // const { slug } = usePublicRestaurant();
 
-  useEffect(() => { if (step !== "menu" || sheetOpen) navigate(`/${slug}`, { replace: true }); }, []);
+  // const { data: restaurant, isLoading: loadingRestaurant } = useRestaurantData(
+  //   () => RestaurantService.getPublicRestaurantInfos(slug!),
+  //   QueryCacheName.RESTAURANT_PUBLIC_INFOS
+  // );
+
+  // const { data: products, isLoading: loadingProducts } = useRestaurantData(
+  //   () => RestaurantService.restaurantProductsPublic(slug!),
+  //   QueryCacheName.PRODUCTS_PUBLIC
+  // );
+
+  // const { data: categories, isLoading: loadingCategories } = useRestaurantData(
+  //   () => RestaurantService.restaurantCategoriesPublic(slug!),
+  //   QueryCacheName.CATEGORIES_PUBLIC
+  // );
+
+  // const { data: additionals, isLoading: loadingAdditionals } = useRestaurantData(
+  //   () => RestaurantService.restaurantAdditionalsPublic(slug!),
+  //   QueryCacheName.ADDITIONALS_PUBLIC
+  // );
+
+  // const { data: neighborhoods, isLoading: loadingNeighborhoods } = useRestaurantData(
+  //   () => RestaurantService.restaurantNeighborhoodsPublic(slug!),
+  //   QueryCacheName.NEIGHBORHOODS_PUBLIC
+  // );
+
+  // const isLoading =
+  //   loadingRestaurant ||
+  //   loadingProducts ||
+  //   loadingCategories ||
+  //   loadingAdditionals ||
+  //   loadingNeighborhoods;
+
+
+  // useEffect(() => { if (!sheetOpen) setSelectedProduct(undefined); }, [sheetOpen]);
+  // useEffect(() => { if (step !== "menu" || sheetOpen) navigate(`/${slugNavigate}`, { replace: true }); }, []);
   
-  useEffect(() => {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ costumerName, costumerPhone, costumerEmail, address, neighborhoodId: neighborhood?.id ?? saved.neighborhoodId })); } catch { /* storage indisponível */ }
-  }, [costumerName, costumerPhone, costumerEmail, address, neighborhood, saved.neighborhoodId]);
+  // useEffect(() => {
+  //   try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ costumerName, costumerPhone, costumerEmail, address, neighborhoodId: neighborhood?.id ?? saved.neighborhoodId })); 
+  //   } catch { /* storage indisponível */ }
+  // }, [costumerName, costumerPhone, costumerEmail, address, neighborhood, saved.neighborhoodId]);
 
-  useEffect(() => {
-    if (neighborhood || !saved.neighborhoodId) return;
-    setNeighborhood(neighborhoods?.find((n) => n.id === saved.neighborhoodId));
-  }, [neighborhoods]);
 
-  useEffect(() => {
-    setOrderCreated(undefined);
-  }, [productsAdded, address, neighborhood, type]);
+  // useEffect(() => {
+  //   if (neighborhood || !saved.neighborhoodId || !neighborhoods?.length) return;
 
-  const openSize = (size: Size) => {
-    setSelectedSize(size);
-    if (!products) return;
-    setProductsBySize(products.filter(product => product.productActive && product.sizes.some(s => s.size.id === size.id)));
-    setFlavorCount(1);
-    setStep(size.limitFlavors > 1 ? "flavorCount" : "sizeProducts");
-  };
+  //   const savedNeighborhood = neighborhoods.find(
+  //     (n) => n.id === saved.neighborhoodId
+  //   );
 
-  const chooseFlavorCount = (n: number) => { setFlavorCount(n); setStep("sizeProducts"); };
-  const goToMenu = () => navigate((selectedSize?.limitFlavors ?? 1) > 1 ? -2 : -1);
-  const sizeWithFlavors = selectedSize ? { ...selectedSize, limitFlavors: flavorCount } : undefined;
+  //   if (savedNeighborhood) setNeighborhood(savedNeighborhood);
+  // }, [neighborhoods, neighborhood, saved.neighborhoodId]);
 
-  function nextStep() {
-    switch (step) {
-      case "menu":
-        setStep("cart");
-        break;
-      case "sizeProducts":
-        setStep("menu");
-        break;
-      case "flavorCount": 
-        setStep("sizeProducts"); 
-        break;
-      case "cart":
-        setStep("customer");
-        break;
-      case "customer":
-        setStep("address");
-        break;
-      case "address":
-        setStep("payment");
-        break;
-      case "payment":
-        setStep("paymentMethod");
-        break;
-      case "paymentMethod": setProductsAdded([]); setSelectedSize(undefined); navigate(-5); break;
-    }
-  }
+  // useEffect(() => {
+  //   setOrderCreated(undefined);
+  // }, [productsAdded, address, neighborhood, type]);
 
-  const previousStep = () => navigate(-1);
+  // const openSize = (size: Size) => {
+  //   setSelectedSize(size);
+  //   if (!products) return;
+  //   setProductsBySize(products.filter(product => product.productActive && product.sizes.some(s => s.size.id === size.id)));
+  //   setFlavorCount(1);
+  //   setStep(size.limitFlavors > 1 ? "flavorCount" : "sizeProducts");
+  // };
 
-  const subtotal = productsAdded.reduce((tot, item) => {
-    const additionalsSum = (item.additionals ?? []).reduce((sum, ad) => sum + ad.additionalPrice, 0);
-    return tot + (item.price + additionalsSum) * item.quantity;
-  }, 0);
+  // const chooseFlavorCount = (n: number) => { setFlavorCount(n); setStep("sizeProducts"); };
+  // const goToMenu = () => navigate((selectedSize?.limitFlavors ?? 1) > 1 ? -2 : -1);
+  // const sizeWithFlavors = selectedSize ? { ...selectedSize, limitFlavors: flavorCount } : undefined;
 
-  const total = subtotal + (neighborhood?.deliveryFee ?? 0);
+  // function nextStep() {
+  //   switch (step) {
+  //     case "menu":
+  //       setStep("cart");
+  //       break;
+  //     case "sizeProducts":
+  //       setStep("menu");
+  //       break;
+  //     case "flavorCount": 
+  //       setStep("sizeProducts"); 
+  //       break;
+  //     case "cart":
+  //       setStep("customer");
+  //       break;
+  //     case "customer":
+  //       setStep("address");
+  //       break;
+  //     case "address":
+  //       setStep("payment");
+  //       break;
+  //     case "payment":
+  //       setStep("paymentMethod");
+  //       break;
+  //     case "paymentMethod": setProductsAdded([]); setSelectedSize(undefined); navigate(-5); break;
+  //   }
+  // }
 
-  function addProduct(item: OrderItemBag) {
-    setProductsAdded((prev) => [...prev, item]);
-    setOrderCreated(undefined);
-  }
+  // const previousStep = () => navigate(-1);
 
-  function removeItem(id: string) {
-    setProductsAdded((prev) => prev.filter((item) => item.id !== id));
-    setOrderCreated(undefined);
-  }
+  // const subtotal = productsAdded.reduce((tot, item) => {
+  //   const additionalsSum = (item.additionals ?? []).reduce((sum, ad) => sum + ad.additionalPrice, 0);
+  //   return tot + (item.price + additionalsSum) * item.quantity;
+  // }, 0);
 
-  function increaseQuantity(id: string) {
-    setProductsAdded((prev) =>
-      prev.map((item) =>
-        item.id === id
-        ? { ...item, quantity: item.quantity + 1 }
-        : item
-      )
-    );
-    setOrderCreated(undefined);
-  }
+  // const total = subtotal + (neighborhood?.deliveryFee ?? 0);
 
-  function decreaseQuantity(id: string) {
-    setProductsAdded((prev) =>
-      prev.map((item) =>
-        item.id === id
-        ? { ...item, quantity: Math.max(item.minQuantity ?? 1, item.quantity - 1)}
-        : item
-      )
-    );
-    setOrderCreated(undefined);
-  }
+  // function addProduct(item: OrderItemBag) {
+  //   setProductsAdded((prev) => [...prev, item]);
+  //   setOrderCreated(undefined);
+  // }
 
-  async function createOrder() {
+  // function removeItem(id: string) {
+  //   setProductsAdded((prev) => prev.filter((item) => item.id !== id));
+  //   setOrderCreated(undefined);
+  // }
 
-    if(!restaurant) return
+  // function increaseQuantity(id: string) {
+  //   setProductsAdded((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id
+  //       ? { ...item, quantity: item.quantity + 1 }
+  //       : item
+  //     )
+  //   );
+  //   setOrderCreated(undefined);
+  // }
 
-    const restaurantIsOpen = await RestaurantService.restaurantOpen(restaurant.id)
-    if(!restaurantIsOpen?.data){
-      console.log('RESTAURANTE FECHADO AGR')
-      navigate(-5)
-      handleOpenRestauranteClosed()
-      return
-    }
+  // function decreaseQuantity(id: string) {
+  //   setProductsAdded((prev) =>
+  //     prev.map((item) =>
+  //       item.id === id
+  //       ? { ...item, quantity: Math.max(item.minQuantity ?? 1, item.quantity - 1)}
+  //       : item
+  //     )
+  //   );
+  //   setOrderCreated(undefined);
+  // }
 
-    if (type === "delivery" && (!address || !neighborhood)) return;
+  // async function createOrder() {
+  //   const restaurantIsOpen = await RestaurantService.restaurantIsopenSlug(slug!)
+  //   if(!restaurantIsOpen){
+  //     console.log('RESTAURANTE FECHADO AGR')
+  //     navigate(-5)
+  //     handleOpenRestauranteClosed()
+  //     return
+  //   }
+
+  //   if (type === "delivery" && (!address || !neighborhood)) return;
     
-    if (orderCreated) {
-      const updated = await OrderService.updateOrderPaymentMethod(orderCreated.id, paymentMethod)
-      setOrderCreated(updated)
-      return
-    }
+  //   if (orderCreated) {
+  //     const updated = await OrderService.updateOrderPaymentMethod(orderCreated.id, paymentMethod)
+  //     setOrderCreated(updated)
+  //     return
+  //   }
 
-    const orderItens = productsAdded.map((e) => {
-      const item: CreateOrderItem = {
-        name: e.name,
-        observation: e.observation,
-        quantity: e.quantity,
-        flavors: e.flavors,
-        additionals: e.additionals?.map((ad) => ad.id)
-      }
-      return item;
-    })
+  //   const orderItens = productsAdded.map((e) => {
+  //     const item: CreateOrderItem = {
+  //       name: e.name,
+  //       observation: e.observation,
+  //       quantity: e.quantity,
+  //       flavors: e.flavors,
+  //       additionals: e.additionals?.map((ad) => ad.id)
+  //     }
+  //     return item;
+  //   })
 
-    console.log("PRDUTOS: ", orderItens)
+  //   console.log("PRDUTOS: ", orderItens)
 
-    // const observations = productsAdded
-    //   .map((e) => e.observation)
-    //   .filter(Boolean)
-    //   .join(" | ");
+  //   // const observations = productsAdded
+  //   //   .map((e) => e.observation)
+  //   //   .filter(Boolean)
+  //   //   .join(" | ");
     
-    const newOrder: CreateOrder = {
-      type: type,
-      paymentMethod: paymentMethod,
-      changeFor: changeFor,
-      items: orderItens,
-      // observation: observations,
-      costumerName: costumerName,
-      costumerPhone: costumerPhone,
-      ...(type === "delivery" && { address, neighborhoodId: neighborhood!.id }),
-    };
+  //   const newOrder: CreateOrder = {
+  //     type: type,
+  //     paymentMethod: paymentMethod,
+  //     changeFor: changeFor,
+  //     items: orderItens,
+  //     // observation: observations,
+  //     costumerName: costumerName,
+  //     costumerPhone: costumerPhone,
+  //     ...(type === "delivery" && { address, neighborhoodId: neighborhood!.id }),
+  //   };
 
 
-    const order = await RestaurantService.createOrder(restaurant.id, newOrder)
-    setOrderCreated(order)
-    console.log(order)
-  }
+  //   const order = await RestaurantService.createOrder(slug!, newOrder)
+  //   setOrderCreated(order)
+  //   console.log(order)
+  // }
 
   return {
-    step, openSize, selectedSize, productsBySize, previousStep,
-    selectedProduct, setSelectedProduct, productsAdded, setProductsAdded,
-    addProduct, nextStep, removeItem, increaseQuantity, decreaseQuantity,
-    observation, setObservation, costumerName, setCostumerName,
-    costumerPhone, setCostumerPhone, address, setAddress,
-    neighborhood, setNeighborhood, type, setType, paymentMethod,
-    setPaymentMethod, changeFor, setChangeFor, createOrder, handleCloseRestauranteClosed, restauranteClosed,
-    subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail,
-    flavorCount, chooseFlavorCount, goToMenu, sizeWithFlavors, openProduct, closeProduct
+    // step, openSize, selectedSize, productsBySize, previousStep,
+    // selectedProduct, setSelectedProduct, productsAdded, setProductsAdded,
+    // addProduct, nextStep, removeItem, increaseQuantity, decreaseQuantity,
+    // observation, setObservation, costumerName, setCostumerName,
+    // costumerPhone, setCostumerPhone, address, setAddress,
+    // neighborhood, setNeighborhood, type, setType, paymentMethod,
+    // setPaymentMethod, changeFor, setChangeFor, createOrder, handleCloseRestauranteClosed, restauranteClosed,
+    // subtotal, total, category, setCategory, orderCreated, costumerEmail, setCostumerEmail,
+    // flavorCount, chooseFlavorCount, goToMenu, sizeWithFlavors, openProduct, closeProduct, isLoading, restaurant, categories, additionals,
+    // products, neighborhoods
   };
 }

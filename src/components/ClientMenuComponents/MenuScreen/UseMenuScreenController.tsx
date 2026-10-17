@@ -1,22 +1,25 @@
 import { useEffect, useRef, useState } from "react";
-import type { Product, ProductCategory, Size } from "../../../types/Product.type";
-import type { Restaurant } from "../../../types/Restaurant.type";
+import type { Product, Size } from "../../../types/Product.type";
+import { RestaurantService } from "../../../api/services/restaurant.service";
+import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
+import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
 
-interface UseMenuScreenControllerProps {
-  restaurant: Restaurant | undefined;
-  categories: ProductCategory[];
-  products: Product[];
-}
+export function UseMenuScreenController() {
+  
+  const { slug } = usePublicRestaurant()
+  const {data: productsData = [] } = useRestaurantData(() => RestaurantService.restaurantProductsPublic(slug!), QueryCacheName.PRODUCTS_PUBLIC)
+  const {data: categoriesData = [] } = useRestaurantData(() => RestaurantService.restaurantCategoriesPublic(slug!), QueryCacheName.CATEGORIES_PUBLIC)
 
-export function UseMenuScreenController({ restaurant, categories, products }: UseMenuScreenControllerProps) {
-  const PRODUCTS = products ?? [];
-  const CATEGORIES = categories ?? [];
-  const visibleCategories = CATEGORIES.filter((cat) => 
-    produtosComuns(cat.id).length + tamanhosDaCategoria(cat.id).length > 0).sort((a, b) => a.sortOrder - b.sortOrder);  
-
+  const [productSelected, setProductSelected] = useState<Product>()
+  
+  const PRODUCTS = productsData;
+  const CATEGORIES = categoriesData;
+  
+  const visibleCategories = CATEGORIES.filter((cat) => produtosComuns(cat.id).length + tamanhosDaCategoria(cat.id).length > 0).sort((a, b) => a.sortOrder - b.sortOrder);  
   const [activeTab, setActiveTab] = useState(visibleCategories[0]?.id ?? false);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const isClickScrolling = useRef(false);
+
 
   function produtosPorCategoria(catId: string) {
     return PRODUCTS.filter((p) => p.productCategory.id === catId);
@@ -73,16 +76,22 @@ export function UseMenuScreenController({ restaurant, categories, products }: Us
     setTimeout(() => { isClickScrolling.current = false; }, 700);
   };
 
+  const onSelectProduct = (product: Product) => setProductSelected(product)
+  const handleCloseProductSheet = () => setProductSelected(undefined); //Pra fechar o ProductSheet
+
+
   return {
-    restaurant,
     CATEGORIES,
-    products,
+    PRODUCTS,
     produtosPorCategoria,
     tamanhosDaCategoria,
     produtosComuns,
     handleTabClick,
     activeTab,
     visibleCategories,
-    sectionRefs
+    sectionRefs,
+    onSelectProduct,
+    productSelected,
+    handleCloseProductSheet
   };
 }
