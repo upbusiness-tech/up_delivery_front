@@ -1,62 +1,46 @@
-import { useEffect } from "react";
 import { LocationOn, Storefront, AccessTime } from "@mui/icons-material";
-import { Box, Container, InputAdornment, MenuItem, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
-import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
-import type { Address, OrderMode } from "../../../types/Order.type";
+import {  Box, Container, InputAdornment, MenuItem, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { OrderDeliveryMode } from "../../../types/Order.type";
 import { moneyMask } from "../../../utils/masks/mask";
-import type { Neighborhood, Restaurant } from "../../../types/Restaurant.type";
 import { BackHeader } from "../BackHeader/BackHeader";
-import { useAddressValidation, useNumberAddressField } from "../../../hooks/useInfoScreenValidation";
-import { useRestaurantSettings } from "../../../hooks/useRestaurantSettings";
-
-interface AddressScreenProps {
-  type: OrderMode;
-  setType: (v: OrderMode) => void;
-  address: Address;
-  setAddress: (v: Address) => void;
-  neighborhood: Neighborhood | undefined;
-  setNeighborhood: (v: Neighborhood) => void;
-  neighborhoods: Neighborhood[];
-  restaurant: Restaurant | undefined;
-  onBack: () => void;
-  onNext: () => void;
-}
+import { useNavigate } from "react-router-dom";
+import { useAddressController } from "./useAddressController";
+import { useCart } from "../../../context/CartContext";
+import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
 
 const toggleButtonSx = { py: 1.25, borderRadius: 3, textTransform: "none", fontWeight: 600, "&.Mui-selected": { bgcolor: "success.50", color: "success.dark", borderColor: "success.main" } };
 
-export default function AddressScreen({ type, setType, address, setAddress, neighborhood, setNeighborhood, neighborhoods, restaurant, onBack, onNext }: AddressScreenProps) {
-  if(!restaurant) return;
-  const { errors, isValid } = useAddressValidation(type, address, neighborhood);
-  const { allowDelivery, allowPickup } = useRestaurantSettings(restaurant.id);
+export default function AddressScreen() {
 
-  useEffect(() => {
-    if (allowDelivery && !allowPickup && type !== "delivery") setType("delivery");
-    if (allowPickup && !allowDelivery && type !== "pickup") setType("pickup");
-  }, [allowDelivery, allowPickup]);
+  const navigate = useNavigate();
+  const {
+    type,
+    setType,
+    restaurantInfo,
+    allowDelivery,
+    allowPickup,
+    neighborhoods
+  } = useAddressController()
 
-  const updateField = (field: keyof Address) => (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAddress({ ...address, [field]: e.target.value });
-  };
-
-  const numberField = useNumberAddressField(address.number, (v) => setAddress({ ...address, number: v === "" ? 0 : Number(v) }));
+  const { neighborhood, setNeighborhood, address, setAddress} = useCart();
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <BackHeader onBack={onBack} title="Voltar" />
+      <BackHeader onBack={() => navigate(-1)} title="Voltar" />
       <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {type === "delivery" ? "Onde vamos entregar?" : "Retire seu pedido no local"}
+          {type === OrderDeliveryMode.DELIVERY ? "Onde vamos entregar?" : "Retire seu pedido no local"}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {type === "delivery" ? "Confirme seu endereço para calcularmos a entrega." : "O restaurante enviará uma mensagem quando o seu pedido estiver pronto."}
+          {type === OrderDeliveryMode.DELIVERY ? "Confirme seu endereço para calcularmos a entrega." : "O restaurante enviará uma mensagem quando o seu pedido estiver pronto."}
         </Typography>
 
         {allowDelivery && allowPickup && (
-          <ToggleButtonGroup value={type} exclusive fullWidth onChange={(_, value: OrderMode | null) => value && setType(value)} sx={{ mb: 3, gap: 1 }}>
-            <ToggleButton value="delivery" sx={toggleButtonSx}>
+          <ToggleButtonGroup value={type} exclusive fullWidth onChange={(_, value: OrderDeliveryMode | null) => value && setType(value)} sx={{ mb: 3, gap: 1 }}>
+            <ToggleButton value= {OrderDeliveryMode.DELIVERY} sx={toggleButtonSx}>
               <LocationOn sx={{ mr: 1 }} fontSize="small" /> Entrega
             </ToggleButton>
-            <ToggleButton value="pickup" sx={toggleButtonSx}>
+            <ToggleButton value= {OrderDeliveryMode.PICKUP} sx={toggleButtonSx}>
               <Storefront sx={{ mr: 1 }} fontSize="small" /> Retirada
             </ToggleButton>
           </ToggleButtonGroup>
@@ -68,20 +52,20 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               Retire seu pedido em:
             </Typography>
             <Typography variant="subtitle1" sx={{ fontWeight: 700, mt: 0.5 }}>
-              {restaurant?.restaurantName}
+              {restaurantInfo?.restaurantName}
             </Typography>
 
             <Stack direction="row" spacing={1} sx={{ mt: 1.5, alignItems: "center" }}>
               <LocationOn fontSize="small" sx={{ color: "grey.400" }} />
               <Typography variant="body2" color="text.secondary">
-                {restaurant?.restaurantAddress ?? "Endereço não cadastrado"}
+                {restaurantInfo?.restaurantAddress ?? "Endereço não cadastrado"}
               </Typography>
             </Stack>
 
             <Stack direction="row" spacing={1} sx={{ mt: 1, alignItems: "center" }}>
               <AccessTime fontSize="small" sx={{ color: "grey.400" }} />
               <Typography variant="body2" color="text.secondary">
-                Pronto em aproximadamente 25 min
+                Pronto em aproximadamente 40 min
               </Typography>
             </Stack>
           </Paper>
@@ -97,8 +81,8 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
                 if (selected) setNeighborhood(selected);
               }}
               disabled={!neighborhoods || neighborhoods.length === 0}
-              error={!!neighborhood && !!errors.neighborhoodError}
-              helperText={!neighborhoods || neighborhoods.length === 0 ? "Carregando bairros..." : errors.neighborhoodError}
+              // error={!!neighborhood && !!errors.neighborhoodError}
+              // helperText={!neighborhoods || neighborhoods.length === 0 ? "Carregando bairros..." : errors.neighborhoodError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             >
               <MenuItem value="" disabled>
@@ -115,15 +99,11 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
                 </MenuItem>
               ))}
             </TextField>
-
             <TextField
               label="Cidade"
               fullWidth
               value={address.city}
               disabled
-              onChange={updateField("city")}
-              error={!!address.city && !!errors.cityError}
-              helperText={!!address.city && errors.cityError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
 
@@ -131,21 +111,28 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
               label="Rua"
               fullWidth
               value={address.streetName}
-              onChange={updateField("streetName")}
-              error={!!address.streetName && !!errors.streetNameError}
-              helperText={!!address.streetName && errors.streetNameError}
+              onChange={(e) => setAddress({
+                ...address,
+                streetName: e.target.value 
+              })}
+              // error={!!address.streetName && !!errors.streetNameError}
+              // helperText={!!address.streetName && errors.streetNameError}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
+
 
             <Stack direction="row" spacing={2}>
               <TextField
                 label="Número"
                 sx={{ flex: 1, "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
-                value={numberField.value}
-                onChange={numberField.onChange}
+                value={address.number}
+                onChange={(e) => setAddress({
+                  ...address,
+                  number: Number(e.target.value)
+                })}
                 inputMode="numeric"
-                error={!!address.number && !!errors.numberError}
-                helperText={!!address.number && errors.numberError}
+                // error={!!address.number && !!errors.numberError}
+                // helperText={!!address.number && errors.numberError}
                 slotProps={{ input: { startAdornment: <InputAdornment position="start">#</InputAdornment> } }}
               />
             </Stack>
@@ -153,16 +140,19 @@ export default function AddressScreen({ type, setType, address, setAddress, neig
             <TextField
               label="Complemento (opcional)"
               fullWidth
-              value={address.complement ?? ""}
-              onChange={updateField("complement")}
+              value={address.complement}
+              onChange={(e) => setAddress({
+                  ...address,
+                  complement: e.target.value
+              })}
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
-            />
+            /> 
           </Stack>
         )}
       </Container>
 
       <Container maxWidth="sm">
-        <ScreenFooterActions onBack={onBack} onNext={onNext} nextDisabled={!isValid} />
+        <ScreenFooterActions nextPage={() => navigate('..paymentMethod')} nextPageLabel="Pagamento" viewNextPage={true} />
       </Container>
     </Box>
   );
