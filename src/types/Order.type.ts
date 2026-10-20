@@ -35,6 +35,7 @@ export interface Order {
   costumerAddress: Address;
   neighborhood: Neighborhood;
   restaurant: { id: string };
+  created_at: Date
 }
 
 export interface CreateOrder {

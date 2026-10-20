@@ -8,9 +8,9 @@ interface PrintOrderProps {
 }
 
 export default function PrintOrder({ order }: PrintOrderProps) {
-  if (!order) return null;
+  const { products, restaurant } = useRestaurant(); // CORREÇÃO: hook ANTES do return condicional
 
-  const { products, restaurant } = useRestaurant();
+  if (!order) return null;
 
   function getProductNameByProductSize(flavor: string | ProducSize): string {
     const targetId = typeof flavor === "string" ? flavor : flavor.id;
@@ -78,7 +78,6 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
             {flavorLines.length > 0 && (
               <div style={{ marginTop: 4, marginLeft: 8, fontSize: "11px", lineHeight: 1.35 }}>
-                {/* <div style={{ fontWeight: "bold", marginBottom: 2 }}>SABORES:</div> */}
                 {flavorLines.map((line, idx) => <div style={{fontSize: "14px", fontWeight: "bold"}} key={idx}>• {line}</div>)}
               </div>
             )}
@@ -89,7 +88,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
             )}
 
             {item.observation && (
-              <div style={{fontSize: "14px", fontWeight: "bold"}} key={i}>*{item.observation}*</div>
+              <div style={{fontSize: "14px", fontWeight: "bold"}}>*{item.observation}*</div>
             )}
           </div>
         );
@@ -104,7 +103,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       )}
 
       <div style={{ fontSize: "14px", lineHeight: 1.5 }}>
-      
+
       <div style={{ display: "flex", justifyContent: "space-between" }}>
         <span>Subtotal:</span>
         <span>R$ {formatMoney(itemsTotal)}</span>
@@ -116,7 +115,6 @@ export default function PrintOrder({ order }: PrintOrderProps) {
           <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood.deliveryFee)}</span>
         </div>
       )}
-
 
       {Number(order.discount) > 0 && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -144,8 +142,6 @@ export default function PrintOrder({ order }: PrintOrderProps) {
         </div>
       </div>
     </div>
-
-      
 
       <div style={{ textAlign: "center", marginTop: 12, paddingTop: 7, paddingBottom: 7, borderTop: "1px dashed #000", fontSize: "9px", lineHeight: 1.4 }}>
         <div style={{ fontWeight: "bold" }}>PEDIDO GERADO VIA UPDELIVERY</div>
