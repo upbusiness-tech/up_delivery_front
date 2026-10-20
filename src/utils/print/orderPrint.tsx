@@ -143,8 +143,8 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       </div>
     </div>
 
-      <div style={{ textAlign: "center", marginTop: 12, paddingTop: 7, paddingBottom: 7, borderTop: "1px dashed #000", fontSize: "9px", lineHeight: 1.4 }}>
-        <div style={{ fontWeight: "bold" }}>PEDIDO GERADO VIA UPDELIVERY</div>
+      <div style={{ textAlign: "center", marginTop: 12, paddingTop: 7, paddingBottom: 7, borderTop: "1px dashed #000", borderBottom: "1px dashed #000"}}>
+        <div style={{ fontWeight: "bold", fontSize: "14px", marginBottom: 5 }}>Gerado via UpDelivery</div>
       </div>
     </div>
   );
