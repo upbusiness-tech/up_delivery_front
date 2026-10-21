@@ -28,15 +28,15 @@ export default function PrintOrder({ order }: PrintOrderProps) {
     return Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  const now = new Date();
   const itemsTotal = order.items?.reduce((total, item) => total + Number(item.price) * Number(item.quantity), 0) ?? 0;
+  const fixOrderDate = (d: Date | string) => new Date(new Date(d).getTime() - 3 * 60 * 60 * 1000);
 
   return (
     <div id="print-order" className="print-only" style={{ width: "100%", maxWidth: "80mm", padding: "4mm", boxSizing: "border-box", fontFamily: "Arial, Helvetica, sans-serif", fontSize: "13px", color: "#000", background: "#fff" }}>
       <div style={{ textAlign: "center", lineHeight: 1.2, marginBottom: 8 }}>
         <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{restaurant?.restaurantName}</div>
         <div style={{ fontSize: "11px", fontWeight: "bold", marginTop: 3 }}>
-          {now.toLocaleDateString("pt-BR")} {now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+          {fixOrderDate(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" })}
         </div>
       </div>
 

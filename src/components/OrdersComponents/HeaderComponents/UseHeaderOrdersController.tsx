@@ -22,7 +22,7 @@ export default function UseHeaderOrdersController({restaurant}: props){
   const handleOpenModalPendingOrders = () => {setModalPendingOrders(true); };
   const handleCloseModalPendingOrders = () => {setModalPendingOrders(false);};
 
-  const pendingOrders = (orders ?? []).filter((o) => o.status !== STATUS.CANCELADO && !o.printed);
+  const pendingOrders = (orders ?? []).filter((o) => o.status !== STATUS.CANCELADO && !o.received);
 
   useEffect(() => {
     restaurantIsOpen()
@@ -40,8 +40,8 @@ export default function UseHeaderOrdersController({restaurant}: props){
 
   async function handleReceiveOrder(order: Order){
     try {
-      await OrderService.updatePrinted(order.id);
-      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, printed: true } : o)));
+      await OrderService.updateReceived(order.id);
+      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, received: true } : o)));
       sendWhatsAppMessage(order, buildOrderMessage(order));
     } catch {
       return;

@@ -5,7 +5,7 @@ import type { Restaurant } from "../../../types/Restaurant.type";
 import StorefrontIcon from '@mui/icons-material/Storefront';
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import PendingOrdersModal from "./PendingOrdersModal/PendingOrdersModal";
-import OpenCloseRestaurantModal from "./OpenCloseRestaurantModal/OpenCloseRestaurantModal";
+// import OpenCloseRestaurantModal from "./OpenCloseRestaurantModal/OpenCloseRestaurantModal";
 import { useRestaurant } from "../../../context/RestaurantContext";
 
 interface props {
@@ -44,7 +44,7 @@ export function HeadarOrders({restaurant}: props) {
         </Typography>
       </Stack>
 
-      <OpenCloseRestaurantModal restaurant={restaurant} open={c.modalStatusRestaurant} onClose={c.handleCloseModalStatusRestaurant} />
+      {/* <OpenCloseRestaurantModal restaurant={restaurant} open={c.modalStatusRestaurant} onClose={c.handleCloseModalStatusRestaurant} /> */}
       <PendingOrdersModal orders={c.pendingOrders} open={c.modalPendingOrders} onClose={c.handleCloseModalPendingOrders} onReceive={c.handleReceiveOrder} />
     </Stack>
   );

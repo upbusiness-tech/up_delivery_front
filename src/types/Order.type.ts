@@ -22,6 +22,7 @@ export interface Order {
   type: string;
   code: string;
   printed: boolean;
+  received: boolean;
   items: OrderItem[];
   orderTotal: number;
   paymentMethod: string;
