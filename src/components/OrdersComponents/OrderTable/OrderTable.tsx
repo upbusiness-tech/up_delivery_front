@@ -8,6 +8,8 @@ import STATUS_COLOR from "../../../utils/colors/colors";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import { useOrderTableController } from "./UseOrderTableController";
 import InventoryIcon from '@mui/icons-material/Inventory';
+import { useEffect, useState } from "react";
+import PrintOrder from "../../../utils/print/orderPrint";
 
 interface Props {
   orders: Order[] | undefined;
@@ -20,7 +22,10 @@ interface Props {
 
 export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deliveryFee, openOrderDetail }: Props) {
   const { isReceived, handleReceived, handleStatusChange } = useOrderTableController({ updateStatusOrder });
-
+  const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
+  const imprimir = (e: React.MouseEvent, order: Order) => { e.stopPropagation(); setOrderToPrint(order); };
+  useEffect(() => { if (!orderToPrint) return; const t = setTimeout(() => { window.print(); setOrderToPrint(null); }, 100); return () => clearTimeout(t); }, [orderToPrint]);
+  
   if (loading) {
     return (
       <Stack direction="row" sx={{ justifyContent: "center", alignItems: "center", py: 8 }}>
@@ -39,6 +44,16 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
 
   if (isDesktop) {
     return (
+    <>
+      <style>{`
+        .print-only { display: none; }
+        @media print {
+          body * { visibility: hidden; }
+          #print-order, #print-order * { visibility: visible; }
+          #print-order { display: block; position: absolute; top: 0; left: 0; width: 100%; }
+        }
+      `}</style>
+
       <Paper elevation={0} sx={{ overflow: "hidden", border: "1px solid #E5E7EB", borderRadius: 3, backgroundColor: "#fff" }}>
         <Box sx={{ overflowX: "auto" }}>
           <Table
@@ -67,9 +82,6 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
             </TableHead>
             <TableBody>
               {orders.map((order) => {
-                console.log("PEDIDO:", order);
-                console.log("PRINTED:", order.printed);
-
                 const isCancelled = order.status === STATUS.CANCELADO;
                 const total = Number(order.orderTotal) + deliveryFee(order);
                 const change = Number(order.changeFor) - total;
@@ -84,8 +96,8 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                     <TableCell align="center">
                       <IconButton
                         size="small"
-                        onClick={(e) => e.stopPropagation()}
-                        sx={{ width: 34, height: 34, border: "1px solid #E2E8F0", borderRadius: 2, color: "#475569", "&:hover": { backgroundColor: "#F1F5F9" } }}
+                        onClick={(e) => imprimir(e, order)}
+                        sx={{ width: 34, height: 34, border: "2px solid #168b08", borderRadius: 2, color: "#168b08", "&:hover": { backgroundColor: "#F1F5F9" } }}
                       >
                         <PrintIcon fontSize="small" />
                       </IconButton>
@@ -182,6 +194,8 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
           </Table>
         </Box>
       </Paper>
+      <PrintOrder order={orderToPrint} />
+    </>
     );
   }
 

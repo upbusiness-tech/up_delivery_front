@@ -29,7 +29,18 @@ export const OrderService = {
   },
   async updatePrinted(orderId: string) {
     try {
-      const { data } = await api.post<Order>(`/order/${orderId}/printed`);
+      const { data } = await api.post(`/order/${orderId}/printed`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+    async updateReceived(orderId: string) {
+    try {
+      const { data } = await api.post(`/order/${orderId}/received`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

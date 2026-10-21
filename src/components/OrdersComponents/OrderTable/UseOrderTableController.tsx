@@ -10,21 +10,26 @@ interface UseOrderTableControllerProps {
 }
 
 export function useOrderTableController({ updateStatusOrder }: UseOrderTableControllerProps) {
-  const { setOrders, restaurant } = useRestaurant();
+  const { setOrders, restaurant, products } = useRestaurant();
 
-  const isReceived = (order: Order) => order.printed;
+  const isReceived = (order: Order) => order.received;
 
   const handleReceived = async (e: React.MouseEvent, order: Order) => {
     e.stopPropagation();
     if (isReceived(order)) return;
     try {
-      await OrderService.updatePrinted(order.id);
-      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, printed: true } : o)));
-      sendWhatsAppMessage(order, buildOrderMessage(order));
+      await OrderService.updateReceived(order.id);
+      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, received: true } : o)));
+      await sendWhatsAppMessage(order, buildOrderMessage(order, 40, products));
     } catch {
       return;
     }
   };
+
+  function imprimir() {
+    window.print();
+  }
+
 
   const handleStatusChange = async (e: SelectChangeEvent<string>, order: Order) => {
     e.stopPropagation();
@@ -50,5 +55,5 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     }
   };
 
-  return { isReceived, handleReceived, handleStatusChange };
+  return { isReceived, handleReceived, handleStatusChange, imprimir };
 }
