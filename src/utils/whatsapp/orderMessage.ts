@@ -13,15 +13,16 @@ export const getItemFlavorLines = (item: OrderItem, products?: Product[]): strin
 
 
 export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product[]) => {
-  const sep = "------------------------------------";
+  const sep = "━━━━━━━━━━━━━━━━━━━━";
   const items = order.items.map((i) => [`${i.quantity}x ${i.name}`, ...getItemFlavorLines(i, products).map((l) => `   • ${l}`), ...(i.additionals?.length ? [`   + ${i.additionals.map((a) => a.additionalName).join(", ")}`] : []), ...(i.observation ? [`   *${i.observation}*`] : [])].join("\n")).join("\n");
   const isDelivery = order.type === "delivery";
   const addr = order.costumerAddress;
   const fee = Number(order.neighborhood?.deliveryFee ?? 0);
   const total = Number(order.orderTotal) + fee;
   const date = fixOrderDate(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" });
-  const address = isDelivery && addr?.streetName ? [`📍 ${addr.streetName}, ${addr.number}`, order.neighborhood?.neighborhoodName && `Bairro: ${order.neighborhood.neighborhoodName}`, addr.complement && `Complemento: ${addr.complement}`].filter(Boolean).join("\n") : "";
-  const payment = [`*Pagamento: ${paymentMethodMask(order.paymentMethod)}*`, Number(order.changeFor) > 0 && `Troco para: ${moneyMask(Number(order.changeFor))}`, isDelivery && fee > 0 && `Taxa de entrega: ${moneyMask(fee)}`, `*Total: ${moneyMask(total)}*`].filter(Boolean).join("\n");
+  const address = isDelivery && addr?.streetName ? [`*Rua:* ${addr.streetName}, ${addr.number}`, order.neighborhood?.neighborhoodName && `*Bairro:* ${order.neighborhood.neighborhoodName}`, addr.complement && `*Complemento:* ${addr.complement}`].filter(Boolean).join("\n") : "";
+  const payment = [`*Pagamento:* ${paymentMethodMask(order.paymentMethod)}`, Number(order.changeFor) > 0 && `*Troco para:* ${moneyMask(Number(order.changeFor))}`, isDelivery && fee > 0 && `*Taxa de entrega:* ${moneyMask(fee)}`, `*Total:* ${moneyMask(total)}`].filter(Boolean).join("\n");
+
   return [
     `Olá, *${order.costumerName}!* 👋`,
     `Recebemos seu pedido 😁`,
@@ -31,14 +32,19 @@ export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product
     sep,
     payment,
     sep,
-    [isDelivery ? "🛵 Entrega" : "📦 Retirada no local", address, `⏱️ Tempo médio: ${avgTime}min`].filter(Boolean).join("\n"),
+    [isDelivery ? "🛵 *Entrega*" : "📦 *Retirada no local*", address, `⏱️ Tempo médio: ${avgTime}min`].filter(Boolean).join("\n"),
     sep,
     `Pedido gerado via UpDelivery`,
+    "━━━━━━━━━━━━━━━━━━━━",
+    "⭐*DEIXE SUA OPINIÃO!*⭐",
+    "Queremos melhorar sua experiência!💛",
+    "📝 *Avalie sua experiência aqui:*",
+    "https://forms.gle/tZPJg3dVz2dCt5QB9",
   ].join("\n");
 };
 
 export const sendWhatsAppMessage = (order: Order, message: string) => {
-  console.log('Chegou aq 3')
+  // console.log('Chegou aq 3')
   const phone = order.costumerPhone.replace(/\D/g, "");
   window.location.href = `whatsapp://send?phone=55${phone}&text=${encodeURIComponent(message)}`;
 
