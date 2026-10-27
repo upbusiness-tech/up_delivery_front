@@ -13,12 +13,15 @@ export const getItemFlavorLines = (item: OrderItem, products?: Product[]): strin
     .map((flavor) => {
       if (flavor.product?.productName) return flavor.product.productName;
       const sizeId = flavor.size?.id;
-      if (!sizeId || !products) return "";
-      return products.find((p) => p.sizes?.some((ps) => ps.id === sizeId))?.productName ?? "";
+      if (sizeId && products) {
+        const found = products.find((p) => p.sizes?.some((ps) => ps.id === sizeId));
+        if (found?.productName) return found.productName;
+      }
+      return "";
     })
     .filter((n) => n.trim());
   if (names.length === 0) return [];
-  if (names.length === 1 && names[0].trim().toLowerCase() === item.name.trim().toLowerCase()) return [];
+  if (names.length === 1 && names[0].trim().toLowerCase() === item.name.trim().toLowerCase()) return names.map((n) => `1/${names.length} ${n}`);
   return names.map((n) => (names.length === 1 ? n : `1/${names.length} ${n}`));
 };
 
