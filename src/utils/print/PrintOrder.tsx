@@ -16,7 +16,6 @@ export default function PrintOrder({ order }: PrintOrderProps) {
   const createdAt = order.created_at ? new Date(order.created_at) : new Date();
   const printedDate = Number.isNaN(createdAt.getTime()) ? new Date() : createdAt;
   const itemsTotal = order.items?.reduce((total, item) => total + Number(item.price) * Number(item.quantity), 0) ?? 0;
-  const fixOrderDate = (d: Date | string) => new Date(new Date(d).getTime() - 3 * 60 * 60 * 1000);
 
   return (
     <div id="print-order" className="print-only" style={{ width: "100%", maxWidth: "80mm", padding: "4mm", boxSizing: "border-box", fontFamily: "Arial, Helvetica, sans-serif", fontSize: "13px", color: "#000", background: "#fff" }}>

@@ -3,6 +3,7 @@ import type { Order } from "../../../../types/Order.type";
 import { moneyMask, paymentMethodMask, phoneMask } from "../../../../utils/masks/mask";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import CloseIcon from "@mui/icons-material/Close";
+import PrintIcon from "@mui/icons-material/PrintOutlined";
 
 interface props {
   open: boolean;

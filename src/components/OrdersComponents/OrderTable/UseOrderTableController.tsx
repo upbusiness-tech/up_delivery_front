@@ -27,11 +27,6 @@ export function useOrderTableController() {
     }
   };
 
-  function imprimir() {
-    window.print();
-  }
-
-
   const handleStatusChange = async (e: SelectChangeEvent<string>, order: Order) => {
     e.stopPropagation();
     const newStatus = e.target.value;
