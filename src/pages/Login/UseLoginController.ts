@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { AuthService } from "../../api/services/auth.service";
+import { PATHS } from "../../routes/paths";
 
 export function UseLoginController() {
   const [email, setEmail] = useState("");
@@ -8,6 +9,7 @@ export function UseLoginController() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   async function signIn() {
     if (!email || !password) {
@@ -19,7 +21,8 @@ export function UseLoginController() {
     setError(null);
     try {
       await AuthService.signIn(email, password);
-      navigate("/orders");
+      const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+      navigate(from ?? PATHS.orders, { replace: true });
     } catch (err: any) {
       if (
         ["auth/invalid-credential", "auth/wrong-password", "auth/user-not-found"].includes(err.code)

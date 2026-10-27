@@ -8,14 +8,7 @@ export interface Address {
   complement: string;
 }
 
-export interface OrderItem {
-  name: string;
-  observation?: string;
-  quantity: number;
-  price: number;
-  additionals: Additionals[];
-  flavors: string[];
-}
+
 
 export interface Order {
   id: string;
@@ -36,7 +29,25 @@ export interface Order {
   costumerAddress: Address;
   neighborhood: Neighborhood;
   restaurant: { id: string };
-  created_at: Date
+  created_at?: string;
+}
+
+export interface OrderFlavor {
+  id: string;
+  price: number;
+  // O evento de socket `newOrder` pode vir sem essas relações carregadas.
+  product?: {
+    id: string;
+    productName: string;
+  };
+  size?: {
+    id: string;
+    name: string;
+    limitFlavors: number;
+    price: number;
+    created_at: string;
+  };
+  created_at: string;
 }
 
 export interface CreateOrder {
@@ -49,9 +60,10 @@ export interface CreateOrder {
   costumerPhone: string;
   address?: Address;
   neighborhoodId?: string;
+
 }
 
-//Tranforma um OrderItemBag em um OrderItem para a requisição sem o id
+//Transformação para enviar à API
 export interface CreateOrderItem {
   name: string;
   observation?: string;
@@ -60,7 +72,7 @@ export interface CreateOrderItem {
   additionals?: string[];
 }
 
-//Usar o CreateOrderItem para tranformar isso em um OrderItem
+// Produto completo no carrinho
 export interface OrderItemBag {
   id: string;
   name: string;
@@ -68,9 +80,25 @@ export interface OrderItemBag {
   quantity: number;
   price: number;
   flavors: string[],
+  /** Nomes dos sabores escolhidos — usado só para exibição no carrinho. */
+  flavorNames?: string[],
   minQuantity?: number;
   observation: string,
-  additionals?: Additionals[]
+  additionals?: Additionals[],
+  /** Categoria/tamanho usados para reabrir a edição de itens compostos (pizzas). */
+  categoryId?: string;
+  sizeId?: string;
 }
+
+// Estrutura do produto no pedido
+export interface OrderItem {
+  name: string;
+  observation?: string;
+  quantity: number;
+  price: number;
+  additionals: Additionals[];
+  flavors: OrderFlavor[];
+}
+
 
 export type OrderMode =  "delivery" | "pickup";

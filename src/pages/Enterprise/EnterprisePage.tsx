@@ -6,6 +6,7 @@ import {
   Button, FormGroup, FormControlLabel, Checkbox,
   FormControl,
   Switch,
+  Alert,
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import UseEnterpriseController from "./UseEnterpriseController";
@@ -39,14 +40,35 @@ export function EnterprisePage() {
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
-  const { restaurant, loading, businessHours, connectRestaurant } = UseEnterpriseController();
+  const {
+    restaurantInfos,
+    isLoading,
+    error,
+    refetch,
+    connectRestaurant,
+    isConnecting,
+  } = UseEnterpriseController();
   const { 
     allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
-    allowCardPayment, allowPixPayment
-   } = useRestaurantSettings(restaurant?.id ?? "");
+    allowCardPayment, allowPixPayment, isToggling,
+   } = useRestaurantSettings(restaurantInfos?.id ?? "");
 
-  if (loading) { return <Typography>Carregando...</Typography>; }
-  if (!restaurant) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
+  if (isLoading) { return <Typography>Carregando...</Typography>; }
+  if (error) {
+    return (
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={() => void refetch()}>
+            Tentar novamente
+          </Button>
+        }
+      >
+        Não foi possível carregar os dados do restaurante.
+      </Alert>
+    );
+  }
+  if (!restaurantInfos) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
 
   return (
     <Stack spacing={0}>
@@ -79,7 +101,7 @@ export function EnterprisePage() {
                   <StorefrontIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">Nome</Typography>
-                    <Typography variant="body1" sx={{fontWeight: 600}}>{restaurant.restaurantName}</Typography>
+                    <Typography variant="body1" sx={{fontWeight: 600}}>{restaurantInfos.restaurantName}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -89,7 +111,7 @@ export function EnterprisePage() {
                   <PhoneIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box>
                     <Typography variant="caption" color="text.secondary">Telefone</Typography>
-                    <Typography variant="body1">{phoneMask(restaurant.restaurantPhone)}</Typography>
+                    <Typography variant="body1">{phoneMask(restaurantInfos.restaurantPhone)}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -99,7 +121,7 @@ export function EnterprisePage() {
                   <EmailIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography variant="caption" color="text.secondary">E-mail de contato</Typography>
-                    <Typography variant="body1" noWrap>{restaurant.restaurantEmail}</Typography>
+                    <Typography variant="body1" noWrap>{restaurantInfos.restaurantEmail}</Typography>
                   </Box>
                 </Box>
               </Grid>
@@ -127,8 +149,8 @@ export function EnterprisePage() {
                       <TableCell sx={{ fontWeight: 600 }}>{DAYS_LABEL[day]}</TableCell>
                       <TableCell>
                         <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-                          {(businessHours[day] || []).length > 0 ? (
-                            businessHours[day].map((interval, idx) => (
+                          {(restaurantInfos.businessHours[day] || []).length > 0 ? (
+                            restaurantInfos.businessHours[day].map((interval, idx) => (
                               <Chip
                                 key={idx}
                                 label={`${interval.openTime ?? "--"} — ${interval.closeTime ?? "--"}`}
@@ -151,8 +173,8 @@ export function EnterprisePage() {
                   <Paper key={day} sx={{ p: 2 }} variant="outlined">
                     <Typography sx={{ fontWeight: 700, mb: 1 }}>{DAYS_LABEL[day]}</Typography>
                     <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
-                      {(businessHours[day] || []).length > 0 ? (
-                        businessHours[day].map((interval, idx) => (
+                      {(restaurantInfos.businessHours[day] || []).length > 0 ? (
+                        restaurantInfos.businessHours[day].map((interval, idx) => (
                           <Chip
                             key={idx}
                             label={`${interval.openTime ?? "--"} — ${interval.closeTime ?? "--"}`}
@@ -195,8 +217,8 @@ export function EnterprisePage() {
                 </Stack>
               </Stack>
 
-              <Button sx={{textTransform: 'none'}} endIcon={<AssuredWorkloadIcon/>} onClick={connectRestaurant} variant="contained">
-                Integrar conta
+              <Button sx={{textTransform: 'none'}} endIcon={<AssuredWorkloadIcon/>} onClick={connectRestaurant} variant="contained" disabled={isConnecting}>
+                {isConnecting ? "Conectando..." : "Integrar conta"}
               </Button>
             </Stack>
           </Paper>
@@ -210,7 +232,7 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
             <FormControlLabel
-              control={<Checkbox checked={paymentsPlatform} onChange={() => togglePaymentMode("payments_via_the_platform", "separete_payments")} />}
+              control={<Checkbox disabled={isToggling} checked={paymentsPlatform} onChange={() => togglePaymentMode("payments_via_the_platform", "separete_payments")} />}
               label="Usar pagamentos integrados"
             />
             </FormGroup>
@@ -223,7 +245,7 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
               <FormControlLabel
-                control={<Checkbox checked={separetePayments} onChange={() => togglePaymentMode("separete_payments", "payments_via_the_platform")} />}
+                control={<Checkbox disabled={isToggling} checked={separetePayments} onChange={() => togglePaymentMode("separete_payments", "payments_via_the_platform")} />}
                 label="Usar pagamentos a parte"
               />
             </FormGroup>
@@ -234,11 +256,11 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
            <FormControlLabel
-              control={<Checkbox checked={allowPixPayment} onChange={() => toggleSetting("allow_pix_payment")} />}
+              control={<Checkbox disabled={isToggling} checked={allowPixPayment} onChange={() => toggleSetting("allow_pix_payment")} />}
               label="Pix"
             />
             <FormControlLabel
-              control={<Checkbox checked={allowCardPayment} onChange={() => toggleSetting("allow_card_payment")} />}
+              control={<Checkbox disabled={isToggling} checked={allowCardPayment} onChange={() => toggleSetting("allow_card_payment")} />}
               label="Cartões Crédito e Débito"
             />
             </FormGroup>
@@ -254,8 +276,8 @@ export function EnterprisePage() {
           <Divider sx={{ mb: 2 }} />
 
           <FormControl>
-            <FormControlLabel control={<Switch checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
-            <FormControlLabel control={<Switch checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
+            <FormControlLabel control={<Switch disabled={isToggling} checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
+            <FormControlLabel control={<Switch disabled={isToggling} checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
           </FormControl>
         </Paper>
       </TabPanel>

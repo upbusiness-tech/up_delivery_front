@@ -4,6 +4,8 @@ import Row from "../Row";
 import type { Order } from "../../../types/Order.type";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
+import { useCheckout } from "../../../checkout/CheckoutContext";
 
 interface DoneScreenProps {
   order: Order;
@@ -12,6 +14,26 @@ interface DoneScreenProps {
 }
 
 export default function DoneScreen({ order, onNext, total }: DoneScreenProps) {
+  const { restaurant } = usePublicRestaurant();
+  const { products: cartItems } = useCheckout();
+
+  const items = order.items && order.items.length > 0 ? order.items : cartItems.map((p) => ({
+    name: p.name,
+    quantity: p.quantity,
+    observation: p.observation,
+    price: p.price,
+    additionals: p.additionals ?? [],
+    flavors: [],
+  }));
+
+  const handleContactRestaurant = () => {
+    const phone = (restaurant?.restaurantPhone || "").replace(/\D/g, "");
+    if (!phone) return;
+    const itemsText = items.map((item) => `- ${item.quantity}x ${item.name}`).join("\n");
+    const message = `Olá! Acabei de fazer meu pedido #${order.code} pelo app.\n\n*Cliente:* ${order.costumerName}\n*Itens:*\n${itemsText}\n\n*Total:* ${moneyMask(total)}\n*Pagamento:* ${paymentMethodMask(order.paymentMethod)}\n\nGostaria de confirmar se o pedido foi recebido. Obrigado!`;
+    window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <Container maxWidth="sm" sx={{ py: 6, textAlign: "center" }}>
       <Box sx={{ animation: "scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)", "@keyframes scaleIn": { "0%": { transform: "scale(0.6)", opacity: 0 }, "100%": { transform: "scale(1)", opacity: 1 } } }}>
@@ -28,9 +50,20 @@ export default function DoneScreen({ order, onNext, total }: DoneScreenProps) {
         </Box>
 
         <Box sx={{ px: 3, py: 2.5 }}>
+          <Row label="Cliente" value={order.costumerName} />
+          <Divider sx={{ my: 1, borderColor: "#F1F5F9" }} />
           <Row label="Pagamento" value={paymentMethodMask(order.paymentMethod)} />
           <Divider sx={{ my: 1, borderColor: "#F1F5F9" }} />
-          <Row label="Total pago" value={moneyMask(total) } bold />
+          <Row label="Total pago" value={moneyMask(total)} bold />
+          <Divider sx={{ my: 1, borderColor: "#F1F5F9" }} />
+          <Box>
+            <Typography sx={{ fontSize: "0.8rem", color: "#475569", mb: 0.5 }}>Itens</Typography>
+            {items.map((item: any, idx: number) => (
+              <Typography key={idx} sx={{ fontSize: "0.85rem", color: "#1E293B", mb: 0.25 }}>
+                {item.quantity}x {item.name}
+              </Typography>
+            ))}
+          </Box>
         </Box>
 
         <Box sx={{ px: 3, py: 2, backgroundColor: "#F0FDF4", display: "flex", alignItems: "center", gap: 1.5 }}>
@@ -38,6 +71,18 @@ export default function DoneScreen({ order, onNext, total }: DoneScreenProps) {
           <Typography sx={{ fontSize: "0.82rem", color: "#166534", textAlign: "left" }}>Você vai receber as atualizações do pedido pelo WhatsApp</Typography>
         </Box>
       </Paper>
+
+      {restaurant?.restaurantPhone && (
+        <Button
+          variant="outlined"
+          fullWidth
+          onClick={handleContactRestaurant}
+          startIcon={<WhatsApp sx={{ fontSize: 18 }} />}
+          sx={{ borderRadius: 3, textTransform: "none", fontWeight: 700, mt: 2, borderColor: "#25D366", color: "#16A34A", "&:hover": { borderColor: "#22C55E", bgcolor: "rgba(37,211,102,0.04)" } }}
+        >
+          Avisar restaurante pelo WhatsApp
+        </Button>
+      )}
 
       <Button
         variant="contained"

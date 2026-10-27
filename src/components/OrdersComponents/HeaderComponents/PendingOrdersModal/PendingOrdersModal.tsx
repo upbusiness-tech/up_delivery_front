@@ -9,9 +9,10 @@ interface props {
   onClose: () => void;
   orders: Order[];
   onReceive: (order: Order) => void;
+  isReceiving?: boolean;
 }
 
-export default function PendingOrdersModal({ onClose, open, orders, onReceive }: props) {
+export default function PendingOrdersModal({ onClose, open, orders, onReceive, isReceiving }: props) {
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth sx={{ sx: { borderRadius: 3, maxHeight: "90vh" } }}>
       <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #E5E7EB", py: 1.25, px: 2 }}>
@@ -46,17 +47,64 @@ export default function PendingOrdersModal({ onClose, open, orders, onReceive }:
             </TableHead>
 
             <TableBody>
-              {orders.map((order) => (
-                <TableRow key={order.id} sx={{ backgroundColor: "#fff" }}>
-                  <TableCell align="center"><Typography sx={{ fontWeight: 700, fontSize: "0.82rem", color: "#0F172A" }}>#{order.code}</Typography></TableCell>
-                  <TableCell><Chip size="small" icon={<LocalShippingIcon sx={{ fontSize: 13 }} />} label={order.type === "pickup" ? "Retirada" : "Delivery"} sx={{ height: 22, fontWeight: 600, fontSize: "0.7rem", backgroundColor: order.type === "pickup" ? "#F1F5F9" : "#EFF6FF", color: order.type === "pickup" ? "#475569" : "#2563EB", border: "none" }} /></TableCell>
-                  <TableCell><Typography sx={{ fontWeight: 600, fontSize: "0.82rem", color: "#0F172A" }}>{order.costumerName}</Typography></TableCell>
-                  <TableCell><Typography sx={{ fontSize: "0.8rem", color: "#475569" }}>{phoneMask(order.costumerPhone)}</Typography></TableCell>
-                  <TableCell align="right"><Typography sx={{ fontWeight: 800, fontSize: "0.85rem", color: "#0F172A" }}>{moneyMask(order.orderTotal)}</Typography></TableCell>
-                  <TableCell><Typography sx={{ fontSize: "0.8rem", fontWeight: 500, color: "#475569" }}>{paymentMethodMask(order.paymentMethod)}</Typography></TableCell>
-                  <TableCell align="center"><Button size="small" variant="contained" onClick={() => onReceive(order)} sx={{ textTransform: "none", borderRadius: 1.5, fontWeight: 600, fontSize: "0.75rem", py: 0.25, minWidth: 0, backgroundColor: "#25D366", "&:hover": { backgroundColor: "#20BD5A" } }}>Receber</Button></TableCell>
-                </TableRow>
-              ))}
+              {orders.map((order) => {
+                return (
+                  <TableRow key={order.id} sx={{ backgroundColor: "#fff", "&:hover": { backgroundColor: "#F8FAFC" } }}>
+                    <TableCell align="center">
+                      <IconButton size="small" onClick={(e) => e.stopPropagation()} sx={{ width: 34, height: 34, border: "1px solid #E2E8F0", borderRadius: 2, color: "#475569", "&:hover": { backgroundColor: "#F1F5F9" } }}>
+                        <PrintIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography sx={{ fontWeight: 700, fontSize: "0.9rem", color: "#0F172A" }}>#{order.code}</Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Chip size="small" icon={<LocalShippingIcon sx={{ fontSize: 15 }} />} label={order.type === "pickup" ? "Retirada" : "Delivery"} sx={{ fontWeight: 600, fontSize: "0.75rem", backgroundColor: order.type === "pickup" ? "#F1F5F9" : "#EFF6FF", color: order.type === "pickup" ? "#475569" : "#2563EB", border: "none" }} />
+                    </TableCell>
+
+                    <TableCell>
+                      <Box>
+                        <Typography sx={{ fontWeight: 600, fontSize: "0.875rem", color: "#0F172A" }}>{order.costumerName}</Typography>
+                        <Typography sx={{ fontSize: "0.72rem", color: "#94A3B8", mt: 0.25 }}>Cliente</Typography>
+                      </Box>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography sx={{ fontSize: "0.85rem", color: "#475569" }}>{phoneMask(order.costumerPhone)}</Typography>
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <Typography sx={{ fontWeight: 800, fontSize: "0.95rem", color: "#0F172A" }}>{moneyMask(order.orderTotal)}</Typography>
+                    </TableCell>
+
+                    <TableCell>
+                      <Typography sx={{ fontSize: "0.85rem", fontWeight: 500, color: "#475569" }}>{paymentMethodMask(order.paymentMethod)}</Typography>
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <Typography sx={{ fontSize: "0.85rem", color: "#475569" }}>
+                        {order.paymentMethod === "cash" && Number(order.changeFor) > 0
+                          ? moneyMask(Number(order.changeFor) - Number(order.orderTotal))
+                          : "—"}
+                      </Typography>
+                    </TableCell>
+
+                    <TableCell align="right">
+                      <Button
+                        size="small"
+                        variant="contained"
+                        disabled={isReceiving}
+                        onClick={() => onReceive(order)}
+                        sx={{ textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: "#25D366", "&:hover": { backgroundColor: "#20BD5A" } }}
+                      >
+                        Receber
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </Box>

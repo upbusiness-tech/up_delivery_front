@@ -1,5 +1,5 @@
 import { QrCode2, ContentCopy, CheckCircle } from "@mui/icons-material";
-import { Box, Button, LinearProgress, Paper, Stack, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, LinearProgress, Paper, Stack, Typography } from "@mui/material";
 import { moneyMask } from "../../../../utils/masks/mask";
 import { UsePixScreenController } from "./UsePixScreenController";
 import type { Order } from "../../../../types/Order.type";
@@ -42,6 +42,15 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
               Pague com Pix
             </Typography>
           </Stack>
+        </Stack>
+      )}
+
+      {!isApproved && c.loading && (
+        <Stack sx={{ alignItems: "center", justifyContent: "center", py: 6, gap: 2 }}>
+          <CircularProgress color="success" />
+          <Typography variant="body2" color="text.secondary">
+            Gerando QR Code...
+          </Typography>
         </Stack>
       )}
 
@@ -102,16 +111,10 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
           <LinearProgress color="success" variant="determinate" value={c.progress} sx={{ height: 6, borderRadius: 999, mb: 2.5}} />
 
 
-          {c.loading ? (
-            <Stack sx={{ alignItems: "center", justifyContent: "center", py: 3 }}>
-              <Typography variant="body2" color="text.secondary">Gerando QR Code...</Typography>
+          {c.qrCodeBase64 && (
+            <Stack sx={{ alignItems: "center", justifyContent: "center", mb: 2.5 }}>
+              <img style={{ width: 180, height: 180 }} src={`data:image/png;base64,${c.qrCodeBase64}`} alt="QR Code Pix" />
             </Stack>
-          ) : (
-            c.qrCodeBase64 && (
-              <Stack sx={{ alignItems: "center", justifyContent: "center", mb: 2.5 }}>
-                <img style={{ width: 180, height: 180 }} src={`data:image/png;base64,${c.qrCodeBase64}`} alt="QR Code Pix" />
-              </Stack>
-            )
           )}
 
           <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center" }}>

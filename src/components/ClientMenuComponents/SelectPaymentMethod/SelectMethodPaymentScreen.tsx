@@ -9,26 +9,29 @@ interface PaymentScreenProps {
   total: number;
   paymentMethod: string;
   setPaymentMethod: (method: string) => void;
-  onCreateOrder: () => void;
+  onCreateOrder: () => void | Promise<void>;
   restaurant: Restaurant | undefined;
+  step?: number;
+  totalSteps?: number;
   onBack: () => void;
-  onNext: () => void;
+  loading?: boolean;
 }
 
-export default function PaymentScreen({onBack, onNext, setPaymentMethod, paymentMethod, onCreateOrder, restaurant}: PaymentScreenProps) {
+export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, onCreateOrder, restaurant, step, totalSteps, loading = false}: PaymentScreenProps) {
+
+  const { allowPixPayment, allowCardPayment } = useRestaurantSettings(restaurant?.id ?? "");
+  const c = UsePaymentController({ setPaymentMethod, allowPixPayment, allowCardPayment });
 
   if(!restaurant) return null;
-  const { allowPixPayment, allowCardPayment } = useRestaurantSettings(restaurant.id);
-  const c = UsePaymentController({ setPaymentMethod, allowPixPayment, allowCardPayment });
   
-  async function handleNext(){
-    onCreateOrder()
-    onNext()
+  function handleNext(){
+    if (loading) return;
+    void onCreateOrder();
   }
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <BackHeader onBack={onBack} title="Voltar" />
+      <BackHeader onBack={onBack} title="Pagamento" step={step} totalSteps={totalSteps} />
       <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Como você quer pagar?</Typography>
 
@@ -38,14 +41,17 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
             return (
               <Paper
                 key={o.id}
-                onClick={() => setPaymentMethod(o.id)}
+                onClick={() => !loading && setPaymentMethod(o.id)}
+                aria-disabled={loading}
                 sx={{
                   p: 2,
-                  cursor: "pointer",
+                  cursor: loading ? "default" : "pointer",
                   border: 2,
                   borderColor: active ? "success.main" : "transparent",
                   bgcolor: active ? "success.50" : "#fff",
-                  transition: "border-color 120ms ease, background-color 120ms ease",
+                  opacity: loading ? 0.6 : 1,
+                  pointerEvents: loading ? "none" : "auto",
+                  transition: "border-color 120ms ease, background-color 120ms ease, opacity 120ms ease",
                 }}
               >
                 <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
@@ -65,8 +71,9 @@ export default function PaymentScreen({onBack, onNext, setPaymentMethod, payment
         <ScreenFooterActions
           onBack={onBack}
           onNext={handleNext}
-          nextLabel="Continuar"
+          nextLabel={loading ? "Carregando..." : "Continuar"}
           nextDisabled={!paymentMethod}
+          loading={loading}
         />
       </Container>
     </Box>

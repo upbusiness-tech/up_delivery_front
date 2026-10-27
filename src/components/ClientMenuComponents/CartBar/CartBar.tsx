@@ -5,11 +5,11 @@ import { moneyMask } from "../../../utils/masks/mask";
 
 interface Props {
   itemCount: number;
-  total: number;
-  onClick?: () => void;
+  subtotal: number;
+  onClick: () => void;
 }
 
-export function CartBar({ itemCount, total, onClick }: Props) {
+export function CartBar({ itemCount, subtotal, onClick }: Props) {
   if (itemCount === 0) return null;
 
   return (
@@ -25,7 +25,7 @@ export function CartBar({ itemCount, total, onClick }: Props) {
           {itemCount} {itemCount === 1 ? "item" : "itens"}
         </Typography>
         <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 700, lineHeight: 1.2 }}>
-          {moneyMask(total)}
+          {moneyMask(subtotal)}
         </Typography>
       </Box>
 

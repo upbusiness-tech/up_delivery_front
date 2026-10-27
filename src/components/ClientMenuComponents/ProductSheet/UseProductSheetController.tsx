@@ -1,25 +1,37 @@
 import { useTheme } from "@mui/material/styles";
 import { useMediaQuery } from "@mui/material";
 import { useEffect, useState } from "react";
-import type { Additionals, Product, ProductCategory } from "../../../types/Product.type";
+import type { Additionals, Product } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
+import { RestaurantService } from "../../../api/services/restaurant.service";
+import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
+import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
 
-export default function UseProductSheetController(item: Product | undefined, category: ProductCategory, additionals: Additionals[]){
+export default function UseProductSheetController(
+  item: Product | undefined,
+  initialItem?: OrderItemBag,
+){
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
-  const [qty, setQty] = useState(item?.minQuantity ?? 1);
-  const [observation, setObservation] = useState("");
-  const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>([]);
+  const [qty, setQty] = useState(initialItem?.quantity ?? item?.minQuantity ?? 1);
+  const [observation, setObservation] = useState(initialItem?.observation ?? "");
+  const [checkedAdditionals, setCheckedAdditionals] = useState<Additionals[]>(
+    initialItem?.additionals ?? [],
+  );
+
+  const { slug } = usePublicRestaurant()
+  const { data: additionals = []} = useRestaurantData(() => RestaurantService.restaurantAdditionalsPublic(slug!), QueryCacheName.ADDITIONALS_PUBLIC, slug)
+  
   const ADDITIONALS = additionals ?? []
 
   useEffect(() => {
-    setQty(item?.minQuantity ?? 1);
-    setObservation("");
-    setCheckedAdditionals([]);
-  }, [item?.id]);
+    setQty(initialItem?.quantity ?? item?.minQuantity ?? 1);
+    setObservation(initialItem?.observation ?? "");
+    setCheckedAdditionals(initialItem?.additionals ?? []);
+  }, [item?.id, initialItem?.id]);
 
   function additionalsByCategory() {
-    return ADDITIONALS.filter((a) => a.category.id === category.id);
+    return ADDITIONALS.filter((a) => a.category.id === item?.productCategory.id);
   }
 
   const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);
@@ -34,7 +46,7 @@ export default function UseProductSheetController(item: Product | undefined, cat
   //Essa função so vai ser usada em produtos com 1 unico tamanho 
   function toOrderItem(product: Product){
     const orderItem: OrderItemBag = {
-      id: product.id,
+      id: initialItem?.id ?? product.id,
       name: product.productName,
       quantity: qty,
       price: product.sizes[0].price,
@@ -42,11 +54,14 @@ export default function UseProductSheetController(item: Product | undefined, cat
       observation: observation,
       additionals: checkedAdditionals,
       image: product.image,
-      minQuantity: product.minQuantity ?? 1
+      minQuantity: product.minQuantity ?? 1,
+      categoryId: product.productCategory.id,
+      sizeId: product.sizes[0].size.id,
     }
     // console.log("Produto simples adicionado: ", orderItem)
     return orderItem
   }
+
 
   return {
     isDesktop,

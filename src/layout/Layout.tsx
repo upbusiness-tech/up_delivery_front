@@ -1,13 +1,13 @@
 import { Outlet } from "react-router-dom";
 import AppShell from "../components/Sidbar/AppShell";
-import { RestaurantProvider } from "../context/RestaurantContext";
+import { PrintQueueProvider } from "../context/PrintQueueContext";
 
 export default function Layout() {
   return (
-    <RestaurantProvider>
+    <PrintQueueProvider>
       <AppShell>
         <Outlet />
       </AppShell>
-    </RestaurantProvider>
+    </PrintQueueProvider>
   );
 }

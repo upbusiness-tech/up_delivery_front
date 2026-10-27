@@ -1,22 +1,102 @@
-import { Box, Paper, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import CloseIcon from "@mui/icons-material/Close";
 import { moneyMask } from "../../../../utils/masks/mask";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
-import UseMenuController from "./UseProductsTablesController";
+import UseProductsTablesController from "./UseProductsTablesController";
 // import StopCircleIcon from '@mui/icons-material/StopCircle';
-import SizeComponent from "../SizeComponent/SizeComponent";
+// import SizeComponent from "../SizeComponent/SizeComponent";
 
 
 export default function ProductsTable(){
-  const c = UseMenuController()
+  const {
+    categories,
+    // sizes,
+    additionalsByCategory,
+    openProductDetail,
+    produtosPorCategoria,
+    isLoading,
+    error,
+    refetch,
+    updateActiveProduct,
+    togglingProductId,
+    selectedProduct,
+    closeProductDetail,
+    search,
+    setSearch,
+    isSearching,
+    hasSearchResults,
+  } = UseProductsTablesController()
+
+  if (isLoading) {
+    return (
+      <Stack direction="row" sx={{ justifyContent: "center", alignItems: "center", py: 8 }}>
+        <CircularProgress size={32} />
+      </Stack>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={refetch}>
+            Tentar novamente
+          </Button>
+        }
+      >
+        Não foi possível carregar o cardápio.
+      </Alert>
+    );
+  }
 
   return (
     <Box >
-      <SizeComponent sizes={c.SIZES}/>
-      {c.CATEGORIAS.map((cat) => {
-        const produtos = c.produtosPorCategoria(cat.id)
-        const adicionais = c.additionalsByCategory(cat.id)
+      {/* <SizeComponent sizes={sizes}/> */}
+      <Paper elevation={0} sx={{ p: 1.5, mb: 2, border: "1px solid #E5E7EB", borderRadius: 3 }}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Pesquisar produto ou adicional..."
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon fontSize="small" />
+                </InputAdornment>
+              ),
+              endAdornment: search ? (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    aria-label="Limpar pesquisa"
+                    onClick={() => setSearch("")}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ) : null,
+            },
+          }}
+        />
+      </Paper>
+
+      {isSearching && !hasSearchResults ? (
+        <Paper elevation={0} sx={{ p: 5, textAlign: "center", border: "1px solid #E5E7EB", borderRadius: 3 }}>
+          <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+            Nenhum item encontrado para "{search.trim()}".
+          </Typography>
+        </Paper>
+      ) : (
+        <Box>
+          {categories.map((cat) => {
+        const produtos = produtosPorCategoria(cat.id)
+        const adicionais = additionalsByCategory(cat.id)
         return (
-          <Paper elevation={1} sx={{p: 2, mb: 4}}>
+          <Paper key={cat.id} elevation={1} sx={{p: 2, mb: 4}}>
             <Stack direction="row" spacing={1.5} sx={{ mb: 1.5, alignItems: "center", justifyContent: "space-between" }}>
               <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#1f2937" }}>{cat.categoryName}</Typography>
@@ -42,7 +122,7 @@ export default function ProductsTable(){
                     <TableRow 
                       key={p.id} 
                       sx={{ '&:last-child td': { borderBottom: 0 }, cursor: 'pointer' }}
-                      onClick={() => c.openProductDetail(p)}
+                      onClick={() => openProductDetail(p)}
                       >
                       <TableCell sx={{ py: 2 }}>
                         <Stack direction='row' spacing={2} sx={{alignItems:'center'}}>
@@ -97,9 +177,10 @@ export default function ProductsTable(){
                           {/* <Switch onClick={(e) => e.stopPropagation() } defaultChecked /> */}
                           <Switch
                             checked={p.productActive}
+                            disabled={togglingProductId === p.id}
+                            onChange={() => updateActiveProduct(p.id)}
                             onClick={(e) => {
                               e.stopPropagation();
-                              c.updateActiveProduct(p.id);
                             }}
                           />
                         </Stack>
@@ -148,9 +229,12 @@ export default function ProductsTable(){
           </Paper>
         )
       })}
+        </Box>
+      )}
+
       <ProductDetail
-        product={c.selectedProduct}
-        onClose={c.closeProductDetail}
+        product={selectedProduct}
+        onClose={closeProductDetail}
       />
     </Box>
   );

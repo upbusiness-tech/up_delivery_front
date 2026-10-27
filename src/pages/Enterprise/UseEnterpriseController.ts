@@ -1,38 +1,33 @@
-import { useEffect, useState } from "react";
-import type { BusinessHours } from "../../types/Restaurant.type";
-import { useRestaurant } from "../../context/RestaurantContext";
-import { RestaurantService } from "../../api/services/restaurant.service";
+import {
+  useConnectMercadoPago,
+  useRestaurantMe,
+} from "../../hooks/queries/useRestaurantQueries";
 
 export default function UseEnterpriseController() {
-  //Recebendo os dados do restaurante via contexto
-  const {restaurant} = useRestaurant()
-  const [businessHours, setBusinessHours] = useState<BusinessHours>({});
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoading(true);
-    if (restaurant) {setBusinessHours(restaurant.businessHours || {})
-      setLoading(false);
-    }
-  }, []);
+  const {
+    data: restaurantInfos,
+    isPending,
+    error,
+    refetch,
+  } = useRestaurantMe();
+  const connectMercadoPagoMutation = useConnectMercadoPago();
 
   async function connectRestaurant() {
-    try{
-      const response = await RestaurantService.restaurantConnectMp()
-      if(response){
-        const link = response.data.authorizationUrl;
-        console.log(link)
-        window.location.href = link;
-      }
-    }catch(err){
-      console.log(err)
+    try {
+      const data = await connectMercadoPagoMutation.mutateAsync();
+      window.location.href = data.authorizationUrl;
+    } catch {
+      return;
     }
   }
 
   return {
-    restaurant,
-    loading,
-    businessHours,
-    connectRestaurant
+    restaurantInfos,
+    isLoading: isPending,
+    error,
+    refetch,
+    connectRestaurant,
+    isConnecting: connectMercadoPagoMutation.isPending,
   }
 }

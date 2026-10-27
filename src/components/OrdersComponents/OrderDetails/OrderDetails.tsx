@@ -1,6 +1,8 @@
-import PrintIcon from "@mui/icons-material/Print";
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import PrintIcon from "@mui/icons-material/Print";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import {
   Box,
   Button,
@@ -15,24 +17,34 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
-import { useOrderDetailController } from "./UseOrderDetailController";
 import { type Order } from "../../../types/Order.type";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
-import PrintOrder from "../../../utils/print/orderPrint";
+import { openWhatsAppChat } from "../../../utils/whatsapp/orderMessage";
+import { useOrderDetailController } from "./UseOrderDetailController";
+import { usePrintQueue } from "../../../context/PrintQueueContext";
 
 interface OrderDetailProps {
   order: Order | null;
   onClose: () => void;
-  updateStatusOrder: (status: string, orderId: string) => void;
 }
 
 export default function OrderDetail({ order, onClose }: OrderDetailProps) {
-  const { open, openModalOrderCancel, handleCloseModalOrderCancel, cancelOrder, getItemFlavorLines, imprimir } = useOrderDetailController({ order, onClose });
+  const { openModalOrderCancel, handleCloseModalOrderCancel } = useOrderDetailController();
+  const { activeOrder, printOrder } = usePrintQueue();
 
   if (!order) return null;
 
   const isDelivery = order.type === "delivery";
   const deliveryFee = isDelivery ? Number(order.neighborhood?.deliveryFee ?? 0) : 0;
+  const createdAt = order.created_at ? new Date(order.created_at) : null;
+  const createdAtLabel =
+    createdAt && !Number.isNaN(createdAt.getTime())
+      ? createdAt.toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        })
+      : "Não informado";
+  const isThisOrderPrinting = activeOrder?.id === order.id;
 
   return (
     <>
@@ -45,13 +57,23 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         }
       `}</style>
 
-      
-
-      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <Dialog open={true} onClose={onClose} maxWidth="md" fullWidth>
         <DialogTitle>
           <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
             <Box>
-              <Typography variant="body1">Pedido {order.code}</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                Pedido {order.code}
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ alignItems: "center", mt: 0.25 }}
+              >
+                <ScheduleIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+                <Typography variant="body2" color="text.secondary">
+                  Feito em {createdAtLabel}
+                </Typography>
+              </Stack>
             </Box>
           </Stack>
           <IconButton aria-label="Fechar" onClick={onClose} sx={{ position: "absolute", right: 12, top: 12 }}>
@@ -64,7 +86,10 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
             <Grid size={{ xs: 12, md: 7 }}>
               <Typography variant="subtitle1" gutterBottom>Itens do pedido:</Typography>
               <Stack spacing={1.25}>
-                {order?.items?.map((item, i) => (
+                {order?.items?.map((item, i) => {
+                  const flavors = item.flavors ?? [];
+
+                  return (
                   <Paper elevation={0} key={i} sx={{ p: 1 }}>
                     <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
                       <Box>
@@ -77,11 +102,20 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                           </Typography>
                         )}
 
-                        {getItemFlavorLines(item).map((line, idx) => (
-                          <Typography key={idx} variant="body2" color="text.secondary" sx={{ ml: 2 }}>
-                            {line}
-                          </Typography>
-                        ))}
+                          <Box sx={{ ml: 2 }}>
+                            {flavors.map((flavor, flavorIndex) =>
+                              flavors.length >= 1 && flavor?.size?.name !== "COMUM" ? (
+                                <Typography
+                                  key={flavor?.id ?? `${i}-${flavorIndex}`}
+                                  variant="body2"
+                                  color="text.secondary"
+                                >
+                                  1/{flavors.length} {flavor?.product?.productName ?? "Sabor"}
+                                </Typography>
+                              ) : null
+                            )}
+                          </Box>
+
                         {item.additionals && item.additionals.length > 0 && (
                           <Typography variant="body2" color="success" sx={{ ml: 2 }}>
                             + {item.additionals.map((e) => e.additionalName).join(", ")}
@@ -94,7 +128,8 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                       </Typography>
                     </Stack>
                   </Paper>
-                ))}
+                  );
+                })}
               </Stack>
               <Typography variant="subtitle1" gutterBottom>Observações:</Typography>
               <Paper elevation={0}>
@@ -112,6 +147,26 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                   <Typography variant="subtitle2" gutterBottom>Cliente</Typography>
                   <Typography>{order.costumerName}</Typography>
                   <Typography variant="body2" color="text.secondary">{order.costumerPhone}</Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<WhatsAppIcon />}
+                    disabled={!order.costumerPhone}
+                    onClick={() => openWhatsAppChat(order)}
+                    sx={{
+                      mt: 1,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderColor: "#25D366",
+                      color: "#128C4B",
+                      "&:hover": {
+                        borderColor: "#128C4B",
+                        backgroundColor: "#F0FDF4",
+                      },
+                    }}
+                  >
+                    WhatsApp do cliente
+                  </Button>
                   <Divider sx={{ my: 1 }} />
 
                   {isDelivery ? (
@@ -178,8 +233,10 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
           </Button> */}
 
           <Stack direction="row" spacing={1}>
-            <Button onClick={() => imprimir()} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
-              Imprimir
+          </Stack>
+          <Stack direction="row" spacing={1}>
+            <Button disabled={Boolean(activeOrder)} onClick={() => printOrder(order)} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
+              {isThisOrderPrinting ? "Imprimindo..." : "Imprimir"}
             </Button>
             {/* <Select
               value={order.status}
@@ -218,14 +275,13 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
             <Button sx={{ textTransform: "none" }} disableElevation variant="contained" color="inherit" size="medium" onClick={() => handleCloseModalOrderCancel()}>
               Voltar
             </Button>
-            <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => cancelOrder()}>
+            {/* <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => cancelOrder()}>
               Cancelar
-            </Button>
+            </Button> */}
           </Stack>
         </DialogActions>
       </Dialog>
 
-      <PrintOrder order={order} />
     </>
   );
 }

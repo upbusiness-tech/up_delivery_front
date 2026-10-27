@@ -1,26 +1,27 @@
 import type { SelectChangeEvent } from "@mui/material";
 import type { Order } from "../../../types/Order.type";
 import { STATUS } from "../../../utils/texts/status.enum";
-import { OrderService } from "../../../api/services/order.service";
-import { useRestaurant } from "../../../context/RestaurantContext";
 import { buildOrderMessage, sendWhatsAppMessage } from "../../../utils/whatsapp/orderMessage";
+import {
+  useUpdateOrderReceived,
+  useUpdateOrderStatus,
+} from "../../../hooks/queries/useOrdersQueries";
+import { useRestaurantMe } from "../../../hooks/queries/useRestaurantQueries";
 
-interface UseOrderTableControllerProps {
-  updateStatusOrder: (status: string, orderId: string) => Promise<void>;
-}
-
-export function useOrderTableController({ updateStatusOrder }: UseOrderTableControllerProps) {
-  const { setOrders, restaurant, products } = useRestaurant();
+export function useOrderTableController() {
+  const { data: restaurant } = useRestaurantMe();
+  const updateStatusMutation = useUpdateOrderStatus();
+  const updateReceivedMutation = useUpdateOrderReceived();
 
   const isReceived = (order: Order) => order.received;
 
   const handleReceived = async (e: React.MouseEvent, order: Order) => {
     e.stopPropagation();
     if (isReceived(order)) return;
+
     try {
-      await OrderService.updateReceived(order.id);
-      setOrders((prev) => prev?.map((o) => (o.id === order.id ? { ...o, received: true } : o)));
-      await sendWhatsAppMessage(order, buildOrderMessage(order, 40, products));
+      await updateReceivedMutation.mutateAsync(order.id);
+      sendWhatsAppMessage(order, buildOrderMessage(order));
     } catch {
       return;
     }
@@ -36,7 +37,18 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     const newStatus = e.target.value;
     if (newStatus === order.status) return;
 
-    await updateStatusOrder(newStatus, order.id);
+    try {
+      await updateStatusMutation.mutateAsync({
+        orderId: order.id,
+        status: newStatus,
+      });
+    } catch {
+      return;
+    }
+
+    if (newStatus === STATUS.EM_PREPARO) {
+      sendWhatsAppMessage(order, `Oba😋 Seu pedido já está sendo preparado!\n Assim que estiver prontinho, avisaremos você por aqui.❤️`);
+    }
 
     if (newStatus === STATUS.EM_ROTA) {
       sendWhatsAppMessage(order, `Seu pedido saiu para entrega e está a caminho.\nEm breve ele chegará até você. Obrigado pela preferência!`);
@@ -55,5 +67,11 @@ export function useOrderTableController({ updateStatusOrder }: UseOrderTableCont
     }
   };
 
-  return { isReceived, handleReceived, handleStatusChange, imprimir };
+  return {
+    isReceived,
+    handleReceived,
+    handleStatusChange,
+    isUpdating:
+      updateStatusMutation.isPending || updateReceivedMutation.isPending,
+  };
 }

@@ -1,4 +1,4 @@
-import { Box, Button, Chip, CircularProgress, Divider, IconButton, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableHead, TableRow, Typography } from "@mui/material";
+import { Box, Button, Chip, CircularProgress, Divider, IconButton, MenuItem, Paper, Select, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from "@mui/material";
 import { moneyMask, paymentMethodMask, phoneMask } from "../../../utils/masks/mask";
 import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
 import type { Order } from "../../../types/Order.type";
@@ -6,26 +6,23 @@ import PrintIcon from "@mui/icons-material/PrintOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import STATUS_COLOR from "../../../utils/colors/colors";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import { useOrderTableController } from "./UseOrderTableController";
+// import { useOrderTableController } from "./UseOrderTableController";
 import InventoryIcon from '@mui/icons-material/Inventory';
-import { useEffect, useState } from "react";
-import PrintOrder from "../../../utils/print/orderPrint";
+import { useOrderTableController } from "./UseOrderTableController";
+import { usePrintQueue } from "../../../context/PrintQueueContext";
 
 interface Props {
   orders: Order[] | undefined;
   loading: boolean;
   isDesktop: boolean;
   openOrderDetail: (order: Order) => void;
-  deliveryFee: (order: Order) => number;
-  updateStatusOrder: (status: string, orderId: string) => Promise<void>;
+  emptyMessage?: string;
 }
 
-export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deliveryFee, openOrderDetail }: Props) {
-  const { isReceived, handleReceived, handleStatusChange } = useOrderTableController({ updateStatusOrder });
-  const [orderToPrint, setOrderToPrint] = useState<Order | null>(null);
-  const imprimir = (e: React.MouseEvent, order: Order) => { e.stopPropagation(); setOrderToPrint(order); };
-  useEffect(() => { if (!orderToPrint) return; const t = setTimeout(() => { window.print(); setOrderToPrint(null); }, 100); return () => clearTimeout(t); }, [orderToPrint]);
-  
+export function OrderTable({ orders, loading, isDesktop, openOrderDetail, emptyMessage }: Props) {
+  const { isReceived, handleReceived, handleStatusChange, isUpdating } = useOrderTableController();
+  const { activeOrder, printOrder } = usePrintQueue();
+
   if (loading) {
     return (
       <Stack direction="row" sx={{ justifyContent: "center", alignItems: "center", py: 8 }}>
@@ -37,36 +34,34 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
   if (!orders || orders.length === 0) {
     return (
       <Paper elevation={0} sx={{ p: 5, textAlign: "center", border: "1px solid #E5E7EB", borderRadius: 3 }}>
-        <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>Nenhum pedido encontrado.</Typography>
+        <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>{emptyMessage ?? "Nenhum pedido encontrado."}</Typography>
       </Paper>
     );
   }
 
   if (isDesktop) {
     return (
-    <>
-      <style>{`
-        .print-only { display: none; }
-        @media print {
-          body * { visibility: hidden; }
-          #print-order, #print-order * { visibility: visible; }
-          #print-order { display: block; position: absolute; top: 0; left: 0; width: 100%; }
-        }
-      `}</style>
-
-      <Paper elevation={0} sx={{ overflow: "hidden", border: "1px solid #E5E7EB", borderRadius: 3, backgroundColor: "#fff" }}>
-        <Box sx={{ overflowX: "auto" }}>
-          <Table
-            size="medium"
-            sx={{
-              minWidth: 1100,
-              "& th": { backgroundColor: "#F8FAFC", color: "#64748B", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", borderBottom: "1px solid #E5E7EB", whiteSpace: "nowrap", py: 1.5 },
-              "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
-              "& tbody tr": { transition: "all 0.15s ease", backgroundColor: "#fff" },
-              "& tbody tr:hover": { backgroundColor: "#F8FAFC" },
-              "& tbody tr:last-child td": { borderBottom: 0 },
-            }}
-          >
+      <TableContainer
+        component={Paper}
+        elevation={0}
+        sx={{
+          border: "1px solid #E5E7EB",
+          borderRadius: 3,
+          backgroundColor: "#fff",
+          overflowX: "auto",
+        }}
+      >
+        <Table
+          size="medium"
+          sx={{
+            minWidth: 1100,
+            "& th": { backgroundColor: "#F8FAFC", color: "#64748B", fontSize: "0.72rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.03em", borderBottom: "1px solid #E5E7EB", whiteSpace: "nowrap", py: 1.5 },
+            "& td": { borderBottom: "1px solid #F1F5F9", py: 1.6 },
+            "& tbody tr": { transition: "all 0.15s ease", backgroundColor: "#fff" },
+            "& tbody tr:hover": { backgroundColor: "#F8FAFC" },
+            "& tbody tr:last-child td": { borderBottom: 0 },
+          }}
+        >
             <TableHead>
               <TableRow>
                 <TableCell width={70} align="center">Ações</TableCell>
@@ -83,7 +78,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
             <TableBody>
               {orders.map((order) => {
                 const isCancelled = order.status === STATUS.CANCELADO;
-                const total = Number(order.orderTotal) + deliveryFee(order);
+                const total = Number(order.orderTotal);
                 const change = Number(order.changeFor) - total;
                 const received = isReceived(order);
 
@@ -94,13 +89,23 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                     sx={{ cursor: "pointer", backgroundColor: isCancelled ? "#FFF7F7" : "#fff", "&:hover": { backgroundColor: isCancelled ? "#FFF1F2" : "#F8FAFC" } }}
                   >
                     <TableCell align="center">
-                      <IconButton
-                        size="small"
-                        onClick={(e) => imprimir(e, order)}
-                        sx={{ width: 34, height: 34, border: "2px solid #168b08", borderRadius: 2, color: "#168b08", "&:hover": { backgroundColor: "#F1F5F9" } }}
-                      >
-                        <PrintIcon fontSize="small" />
-                      </IconButton>
+                      <Tooltip title={activeOrder?.id === order.id ? "Imprimindo..." : "Imprimir pedido"}>
+                        <IconButton
+                          size="small"
+                          aria-label={`Imprimir pedido #${order.code}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            printOrder(order);
+                          }}
+                          sx={{ width: 34, height: 34, border: "1px solid #E2E8F0", borderRadius: 2, color: "#475569", "&:hover": { backgroundColor: "#F1F5F9" } }}
+                        >
+                          {activeOrder?.id === order.id ? (
+                            <CircularProgress size={18} />
+                          ) : (
+                            <PrintIcon fontSize="small" />
+                          )}
+                        </IconButton>
+                      </Tooltip>
                     </TableCell>
 
                     <TableCell>
@@ -165,6 +170,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                             endIcon={<WhatsAppIcon sx={{ fontSize: "17px !important" }} />}
                             variant={received ? "outlined" : "contained"}
                             size="small"
+                            disabled={isUpdating}
                             onClick={(e) => handleReceived(e, order)}
                             sx={{ minWidth: 95, height: 34, textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: received ? "transparent" : "#25D366", color: received ? "#64748B" : "#fff", borderColor: received ? "#CBD5E1" : "#25D366", "&:hover": { backgroundColor: received ? "#F8FAFC" : "#20BD5A", borderColor: received ? "#94A3B8" : "#20BD5A" } }}
                           >
@@ -174,6 +180,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                           <Select
                             value={order.status}
                             size="small"
+                            disabled={isUpdating}
                             onChange={(e) => handleStatusChange(e, order)}
                             onClick={(e) => e.stopPropagation()}
                             sx={{ minWidth: 135, height: 34, color: "#fff", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2, backgroundColor: STATUS_COLOR(order.status), "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSelect-icon": { color: "#fff" } }}
@@ -191,11 +198,8 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                 );
               })}
             </TableBody>
-          </Table>
-        </Box>
-      </Paper>
-      <PrintOrder order={orderToPrint} />
-    </>
+        </Table>
+      </TableContainer>
     );
   }
 
@@ -203,7 +207,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
     <Stack spacing={1.5}>
       {orders.map((order) => {
         const isCancelled = order.status === STATUS.CANCELADO;
-        const total = Number(order.orderTotal) + deliveryFee(order);
+        const total = Number(order.orderTotal);
         const received = isReceived(order);
 
         return (
@@ -218,11 +222,30 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                 <Typography sx={{ fontWeight: 800, fontSize: "0.95rem", color: "#0F172A" }}>#{order.code}</Typography>
                 <Typography sx={{ fontSize: "0.72rem", color: "#94A3B8", mt: 0.25 }}>Pedido</Typography>
               </Box>
-              <Chip
-                size="small"
-                label={order.type === "delivery" ? "Delivery" : "Retirada"}
-                sx={{ fontWeight: 600, backgroundColor: order.type === "delivery" ? "#EFF6FF" : "#F1F5F9", color: order.type === "delivery" ? "#2563EB" : "#475569", border: "none" }}
-              />
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+                <Chip
+                  size="small"
+                  label={order.type === "delivery" ? "Delivery" : "Retirada"}
+                  sx={{ fontWeight: 600, backgroundColor: order.type === "delivery" ? "#EFF6FF" : "#F1F5F9", color: order.type === "delivery" ? "#2563EB" : "#475569", border: "none" }}
+                />
+                <Tooltip title={activeOrder?.id === order.id ? "Imprimindo..." : "Imprimir pedido"}>
+                  <IconButton
+                    size="small"
+                    aria-label={`Imprimir pedido #${order.code}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      printOrder(order);
+                    }}
+                    sx={{ width: 34, height: 34, border: "1px solid #E2E8F0", borderRadius: 2, color: "#475569", "&:hover": { backgroundColor: "#F1F5F9" } }}
+                  >
+                    {activeOrder?.id === order.id ? (
+                      <CircularProgress size={18} />
+                    ) : (
+                      <PrintIcon fontSize="small" />
+                    )}
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </Stack>
 
             <Box sx={{ mt: 2 }}>
@@ -253,6 +276,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                   endIcon={<WhatsAppIcon sx={{ fontSize: "17px !important" }} />}
                   variant={received ? "outlined" : "contained"}
                   size="small"
+                  disabled={isUpdating}
                   onClick={(e) => handleReceived(e, order)}
                   sx={{ minWidth: 95, height: 34, textTransform: "none", borderRadius: 2, fontWeight: 600, backgroundColor: received ? "transparent" : "#25D366", color: received ? "#64748B" : "#fff", borderColor: received ? "#CBD5E1" : "#25D366", "&:hover": { backgroundColor: received ? "#F8FAFC" : "#20BD5A", borderColor: received ? "#94A3B8" : "#20BD5A" } }}
                 >
@@ -262,6 +286,7 @@ export function OrderTable({ orders, loading, isDesktop, updateStatusOrder, deli
                 <Select
                   value={order.status}
                   size="small"
+                  disabled={isUpdating}
                   onChange={(e) => handleStatusChange(e, order)}
                   onClick={(e) => e.stopPropagation()}
                   sx={{ flex: 1, height: 36, color: "#fff", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2, backgroundColor: STATUS_COLOR(order.status), "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSelect-icon": { color: "#fff" } }}

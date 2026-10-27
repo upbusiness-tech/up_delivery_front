@@ -1,6 +1,4 @@
-import { useRestaurant } from "../../context/RestaurantContext";
-import type { Order, OrderItem } from "../../types/Order.type";
-import type { ProducSize } from "../../types/Product.type";
+import type { Order } from "../../types/Order.type";
 import { paymentMethodMask } from "../masks/mask";
 
 interface PrintOrderProps {
@@ -8,35 +6,24 @@ interface PrintOrderProps {
 }
 
 export default function PrintOrder({ order }: PrintOrderProps) {
-  const { products, restaurant } = useRestaurant(); // CORREÇÃO: hook ANTES do return condicional
 
   if (!order) return null;
-
-  function getProductNameByProductSize(flavor: string | ProducSize): string {
-    const targetId = typeof flavor === "string" ? flavor : flavor.id;
-    const product = products?.find((p) => p.sizes.some((ps) => ps.id === targetId));
-    return product?.productName ?? "Sabor não encontrado";
-  }
-
-  function getItemFlavorLines(item: OrderItem): string[] {
-    const names = item.flavors.map(getProductNameByProductSize);
-    if (names.length === 1 && names[0].trim().toLowerCase() === item.name.trim().toLowerCase()) return [];
-    return names.map((n) => names.length === 1 ? n : `1/${names.length} ${n}`);
-  }
 
   function formatMoney(value: number | string | undefined | null) {
     return Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  const createdAt = order.created_at ? new Date(order.created_at) : new Date();
+  const printedDate = Number.isNaN(createdAt.getTime()) ? new Date() : createdAt;
   const itemsTotal = order.items?.reduce((total, item) => total + Number(item.price) * Number(item.quantity), 0) ?? 0;
   const fixOrderDate = (d: Date | string) => new Date(new Date(d).getTime() - 3 * 60 * 60 * 1000);
 
   return (
     <div id="print-order" className="print-only" style={{ width: "100%", maxWidth: "80mm", padding: "4mm", boxSizing: "border-box", fontFamily: "Arial, Helvetica, sans-serif", fontSize: "13px", color: "#000", background: "#fff" }}>
       <div style={{ textAlign: "center", lineHeight: 1.2, marginBottom: 8 }}>
-        <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{restaurant?.restaurantName}</div>
+        {/* <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{order.restaurant.restaurantName}</div> */}
         <div style={{ fontSize: "11px", fontWeight: "bold", marginTop: 3 }}>
-          {fixOrderDate(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" })}
+          {printedDate.toLocaleDateString("pt-BR")} {printedDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
 
@@ -64,23 +51,29 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       <div style={{ fontWeight: "bold", fontSize: "12px", marginBottom: 5 }}>ITENS DO PEDIDO</div>
 
       {order.items?.map((item, i) => {
-        const flavorLines = getItemFlavorLines(item);
-        const itemTotal = Number(item.price) * Number(item.quantity);
+        const flavors = item.flavors ?? [];
 
         return (
           <div key={i} style={{ marginBottom: 9, pageBreakInside: "avoid" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 5 }}>
               <div style={{ flex: 1, fontWeight: "bold", lineHeight: 1.2, fontSize: 18 }}>{item.name}</div>
-              <div style={{ whiteSpace: "nowrap", fontWeight: "bold" }}>R$ {formatMoney(itemTotal)}</div>
+              <div style={{ whiteSpace: "nowrap", fontWeight: "bold" }}>R$ {formatMoney(item.price)}</div>
             </div>
 
             <div style={{ fontSize: "14px", marginTop: 2, fontWeight: 'bold'}}>{item.quantity} x R$ {formatMoney(item.price)}</div>
 
-            {flavorLines.length > 0 && (
               <div style={{ marginTop: 4, marginLeft: 8, fontSize: "11px", lineHeight: 1.35 }}>
-                {flavorLines.map((line, idx) => <div style={{fontSize: "14px", fontWeight: "bold"}} key={idx}>• {line}</div>)}
+                {flavors.map((flavor, flavorIndex) =>
+                  flavors.length > 1 && flavor?.size?.name !== "COMUM" ? (
+                    <div
+                      key={flavor?.id ?? `${i}-${flavorIndex}`}
+                      style={{fontSize: "14px"}}
+                    >
+                      1/{flavors.length} {flavor?.product?.productName ?? "Sabor"}
+                    </div>
+                  ) : null
+                )}
               </div>
-            )}
             {item.additionals && item.additionals.length > 0 && (
               <div style={{fontSize: "14px", fontWeight: "bold"}}>
                 + {item.additionals.map((e) => e.additionalName).join(", ")}
@@ -112,7 +105,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       {order.type === "delivery" && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{fontWeight: "bold"}}>Taxa de entrega:</span>
-          <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood.deliveryFee)}</span>
+          <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood?.deliveryFee)}</span>
         </div>
       )}
 

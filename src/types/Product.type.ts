@@ -40,7 +40,9 @@ export interface Product {
 export interface ProducSize {
   id: string; 
   price: number;
-  size: Size
+  product: Product;
+  size: Size;
+  created_at: Date
 }
 
 export interface ProducSizeDTO {

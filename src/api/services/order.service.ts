@@ -11,6 +11,7 @@ export const OrderService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error
     }
   },
   async updateStatusOrder(status: string, orderId: string) {
@@ -29,7 +30,7 @@ export const OrderService = {
   },
   async updatePrinted(orderId: string) {
     try {
-      const { data } = await api.post(`/order/${orderId}/printed`);
+      const { data } = await api.post<void>(`/order/${orderId}/printed`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -38,9 +39,9 @@ export const OrderService = {
       throw error;
     }
   },
-    async updateReceived(orderId: string) {
+  async updateReceived(orderId: string) {
     try {
-      const { data } = await api.post(`/order/${orderId}/received`);
+      const { data } = await api.post<void>(`/order/${orderId}/received`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

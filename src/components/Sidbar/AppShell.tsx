@@ -24,33 +24,73 @@ import MenuBookIcon from '@mui/icons-material/MenuBook';
 import icon from '../../../public/icon-512.png'
 
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useNavigate } from "react-router-dom";
-import { ROUTES_ENUM } from "../../routes/routes.enum";
+import { matchPath, useLocation, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import { AuthService } from "../../api/services/auth.service";
+import { PATHS } from "../../routes/paths";
 
 const DRAWER_WIDTH = 240;
 const COLLAPSED_WIDTH = 72;
+const SIDEBAR_COLLAPSED_STORAGE_KEY = "updelivery:sidebar-collapsed";
+
+function getInitialCollapsed() {
+  try {
+    return window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY) === "true";
+  } catch {
+    // localStorage indisponível (modo privado, cota cheia...) — usa o padrão.
+    return false;
+  }
+}
+
+function persistCollapsed(collapsed: boolean) {
+  try {
+    window.localStorage.setItem(
+      SIDEBAR_COLLAPSED_STORAGE_KEY,
+      String(collapsed),
+    );
+  } catch {
+    // Sem persistência disponível, o menu continua funcionando na sessão.
+  }
+}
 
 const NAV = [
-  { label: "Pedidos", route: ROUTES_ENUM.ORDERS , icon: ReceiptLongIcon },
-  { label: "Empresa", route: ROUTES_ENUM.ENTERPRISE, icon: RestaurantMenuIcon },
-  { label: "Cardápio", route: ROUTES_ENUM.CARDAPIO, icon: MenuBookIcon },
-  // { label: "Empresa", route: , icon: StoreIcon },
-  // { label: "Finanças", route: , icon: PaidIcon },
-  // { label: "Faturas", route: , icon: DescriptionIcon },
-  // { label: "Conta", route: , icon: PersonIcon },
+  { label: "Pedidos", route: PATHS.orders, icon: ReceiptLongIcon },
+  { label: "Empresa", route: PATHS.enterprise, icon: RestaurantMenuIcon },
+  { label: "Cardápio", route: PATHS.menu, icon: MenuBookIcon },
 ];
 
 export default function AppShell({ children }: { children: ReactNode }) {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
 
-  const [active, setActive] = useState("Pedidos");
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(getInitialCollapsed);
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const width = collapsed ? COLLAPSED_WIDTH : DRAWER_WIDTH;
 
-  const navigate = useNavigate()
+  function toggleCollapsed() {
+    const next = !collapsed;
+    setCollapsed(next);
+    persistCollapsed(next);
+  }
+
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { pathname } = useLocation();
+  // A rota é a fonte da verdade do item ativo (deep link, voltar/avançar, F5).
+  const active = NAV.find((item) => matchPath({ path: item.route, end: true }, pathname)) ?? NAV[0];
+
+  async function handleLogout() {
+    try {
+      await AuthService.signOut();
+      // O `ProtectedRoute` reage ao estado do Firebase e leva para /login.
+    } catch {
+      navigate(PATHS.login, { replace: true });
+    } finally {
+      // Evita que dados do restaurante anterior fiquem disponíveis no cache.
+      queryClient.clear();
+    }
+  }
 
   const drawerContent = (
     <>
@@ -75,15 +115,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
       <List sx={{ px: 1, py: 1, flex: 1 }}>
         {NAV.map((item) => {
           const Icon = item.icon;
-          const isActive = active === item.label;
+          const isActive = active.route === item.route;
           return (
             <ListItem key={item.label} disablePadding sx={{ mb: 0.25 }}>
               <ListItemButton
                 onClick={() => {
-                  setActive(item.label);
                   setMobileOpen(false);
                   navigate(item.route)
-
                 }}
                 sx={{
                   borderRadius: 1.5,
@@ -123,7 +161,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
               color: "#CBD5E1",
               "&:hover": { bgcolor: "rgba(255,255,255,0.06)" },
             }}
-            onClick={() => navigate(ROUTES_ENUM.LOGIN)}
+            onClick={handleLogout}
           >
             <ListItemIcon sx={{ minWidth: collapsed ? 0 : 36, color: "inherit", justifyContent: "center" }}>
               <LogoutIcon fontSize="small" />
@@ -189,13 +227,13 @@ export default function AppShell({ children }: { children: ReactNode }) {
           <Toolbar sx={{ gap: 1 }}>
             <IconButton
               edge="start"
-              onClick={() => (isDesktop ? setCollapsed((c) => !c) : setMobileOpen(true))}
+              onClick={() => (isDesktop ? toggleCollapsed() : setMobileOpen(true))}
               aria-label={isDesktop ? (collapsed ? "Expandir menu" : "Retrair menu") : "Abrir menu"}
             >
               {isDesktop ? (collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />) : <MenuIcon />}
             </IconButton>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              {active}
+              {active.label}
             </Typography>
           </Toolbar>
         </AppBar>

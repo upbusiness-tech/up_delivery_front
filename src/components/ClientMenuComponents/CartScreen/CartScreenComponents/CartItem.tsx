@@ -1,26 +1,25 @@
 import { Box, IconButton, Typography, Card, Button, Chip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import type { OrderItemBag } from "../../../../types/Order.type";
 import { moneyMask } from "../../../../utils/masks/mask";
-import { UseCartItemController } from "./UseCartItemController";
+import { useCheckout } from "../../../../checkout/CheckoutContext";
 
 interface Props {
   item: OrderItemBag;
-  removeItem: () => void;
-  increaseQuantity: () => void;
-  decreaseQuantity: () => void;
+  remove: () => void;
+  onEdit?: () => void;
 }
 
-export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity }: Props) {
+export function CartItem({ item, remove, onEdit }: Props) {
   const hasAdditionals = item.additionals && item.additionals.length > 0;
   const additionalsSum = hasAdditionals ? item.additionals?.reduce((sum, ad) => sum + ad.additionalPrice, 0) : 0;
   const subtotal = item.price + (additionalsSum || 0);
   const total = subtotal * item.quantity;
 
-  const c = UseCartItemController();
-  const flavorLines = c.getFlavorLines(item.flavors, item.name);
+  const { addProduct, decrementProduct } = useCheckout()
 
   return (
     <Card sx={{ p: 1.5, mb: 1, borderRadius: 4, boxShadow: "0 1px 3px rgba(0,0,0,0.05)", border: "1px solid", borderColor: "grey.200", transition: "box-shadow 0.2s ease, border-color 0.2s ease", "&:hover": { boxShadow: "0 6px 16px rgba(0,0,0,0.08)", borderColor: "grey.300" } }}>
@@ -47,12 +46,19 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
         </Box>
       </Box>
 
-      {flavorLines.length > 0 && (
+      {item.flavorNames && item.flavorNames.length > 0 && (
         <Box sx={{ mt: 1.5, pt: 1.5, borderTop: "1px dashed", borderColor: "grey.200" }}>
-          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 0.75 }}>Detalhes:</Typography>
+          <Typography variant="caption" sx={{ color: "text.secondary", fontWeight: 600, display: "block", mb: 0.75 }}>
+            Sabores
+          </Typography>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.75 }}>
-            {flavorLines.map((line, index) => (
-              <Typography key={`${line}-${index}`} sx={{ color: "success.dark", fontWeight: 600, fontSize: 14, mb: 0.5 }}>{line}</Typography>
+            {item.flavorNames.map((flavor, index) => (
+              <Chip
+                key={`${flavor}-${index}`}
+                label={flavor}
+                size="small"
+                sx={{ bgcolor: "rgba(46,125,50,0.12)", color: "success.dark", fontWeight: 600, borderRadius: 999, "& .MuiChip-label": { px: 1.25 } }}
+              />
             ))}
           </Box>
         </Box>
@@ -69,7 +75,7 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
                 key={additional.id}
                 label={`${additional.additionalName} · +${moneyMask(additional.additionalPrice)}`}
                 size="small"
-                sx={{ bgcolor: "success.50", color: "success.dark", fontWeight: 600, borderRadius: 999, "& .MuiChip-label": { px: 1.25 } }}
+                sx={{ bgcolor: "rgba(46,125,50,0.12)", color: "success.dark", fontWeight: 600, borderRadius: 999, "& .MuiChip-label": { px: 1.25 } }}
               />
             ))}
           </Box>
@@ -82,11 +88,20 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
         </Typography>
       )}
 
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5, pt: 1, borderTop: "1px dashed", borderColor: "grey.500", flexWrap: "wrap" }}>
-        <Button size="small" onClick={removeItem} startIcon={<DeleteOutlineIcon fontSize="small" />} sx={{ color: "#910404", textTransform: "none" }} />
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mt: 1.5, pt: 1, borderTop: "1px dashed", borderColor: "grey.500", flexWrap: "wrap", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+          {onEdit && (
+            <Button size="small" onClick={onEdit} startIcon={<EditOutlinedIcon fontSize="small" />} sx={{ color: "text.secondary", textTransform: "none" }}>
+              Editar
+            </Button>
+          )}
+          <Button size="small" onClick={remove} startIcon={<DeleteOutlineIcon fontSize="small" />} sx={{ color: "#910404", textTransform: "none" }}>
+            Remover
+          </Button>
+        </Box>
 
         <Box sx={{ display: "flex", alignItems: "center", bgcolor: "grey.100", borderRadius: 999, p: 0.5, gap: 0.5 }}>
-          <IconButton size="small" onClick={decreaseQuantity} disabled={item.quantity <= (item.minQuantity ?? 1)} sx={{ bgcolor: "background.paper", width: 30, height: 30, boxShadow: "0 1px 2px rgba(0,0,0,0.1)", "&:hover": { bgcolor: "grey.200" } }}>
+          <IconButton onClick={() => decrementProduct(item)}  size="small"  disabled={item.quantity <= (item.minQuantity ?? 1)} sx={{ bgcolor: "background.paper", width: 30, height: 30, boxShadow: "0 1px 2px rgba(0,0,0,0.1)", "&:hover": { bgcolor: "grey.200" } }}>
             <RemoveIcon fontSize="small" />
           </IconButton>
 
@@ -94,7 +109,7 @@ export function CartItem({ item, removeItem, increaseQuantity, decreaseQuantity 
             {item.quantity}
           </Typography>
 
-          <IconButton size="small" onClick={increaseQuantity} sx={{ bgcolor: "success.main", color: "success.contrastText", width: 30, height: 30, "&:hover": { bgcolor: "success.dark" }, "&.Mui-disabled": { bgcolor: "grey.300", color: "grey.500" } }}>
+          <IconButton onClick={() => addProduct(item)}  size="small" sx={{ bgcolor: "success.main", color: "success.contrastText", width: 30, height: 30, "&:hover": { bgcolor: "success.dark" }, "&.Mui-disabled": { bgcolor: "grey.300", color: "grey.500" } }}>
             <AddIcon fontSize="small" />
           </IconButton>
         </Box>

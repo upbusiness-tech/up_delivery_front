@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { ProductService } from "../../../../api/services/product.service";
 import type { ProducSize, Product } from "../../../../types/Product.type";
-// import { ProductService } from "../../../../api/services/product.service";
+import {
+  useDeleteProductSize,
+  useUpdateProductSize,
+} from "../../../../hooks/queries/useMenuQueries";
 
 interface Props {
   sizes: ProducSize[];
@@ -11,7 +13,14 @@ interface Props {
 export default function UseProductsSizesTableController({ sizes, product }: Props) {
   const [editingId, setEditingId] = useState<string | number | null>(null);
   const [editedPrice, setEditedPrice] = useState<number>(0);
-  const [loadingId, setLoadingId] = useState<string | number | null>(null);
+  const updateSizeMutation = useUpdateProductSize();
+  const deleteSizeMutation = useDeleteProductSize();
+
+  const loadingId = updateSizeMutation.isPending
+    ? updateSizeMutation.variables?.productSizeId ?? null
+    : deleteSizeMutation.isPending
+      ? deleteSizeMutation.variables?.productSizeId ?? null
+      : null;
 
   const isEditing = (id: string | number) => editingId === id;
 
@@ -37,22 +46,30 @@ export default function UseProductsSizesTableController({ sizes, product }: Prop
   async function saveEdit(item: ProducSize) {
     if (!isPriceDirty(item)) return;
 
-    setLoadingId(item.id);
-    const response = await ProductService.updateProductSize(item.id, { size: item.size.id, price: editedPrice });
-    setLoadingId(null);
-
-    if (!response) return;
-    console.log(response);
-    setEditingId(null);
+    try {
+      await updateSizeMutation.mutateAsync({
+        productSizeId: item.id,
+        body: {
+          size: item.size.id,
+          price: editedPrice,
+        },
+      });
+      setEditingId(null);
+      setEditedPrice(0);
+    } catch {
+      return;
+    }
   }
 
   async function deleteSize(item: ProducSize) {
-    setLoadingId(item.id);
-    const response = await ProductService.deleteProductSize(product.id, item.id);
-    setLoadingId(null);
-
-    if (!response) return;
-    console.log(response);
+    try {
+      await deleteSizeMutation.mutateAsync({
+        productId: product.id,
+        productSizeId: item.id,
+      });
+    } catch {
+      return;
+    }
   }
 
   return {
