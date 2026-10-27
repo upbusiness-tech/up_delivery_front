@@ -14,6 +14,7 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -23,9 +24,9 @@ export const RestaurantService = {
   },
 
 
-  async createOrder(restaurantId: string, order: CreateOrder){
+  async createOrder(slug: string, order: CreateOrder){
     try{
-      const {data} = await api.post(`/order/create-order/${restaurantId}`, order)
+      const {data} = await api.post(`/order/create-order/${slug}`, order)
       return data
     }catch(error){
       if (axios.isAxiosError(error)) {
@@ -42,6 +43,7 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -53,6 +55,7 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -65,6 +68,7 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -76,6 +80,7 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
@@ -87,17 +92,19 @@ export const RestaurantService = {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
 
   async restaurantConnectMp(){
     try{
-      const response = await api.get(`payment/oauth/connect`)
-      return response;
+      const { data } = await api.get<{ authorizationUrl: string }>(`payment/oauth/connect`)
+      return data;
     }catch(error){
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
+      throw error;
     }
   },
   

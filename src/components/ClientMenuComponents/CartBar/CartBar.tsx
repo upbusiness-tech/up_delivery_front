@@ -1,14 +1,15 @@
 import { Box, Paper, Typography, Button } from "@mui/material";
 import ShoppingBagOutlinedIcon from "@mui/icons-material/ShoppingBagOutlined";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { moneyMask } from "../../../utils/masks/mask";
 
 interface Props {
   itemCount: number;
-  //total: number;
+  subtotal: number;
   onClick: () => void;
 }
 
-export function CartBar({ itemCount, onClick }: Props) {
+export function CartBar({ itemCount, subtotal, onClick }: Props) {
   if (itemCount === 0) return null;
 
   return (
@@ -23,9 +24,9 @@ export function CartBar({ itemCount, onClick }: Props) {
         <Typography variant="caption" sx={{ color: "grey.400", fontWeight: 500, lineHeight: 1.2, display: "block" }}>
           {itemCount} {itemCount === 1 ? "item" : "itens"}
         </Typography>
-        {/* <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 700, lineHeight: 1.2 }}>
-          {moneyMask(total)}
-        </Typography> */}
+        <Typography variant="subtitle1" sx={{ color: "white", fontWeight: 700, lineHeight: 1.2 }}>
+          {moneyMask(subtotal)}
+        </Typography>
       </Box>
 
       <Button

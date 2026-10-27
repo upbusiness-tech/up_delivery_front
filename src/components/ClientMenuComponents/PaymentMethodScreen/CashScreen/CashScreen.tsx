@@ -28,7 +28,8 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
     handleBlur,
     handleNoChangeToggle,
     handleConfirm,
-    status
+    status,
+    submitting
   } = useCashScreenController({ order, total, onBack });
 
   useEffect(() => {
@@ -137,8 +138,9 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
           onNext={handleConfirm}
           onBack={onBack}
           backLabel='Voltar'
-          nextLabel='Confirmar Pedido'
+          nextLabel={submitting ? 'Confirmando...' : 'Confirmar Pedido'}
           nextDisabled={!canConfirm}
+          loading={submitting}
         />
       </>
       )}

@@ -3,14 +3,16 @@ import { Add, Close, Remove, RadioButtonChecked, RadioButtonUnchecked, CheckBox,
 import type { Additionals, Product } from "../../../types/Product.type";
 import UseProductSheetController from "./UseProductSheetController";
 import { moneyMask } from "../../../utils/masks/mask";
-import { useCart } from "../../../context/CartContext";
+import { useCheckout } from "../../../checkout/CheckoutContext";
 import { useEffect, useRef } from "react";
+import type { OrderItemBag } from "../../../types/Order.type";
 interface ProductSheetProps {
   item: Product | undefined;
+  initialItem?: OrderItemBag;
   onClose: () => void;
 }
 
-export default function ProductSheet({ item, onClose }: ProductSheetProps) {
+export default function ProductSheet({ item, initialItem, onClose }: ProductSheetProps) {
   const {
     additionalsByType,
     checkedAdditionals,
@@ -21,9 +23,9 @@ export default function ProductSheet({ item, onClose }: ProductSheetProps) {
     setQty,
     toOrderItem,
     toggleAdditional
-  } = UseProductSheetController(item)
+  } = UseProductSheetController(item, initialItem)
 
-  const { addProduct } = useCart()
+  const { addProduct, updateProduct } = useCheckout()
 
   const singles = additionalsByType('single');
   const multiples = additionalsByType('multiple');
@@ -137,11 +139,16 @@ export default function ProductSheet({ item, onClose }: ProductSheetProps) {
             color="success"
             sx={{ textTransform: "none", boxShadow: 0, fontWeight: 700 }}
             onClick={() => {
-              addProduct(toOrderItem(item));
+              const orderItem = toOrderItem(item);
+              if (initialItem) {
+                updateProduct(orderItem);
+              } else {
+                addProduct(orderItem);
+              }
               closeSheet();
             }}
           >
-            Adicionar · R$ {price.toFixed(2)}
+            {initialItem ? "Salvar alterações" : "Adicionar"} · R$ {price.toFixed(2)}
           </Button>
         </Stack>
       </Box>

@@ -14,16 +14,18 @@ interface InfoScreenProps {
   setPhone: (v: string) => void;
   email: string;
   setEmail: (v: string) => void;
+  step?: number;
+  totalSteps?: number;
   onBack: () => void;
   onNext: () => void;
 }
 
-export default function InfoScreen({ name, setName, phone, setPhone, email, setEmail, onBack, onNext }: InfoScreenProps) {
+export default function InfoScreen({ name, setName, phone, setPhone, email, setEmail, step, totalSteps, onBack, onNext }: InfoScreenProps) {
   const { errors, isValid } = useInfoScreenValidation(name, phone, email);
 
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      <BackHeader onBack={onBack} title="Voltar" />
+      <BackHeader onBack={onBack} title="Dados pessoais" step={step} totalSteps={totalSteps} />
       <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
           Quem está pedindo?
@@ -84,7 +86,7 @@ export default function InfoScreen({ name, setName, phone, setPhone, email, setE
       </Container>
 
       <Container maxWidth="sm">
-        <ScreenFooterActions onBack={onBack} onNext={onNext} nextDisabled={!isValid} />
+        <ScreenFooterActions onBack={onBack} onNext={onNext} nextLabel="Endereço" nextDisabled={!isValid} />
       </Container>
     </Box>
   );

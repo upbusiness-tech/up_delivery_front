@@ -6,6 +6,7 @@ import {
   Button, FormGroup, FormControlLabel, Checkbox,
   FormControl,
   Switch,
+  Alert,
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import UseEnterpriseController from "./UseEnterpriseController";
@@ -39,13 +40,34 @@ export function EnterprisePage() {
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [tab, setTab] = useState<number>(TABS.GENERAL);
 
-  const { restaurantInfos, isLoading, connectRestaurant } = UseEnterpriseController();
+  const {
+    restaurantInfos,
+    isLoading,
+    error,
+    refetch,
+    connectRestaurant,
+    isConnecting,
+  } = UseEnterpriseController();
   const { 
     allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
-    allowCardPayment, allowPixPayment
+    allowCardPayment, allowPixPayment, isToggling,
    } = useRestaurantSettings(restaurantInfos?.id ?? "");
 
   if (isLoading) { return <Typography>Carregando...</Typography>; }
+  if (error) {
+    return (
+      <Alert
+        severity="error"
+        action={
+          <Button color="inherit" size="small" onClick={() => void refetch()}>
+            Tentar novamente
+          </Button>
+        }
+      >
+        Não foi possível carregar os dados do restaurante.
+      </Alert>
+    );
+  }
   if (!restaurantInfos) { return <Typography>Não foi possível carregar os dados do restaurante.</Typography>; }
 
   return (
@@ -195,8 +217,8 @@ export function EnterprisePage() {
                 </Stack>
               </Stack>
 
-              <Button sx={{textTransform: 'none'}} endIcon={<AssuredWorkloadIcon/>} onClick={connectRestaurant} variant="contained">
-                Integrar conta
+              <Button sx={{textTransform: 'none'}} endIcon={<AssuredWorkloadIcon/>} onClick={connectRestaurant} variant="contained" disabled={isConnecting}>
+                {isConnecting ? "Conectando..." : "Integrar conta"}
               </Button>
             </Stack>
           </Paper>
@@ -210,7 +232,7 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
             <FormControlLabel
-              control={<Checkbox checked={paymentsPlatform} onChange={() => togglePaymentMode("payments_via_the_platform", "separete_payments")} />}
+              control={<Checkbox disabled={isToggling} checked={paymentsPlatform} onChange={() => togglePaymentMode("payments_via_the_platform", "separete_payments")} />}
               label="Usar pagamentos integrados"
             />
             </FormGroup>
@@ -223,7 +245,7 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
               <FormControlLabel
-                control={<Checkbox checked={separetePayments} onChange={() => togglePaymentMode("separete_payments", "payments_via_the_platform")} />}
+                control={<Checkbox disabled={isToggling} checked={separetePayments} onChange={() => togglePaymentMode("separete_payments", "payments_via_the_platform")} />}
                 label="Usar pagamentos a parte"
               />
             </FormGroup>
@@ -234,11 +256,11 @@ export function EnterprisePage() {
             </Typography>
             <FormGroup>
            <FormControlLabel
-              control={<Checkbox checked={allowPixPayment} onChange={() => toggleSetting("allow_pix_payment")} />}
+              control={<Checkbox disabled={isToggling} checked={allowPixPayment} onChange={() => toggleSetting("allow_pix_payment")} />}
               label="Pix"
             />
             <FormControlLabel
-              control={<Checkbox checked={allowCardPayment} onChange={() => toggleSetting("allow_card_payment")} />}
+              control={<Checkbox disabled={isToggling} checked={allowCardPayment} onChange={() => toggleSetting("allow_card_payment")} />}
               label="Cartões Crédito e Débito"
             />
             </FormGroup>
@@ -254,8 +276,8 @@ export function EnterprisePage() {
           <Divider sx={{ mb: 2 }} />
 
           <FormControl>
-            <FormControlLabel control={<Switch checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
-            <FormControlLabel control={<Switch checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
+            <FormControlLabel control={<Switch disabled={isToggling} checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
+            <FormControlLabel control={<Switch disabled={isToggling} checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
           </FormControl>
         </Paper>
       </TabPanel>

@@ -1,6 +1,8 @@
 import CloseIcon from "@mui/icons-material/Close";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import PrintIcon from "@mui/icons-material/Print";
+import ScheduleIcon from "@mui/icons-material/Schedule";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import {
   Box,
   Button,
@@ -17,8 +19,9 @@ import {
 } from "@mui/material";
 import { type Order } from "../../../types/Order.type";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
+import { openWhatsAppChat } from "../../../utils/whatsapp/orderMessage";
 import { useOrderDetailController } from "./UseOrderDetailController";
-import PrintOrder from "../../../utils/print/PrintOrder";
+import { usePrintQueue } from "../../../context/PrintQueueContext";
 
 interface OrderDetailProps {
   order: Order | null;
@@ -26,12 +29,22 @@ interface OrderDetailProps {
 }
 
 export default function OrderDetail({ order, onClose }: OrderDetailProps) {
-  const { openModalOrderCancel, handleCloseModalOrderCancel, imprimir  } = useOrderDetailController();
+  const { openModalOrderCancel, handleCloseModalOrderCancel } = useOrderDetailController();
+  const { activeOrder, printOrder } = usePrintQueue();
 
   if (!order) return null;
 
   const isDelivery = order.type === "delivery";
   const deliveryFee = isDelivery ? Number(order.neighborhood?.deliveryFee ?? 0) : 0;
+  const createdAt = order.created_at ? new Date(order.created_at) : null;
+  const createdAtLabel =
+    createdAt && !Number.isNaN(createdAt.getTime())
+      ? createdAt.toLocaleString("pt-BR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        })
+      : "Não informado";
+  const isThisOrderPrinting = activeOrder?.id === order.id;
 
   return (
     <>
@@ -48,7 +61,19 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         <DialogTitle>
           <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
             <Box>
-              <Typography variant="body1">Pedido {order.code}</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                Pedido {order.code}
+              </Typography>
+              <Stack
+                direction="row"
+                spacing={0.5}
+                sx={{ alignItems: "center", mt: 0.25 }}
+              >
+                <ScheduleIcon sx={{ fontSize: 15, color: "text.secondary" }} />
+                <Typography variant="body2" color="text.secondary">
+                  Feito em {createdAtLabel}
+                </Typography>
+              </Stack>
             </Box>
           </Stack>
           <IconButton aria-label="Fechar" onClick={onClose} sx={{ position: "absolute", right: 12, top: 12 }}>
@@ -61,7 +86,10 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
             <Grid size={{ xs: 12, md: 7 }}>
               <Typography variant="subtitle1" gutterBottom>Itens do pedido:</Typography>
               <Stack spacing={1.25}>
-                {order?.items?.map((item, i) => (
+                {order?.items?.map((item, i) => {
+                  const flavors = item.flavors ?? [];
+
+                  return (
                   <Paper elevation={0} key={i} sx={{ p: 1 }}>
                     <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
                       <Box>
@@ -75,14 +103,14 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                         )}
 
                           <Box sx={{ ml: 2 }}>
-                            {item.flavors.map((flavor) =>
-                              item.flavors.length >= 1 && flavor.size.name !== "COMUM" ? (
+                            {flavors.map((flavor, flavorIndex) =>
+                              flavors.length >= 1 && flavor?.size?.name !== "COMUM" ? (
                                 <Typography
-                                  key={flavor.id}
+                                  key={flavor?.id ?? `${i}-${flavorIndex}`}
                                   variant="body2"
                                   color="text.secondary"
                                 >
-                                  1/{item.flavors.length} {flavor.product.productName}
+                                  1/{flavors.length} {flavor?.product?.productName ?? "Sabor"}
                                 </Typography>
                               ) : null
                             )}
@@ -100,7 +128,8 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                       </Typography>
                     </Stack>
                   </Paper>
-                ))}
+                  );
+                })}
               </Stack>
               <Typography variant="subtitle1" gutterBottom>Observações:</Typography>
               <Paper elevation={0}>
@@ -118,6 +147,26 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                   <Typography variant="subtitle2" gutterBottom>Cliente</Typography>
                   <Typography>{order.costumerName}</Typography>
                   <Typography variant="body2" color="text.secondary">{order.costumerPhone}</Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<WhatsAppIcon />}
+                    disabled={!order.costumerPhone}
+                    onClick={() => openWhatsAppChat(order)}
+                    sx={{
+                      mt: 1,
+                      textTransform: "none",
+                      fontWeight: 700,
+                      borderColor: "#25D366",
+                      color: "#128C4B",
+                      "&:hover": {
+                        borderColor: "#128C4B",
+                        backgroundColor: "#F0FDF4",
+                      },
+                    }}
+                  >
+                    WhatsApp do cliente
+                  </Button>
                   <Divider sx={{ my: 1 }} />
 
                   {isDelivery ? (
@@ -186,8 +235,8 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
           <Stack direction="row" spacing={1}>
           </Stack>
           <Stack direction="row" spacing={1}>
-            <Button onClick={() => imprimir()} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
-              Imprimir
+            <Button disabled={Boolean(activeOrder)} onClick={() => printOrder(order)} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
+              {isThisOrderPrinting ? "Imprimindo..." : "Imprimir"}
             </Button>
             {/* <Select
               value={order.status}
@@ -233,7 +282,6 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         </DialogActions>
       </Dialog>
 
-      <PrintOrder order={order} />
     </>
   );
 }

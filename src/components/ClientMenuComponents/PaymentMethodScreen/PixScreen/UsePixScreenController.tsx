@@ -20,7 +20,7 @@ export function UsePixScreenController({
   total,
   userEmail,
 }: Props) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [qrCodeBase64, setQrCodeBase64] = useState("");
   const [qrCode, setQrCode] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
@@ -40,8 +40,6 @@ export function UsePixScreenController({
   const isCancelled = paymentStatus === "cancelled";
 
   const fetchPayment = useCallback(async () => {
-    console.log("fetchPayment chamado", Date.now());
-
     setLoading(true);
     setExpired(false);
 

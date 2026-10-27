@@ -15,6 +15,7 @@ export interface Order {
   type: string;
   code: string;
   printed: boolean;
+  received: boolean;
   items: OrderItem[];
   orderTotal: number;
   paymentMethod: string;
@@ -28,16 +29,18 @@ export interface Order {
   costumerAddress: Address;
   neighborhood: Neighborhood;
   restaurant: { id: string };
+  created_at?: string;
 }
 
 export interface OrderFlavor {
   id: string;
   price: number;
-  product: {
+  // O evento de socket `newOrder` pode vir sem essas relações carregadas.
+  product?: {
     id: string;
     productName: string;
   };
-  size: {
+  size?: {
     id: string;
     name: string;
     limitFlavors: number;
@@ -77,9 +80,14 @@ export interface OrderItemBag {
   quantity: number;
   price: number;
   flavors: string[],
+  /** Nomes dos sabores escolhidos — usado só para exibição no carrinho. */
+  flavorNames?: string[],
   minQuantity?: number;
   observation: string,
-  additionals?: Additionals[]
+  additionals?: Additionals[],
+  /** Categoria/tamanho usados para reabrir a edição de itens compostos (pizzas). */
+  categoryId?: string;
+  sizeId?: string;
 }
 
 // Estrutura do produto no pedido

@@ -1,99 +1,201 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Additionals, Product, ProductCategory, Size } from "../../../types/Product.type";
 import type { OrderItemBag } from "../../../types/Order.type";
 
-export function UseProductBySizeScreenController(size: Size, category: ProductCategory, additionals: Additionals[]) {
+export function UseProductBySizeScreenController(
+  size: Size,
+  category: ProductCategory,
+  additionals: Additionals[],
+  products: Product[] = [],
+  initialItem?: OrderItemBag,
+) {
+  const flavorCount = Math.max(1, size.limitFlavors);
 
-  //Preciso tranformar isso em 1 unico produto com o flavors
-  const [selectedFlavors, setSelectedFlavors] = useState<(Product | null)[]>( Array.from({ length: size.limitFlavors }, () => null));
+  const buildInitialFlavors = () =>
+    Array.from({ length: flavorCount }, (_, index) => {
+      const productSizeId = initialItem?.flavors[index];
+      if (!productSizeId) return null;
+      return (
+        products.find((product) =>
+          product.sizes.some((productSize) => productSize.id === productSizeId),
+        ) ?? null
+      );
+    });
+
+  const initialAdditionals = initialItem?.additionals ?? [];
+  const initialSingle =
+    initialAdditionals.find((additional) => additional.additionalType === "single") ?? null;
+  const initialMultiple = initialAdditionals.filter(
+    (additional) => additional.additionalType !== "single",
+  );
+
+  const [selectedFlavors, setSelectedFlavors] = useState<(Product | null)[]>(() =>
+    buildInitialFlavors(),
+  );
   const [currentFlavorIndex, setCurrentFlavorIndex] = useState(0);
-  const [observation, setObservation] = useState("");
-  const [screenStep, setScreenStep] = useState<"flavors" | "extras">("flavors");
-  const [checkedSingle, setCheckedSingle] = useState<Additionals | null>(null);
-  const [checkedMultiple, setCheckedMultiple] = useState<Additionals[]>([]);
-  const checkedAdditionals = useMemo(() => (checkedSingle ? [checkedSingle, ...checkedMultiple] : checkedMultiple), [checkedSingle, checkedMultiple]);
-  const FLAVOR_LABELS = ["1º Sabor", "2º Sabor", "3º Sabor", "4º Sabor"];
-  const OBSERVATION_SUGGESTIONS = ["Sem cebola", "Sem pimenta", "Bem passado", "Molho à parte", "Cortar ao meio"];
-  const ADDITIONALS = additionals ?? []
+  const [observation, setObservation] = useState(initialItem?.observation ?? "");
+  const [screenStep, setScreenStep] = useState<"flavors" | "extras">(
+    initialItem ? "extras" : "flavors",
+  );
+  const [checkedSingle, setCheckedSingle] = useState<Additionals | null>(initialSingle);
+  const [checkedMultiple, setCheckedMultiple] =
+    useState<Additionals[]>(initialMultiple);
+
+  const checkedAdditionals = useMemo(
+    () => (checkedSingle ? [checkedSingle, ...checkedMultiple] : checkedMultiple),
+    [checkedSingle, checkedMultiple],
+  );
+
+  const FLAVOR_LABELS = useMemo(
+    () => Array.from({ length: flavorCount }, (_, index) => `${index + 1}º sabor`),
+    [flavorCount],
+  );
+
+  const OBSERVATION_SUGGESTIONS = [
+    "Sem cebola",
+    "Sem azeitona",
+    "Sem pimenta",
+    "Molho à parte",
+    "Cortar em 8 pedaços",
+  ];
+
+  const ADDITIONALS = additionals ?? [];
+
+  // Garante que o estado seja reiniciado se o tamanho, a quantidade de sabores
+  // ou o item editado mudar.
+  useEffect(() => {
+    const nextFlavors = Array.from({ length: flavorCount }, (_, index) => {
+      const productSizeId = initialItem?.flavors[index];
+      if (!productSizeId) return null;
+      return (
+        products.find((product) =>
+          product.sizes.some((productSize) => productSize.id === productSizeId),
+        ) ?? null
+      );
+    });
+    const nextAdditionals = initialItem?.additionals ?? [];
+
+    setSelectedFlavors(nextFlavors);
+    setCurrentFlavorIndex(0);
+    setObservation(initialItem?.observation ?? "");
+    setScreenStep(initialItem ? "extras" : "flavors");
+    setCheckedSingle(
+      nextAdditionals.find((additional) => additional.additionalType === "single") ?? null,
+    );
+    setCheckedMultiple(
+      nextAdditionals.filter((additional) => additional.additionalType !== "single"),
+    );
+  }, [size.id, flavorCount, initialItem, products]);
 
   function additionalsByCategory() {
-    return ADDITIONALS.filter((a) => a.category.id === category.id);
+    return ADDITIONALS.filter((additional) => additional.category.id === category.id);
   }
 
-  const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);
-  const toggleSingle = (a: Additionals) => setCheckedSingle((prev) => (prev?.id === a.id ? null : a));
-  const toggleMultiple = (a: Additionals) => setCheckedMultiple((prev) => (prev.some((x) => x.id === a.id) ? prev.filter((x) => x.id !== a.id) : [...prev, a]));
-    
+  const additionalsByType = (type: Additionals["additionalType"]) =>
+    additionalsByCategory().filter((additional) => additional.additionalType === type);
+
+  const toggleSingle = (additional: Additionals) =>
+    setCheckedSingle((previous) => (previous?.id === additional.id ? null : additional));
+
+  const toggleMultiple = (additional: Additionals) =>
+    setCheckedMultiple((previous) =>
+      previous.some((item) => item.id === additional.id)
+        ? previous.filter((item) => item.id !== additional.id)
+        : [...previous, additional],
+    );
+
   const addSuggestion = (text: string) => {
-    setObservation((prev) => (prev.includes(text) ? prev : prev.trim().length ? `${prev.trim()}, ${text}` : text));
+    setObservation((previous) =>
+      previous.includes(text)
+        ? previous
+        : previous.trim().length
+          ? `${previous.trim()}, ${text}`
+          : text,
+    );
   };
-  
-  function toOrderItem(){
-    //Para cada produto em selectedFlavors[], percorro os ProductSizes desse produto e para cada 
-    //ProductSize verifico se o size.id é igual ao size.id do parametro do controller, se for igual, armazeno
-    const getFlavors = selectedFlavors
-    .filter((p): p is Product => p !== null)
-    .map((p) => p.sizes.find((ps) => ps.size.id === size.id)?.id)
-    .filter((id): id is string => id !== undefined);
 
-    //Pego o valor do produto com maior preço
-    const maxPrice = selectedFlavors.reduce((acc, product) => {
-      if (!product) return acc;
-      const price = getPriceBySize(product, size.id) ?? 0;
-      return Math.max(acc, price);
-    }, 0);
-
-    const productName = `${category.categoryName} ${size.name}`;
-    const image = selectedFlavors.find((product) => product !== null)?.image ?? '';
-    // console.log("Adicionais: ", checkedAdditionals)
-
-    const orderItem: OrderItemBag = {
-      id: crypto.randomUUID(),
-      name: productName,
-      quantity: 1,
-      price: maxPrice,
-      flavors: getFlavors,
-      observation: observation,
-      additionals: checkedAdditionals,
-      image: image
-    }
-    console.log("Produto simples adicionado: ", orderItem)
-    return orderItem
+  function getPriceBySize(product: Product, sizeId: string) {
+    return product.sizes.find((productSize) => productSize.size.id === sizeId)?.price;
   }
+
+  const isFlavorSelectedElsewhere = (productId: string) =>
+    selectedFlavors.some(
+      (product, index) => index !== currentFlavorIndex && product?.id === productId,
+    );
 
   const selectFlavor = (product: Product) => {
-    setSelectedFlavors((prev) => {
-      const next = [...prev];
-      next[currentFlavorIndex] =
-        next[currentFlavorIndex]?.id === product.id ? null : product;
+    setSelectedFlavors((previous) => {
+      // Um mesmo sabor não pode ocupar duas fatias.
+      if (previous.some((item, index) => index !== currentFlavorIndex && item?.id === product.id)) {
+        return previous;
+      }
+
+      const next = [...previous];
+      next[currentFlavorIndex] = next[currentFlavorIndex]?.id === product.id ? null : product;
       return next;
     });
   };
 
   const goToNextFlavor = () => {
-    setCurrentFlavorIndex((prev) => Math.min(prev + 1, size.limitFlavors - 1));
+    setCurrentFlavorIndex((previous) => Math.min(previous + 1, flavorCount - 1));
   };
 
   const goToFlavorTab = (index: number) => {
-    setCurrentFlavorIndex(index);
+    setCurrentFlavorIndex(Math.min(Math.max(index, 0), flavorCount - 1));
   };
 
-  function getPriceBySize(product: Product, sizeId: string) {
-    return product.sizes.find(p => p.size.id === sizeId)?.price;
-  }
+  const selectedFlavorProducts = selectedFlavors.filter(
+    (product): product is Product => product !== null,
+  );
 
-  const isLastFlavor = currentFlavorIndex === size.limitFlavors - 1;
+  const unitPrice = selectedFlavorProducts.reduce(
+    (highest, product) => Math.max(highest, getPriceBySize(product, size.id) ?? 0),
+    0,
+  );
+
+  const additionalsTotal = checkedAdditionals.reduce(
+    (total, additional) => total + additional.additionalPrice,
+    0,
+  );
+
+  const totalPrice = unitPrice + additionalsTotal;
+  const allFlavorsSelected = selectedFlavors.every((product) => product !== null);
+  const isLastFlavor = currentFlavorIndex === flavorCount - 1;
   const currentSelection = selectedFlavors[currentFlavorIndex];
+
+  function toOrderItem(): OrderItemBag {
+    const flavorIds = selectedFlavorProducts
+      .map((product) => product.sizes.find((productSize) => productSize.size.id === size.id)?.id)
+      .filter((id): id is string => Boolean(id));
+
+    return {
+      id: initialItem?.id ?? crypto.randomUUID(),
+      name: `${category.categoryName} ${size.name}`,
+      quantity: initialItem?.quantity ?? 1,
+      price: unitPrice,
+      flavors: flavorIds,
+      flavorNames: selectedFlavorProducts.map((product) => product.productName),
+      observation,
+      additionals: checkedAdditionals,
+      image: selectedFlavorProducts[0]?.image ?? "",
+      minQuantity: 1,
+      categoryId: category.id,
+      sizeId: size.id,
+    };
+  }
 
   return {
     getPriceBySize,
     selectedFlavors,
+    selectedFlavorProducts,
     currentFlavorIndex,
     currentSelection,
     selectFlavor,
+    isFlavorSelectedElsewhere,
     goToNextFlavor,
     goToFlavorTab,
     isLastFlavor,
+    allFlavorsSelected,
     toOrderItem,
     observation,
     setObservation,
@@ -101,14 +203,18 @@ export function UseProductBySizeScreenController(size: Size, category: ProductCa
     screenStep,
     setScreenStep,
     checkedAdditionals,
-    additionalsByType, 
-    checkedSingle, 
-    checkedMultiple, 
-    toggleSingle, 
+    additionalsByType,
+    checkedSingle,
+    checkedMultiple,
+    toggleSingle,
     toggleMultiple,
     FLAVOR_LABELS,
     OBSERVATION_SUGGESTIONS,
     ADDITIONALS,
-    additionalsByCategory
+    additionalsByCategory,
+    flavorCount,
+    unitPrice,
+    additionalsTotal,
+    totalPrice,
   };
 }

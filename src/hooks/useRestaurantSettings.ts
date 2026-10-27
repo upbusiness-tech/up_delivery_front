@@ -1,72 +1,69 @@
 import { useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SettingsService } from "../api/services/settings.service";
-import { QueryCacheName } from "./useRestaurantData";
-
-type RestaurantSettingUsage = {
-  id: number;
-  isActive: boolean;
-  restaurantId: string;
-  settingId: number;
-  setting: {
-    id: number;
-    module: string;
-    key: string;
-    description: string;
-    default: boolean;
-  };
-};
+import type { RestaurantSettingUsage } from "../types/Settings.type";
+import { queryKeys } from "./queries/queryKeys";
 
 type ResolvedSettings = Record<string, Record<string, boolean>>;
 
 export function useRestaurantSettings(restaurantId: string) {
   const queryClient = useQueryClient();
-
-  const queryKey = [QueryCacheName.SETTINGS, restaurantId];
+  const queryKey = queryKeys.settings.byRestaurant(restaurantId);
 
   const {
     data: settings = [],
-    isLoading,
+    isPending,
+    error,
     refetch,
-  } = useQuery<RestaurantSettingUsage[]>({
+  } = useQuery({
     queryKey,
-    queryFn: async () => {
-      const res = await SettingsService.getSettings(restaurantId);
-      return res?.data ?? [];
-    },
-    enabled: !!restaurantId,
+    queryFn: () => SettingsService.getSettings(restaurantId),
+    enabled: Boolean(restaurantId),
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
-    refetchOnWindowFocus: false,
   });
 
-  const toggleSetting = async (key: string) => {
-    const currentSettings =
-      queryClient.getQueryData<RestaurantSettingUsage[]>(queryKey) ?? [];
+  const toggleSettingMutation = useMutation({
+    mutationFn: (usageId: string) => SettingsService.toggleActive(usageId),
+    onMutate: async (usageId) => {
+      await queryClient.cancelQueries({ queryKey });
 
-    const usage = currentSettings.find(
-      (s) => s.setting.key === key
-    );
-
-    if (!usage) return;
-
-    try {
-      await SettingsService.toggleActive(String(usage.id));
+      const previousSettings =
+        queryClient.getQueryData<RestaurantSettingUsage[]>(queryKey);
 
       queryClient.setQueryData<RestaurantSettingUsage[]>(
         queryKey,
-        (oldSettings) =>
-          oldSettings?.map((s) =>
-            s.id === usage.id
-              ? { ...s, isActive: !s.isActive }
-              : s
-          )
+        (currentSettings) =>
+          currentSettings?.map((usage) =>
+            String(usage.id) === usageId
+              ? { ...usage, isActive: !usage.isActive }
+              : usage,
+          ),
       );
-    } catch (error) {
-      console.error("Erro ao alterar configuração:", error);
-      throw error;
+
+      return { previousSettings };
+    },
+    onError: (_error, _usageId, context) => {
+      if (context?.previousSettings) {
+        queryClient.setQueryData(queryKey, context.previousSettings);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey });
+    },
+  });
+
+  async function toggleSetting(key: string) {
+    const usage = settings.find((item) => item.setting.key === key);
+    if (!usage) return false;
+
+    try {
+      await toggleSettingMutation.mutateAsync(String(usage.id));
+      return true;
+    } catch {
+      return false;
     }
-  };
+  }
 
   const resolved = useMemo<ResolvedSettings>(
     () =>
@@ -80,13 +77,10 @@ export function useRestaurantSettings(restaurantId: string) {
 
         return acc;
       }, {} as ResolvedSettings),
-    [settings]
+    [settings],
   );
 
-  const togglePaymentMode = async (
-    key: string,
-    otherKey: string
-  ) => {
+  async function togglePaymentMode(key: string, otherKey: string) {
     const current = resolved.Payment?.[key] ?? false;
     const other = resolved.Payment?.[otherKey] ?? false;
 
@@ -96,11 +90,12 @@ export function useRestaurantSettings(restaurantId: string) {
     }
 
     if (other) {
-      await toggleSetting(otherKey);
+      const toggled = await toggleSetting(otherKey);
+      if (!toggled) return;
     }
 
     await toggleSetting(key);
-  };
+  }
 
   return {
     settings,
@@ -111,9 +106,11 @@ export function useRestaurantSettings(restaurantId: string) {
     paymentsPlatform: resolved.Payment?.payments_via_the_platform ?? false,
     allowPixPayment: resolved.Payment?.allow_pix_payment ?? false,
     allowCardPayment: resolved.Payment?.allow_card_payment ?? false,
-    loading: isLoading,
+    loading: isPending && Boolean(restaurantId),
+    error,
+    isToggling: toggleSettingMutation.isPending,
     toggleSetting,
-    refetch: () => refetch(),
+    refetch,
     togglePaymentMode,
   };
 }

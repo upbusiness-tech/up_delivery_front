@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, MenuItem, Select, Stack, Switch, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, MenuItem, Select, Stack, Switch, TextField, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import imagemGenerica from '../../../assets/imgNull.png'
 import UseModalRegisterProduct from "./UseModalRegisterProduct";
@@ -31,8 +31,10 @@ export default function RegisterProductModal({open, onClose }: props) {
     handleSetSizePrice,
     commonPrice,
     setCommonPrice,
-    sizePrices
-  } = UseModalRegisterProduct()
+    sizePrices,
+    isCreating,
+    createError,
+  } = UseModalRegisterProduct({ onClose })
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -207,17 +209,23 @@ export default function RegisterProductModal({open, onClose }: props) {
             </Stack>
           </Grid>
         </Grid>
+        {createError && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            Não foi possível salvar o produto. Tente novamente.
+          </Alert>
+        )}
       </DialogContent>
 
       <DialogActions>
         <Stack direction="row" spacing={1}>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={onClose}>
+          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={onClose} disabled={isCreating}>
             Cancelar
           </Button>
           <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium"
             onClick={createProduct}
+            disabled={isCreating}
           >
-            Salvar Produto
+            {isCreating ? "Salvando..." : "Salvar Produto"}
           </Button>
         </Stack>
       </DialogActions>

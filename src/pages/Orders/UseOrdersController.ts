@@ -1,21 +1,47 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMediaQuery, useTheme } from "@mui/material";
 import type { Order } from "../../types/Order.type";
-import { OrderService } from "../../api/services/order.service";
-import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
+import { useOrders } from "../../hooks/queries/useOrdersQueries";
+import { normalizeSearchText, onlyDigits } from "../../utils/search/search";
 
 export default function UseOrdersController(){
 
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  //Busca pedidos
-  const { data: orders = [], isLoading } = useRestaurantData(OrderService.listOrders, QueryCacheName.ORDERS)
+  const {
+    data: orders = [],
+    isPending,
+    error,
+    refetch,
+  } = useOrders();
 
-  const selectedOrder = orders?.find((o) => o.id === selectedOrderId) ?? null;
-  function openOrderDetail(order: Order) {  setSelectedOrderId(order.id)  }
-  function closeOrderDetail() { setSelectedOrderId(null)  }
+  const hasSearch = searchTerm.trim().length > 0;
+
+  const filteredOrders = useMemo(() => {
+    if (!hasSearch) return orders;
+
+    const normalizedQuery = normalizeSearchText(searchTerm);
+    const phoneQuery = onlyDigits(searchTerm);
+
+    return orders.filter((order) => {
+      const matchesName =
+        normalizedQuery.length > 0 &&
+        normalizeSearchText(order.costumerName).includes(normalizedQuery);
+
+      const matchesPhone =
+        phoneQuery.length > 0 &&
+        onlyDigits(order.costumerPhone).includes(phoneQuery);
+
+      return matchesName || matchesPhone;
+    });
+  }, [hasSearch, orders, searchTerm]);
+
+  const selectedOrder = orders.find((order) => order.id === selectedOrderId) ?? null;
+  function openOrderDetail(order: Order) { setSelectedOrderId(order.id) }
+  function closeOrderDetail() { setSelectedOrderId(null) }
 
   function deliveryFee(order: Order){
     return order.type === "delivery"
@@ -26,7 +52,13 @@ export default function UseOrdersController(){
   return{
     isDesktop,
     orders,
-    isLoading,
+    filteredOrders,
+    searchTerm,
+    setSearchTerm,
+    hasSearch,
+    isLoading: isPending,
+    error,
+    refetch,
     selectedOrder,
     openOrderDetail,
     closeOrderDetail,

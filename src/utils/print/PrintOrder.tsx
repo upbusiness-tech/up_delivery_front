@@ -12,7 +12,8 @@ export default function PrintOrder({ order }: PrintOrderProps) {
     return Number(value ?? 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
-  const now = new Date();
+  const createdAt = order.created_at ? new Date(order.created_at) : new Date();
+  const printedDate = Number.isNaN(createdAt.getTime()) ? new Date() : createdAt;
   const itemsTotal = order.items?.reduce((total, item) => total + Number(item.price) * Number(item.quantity), 0) ?? 0;
 
   return (
@@ -20,7 +21,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       <div style={{ textAlign: "center", lineHeight: 1.2, marginBottom: 8 }}>
         {/* <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{order.restaurant.restaurantName}</div> */}
         <div style={{ fontSize: "11px", fontWeight: "bold", marginTop: 3 }}>
-          {now.toLocaleDateString("pt-BR")} {now.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+          {printedDate.toLocaleDateString("pt-BR")} {printedDate.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
         </div>
       </div>
 
@@ -48,6 +49,8 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       <div style={{ fontWeight: "bold", fontSize: "12px", marginBottom: 5 }}>ITENS DO PEDIDO</div>
 
       {order.items?.map((item, i) => {
+        const flavors = item.flavors ?? [];
+
         return (
           <div key={i} style={{ marginBottom: 9, pageBreakInside: "avoid" }}>
             <div style={{ display: "flex", justifyContent: "space-between", gap: 5 }}>
@@ -58,14 +61,13 @@ export default function PrintOrder({ order }: PrintOrderProps) {
             <div style={{ fontSize: "14px", marginTop: 2, fontWeight: 'bold'}}>{item.quantity} x R$ {formatMoney(item.price)}</div>
 
               <div style={{ marginTop: 4, marginLeft: 8, fontSize: "11px", lineHeight: 1.35 }}>
-                {item.flavors.map((flavor) =>
-                  item.flavors.length > 1 && flavor.size.name !== "COMUM" ? (
+                {flavors.map((flavor, flavorIndex) =>
+                  flavors.length > 1 && flavor?.size?.name !== "COMUM" ? (
                     <div
-                      key={flavor.id}
-                      color="text.secondary"
+                      key={flavor?.id ?? `${i}-${flavorIndex}`}
                       style={{fontSize: "14px"}}
                     >
-                      1/{item.flavors.length} {flavor.product.productName}
+                      1/{flavors.length} {flavor?.product?.productName ?? "Sabor"}
                     </div>
                   ) : null
                 )}
@@ -101,7 +103,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
       {order.type === "delivery" && (
         <div style={{ display: "flex", justifyContent: "space-between" }}>
           <span style={{fontWeight: "bold"}}>Taxa de entrega:</span>
-          <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood.deliveryFee)}</span>
+          <span style={{fontWeight: "bold"}}>R$ {formatMoney(order.neighborhood?.deliveryFee)}</span>
         </div>
       )}
 

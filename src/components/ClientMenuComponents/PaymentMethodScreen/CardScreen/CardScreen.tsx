@@ -1,11 +1,11 @@
 import { CardPayment } from '@mercadopago/sdk-react';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Order } from '../../../../types/Order.type';
 import type { ICardPaymentBrickPayer, ICardPaymentFormData } from '@mercadopago/sdk-react/esm/bricks/cardPayment/type';
 import { UseCardScreenController } from './UseCardScreenController';
 import DoneScreen from '../../DoneScreen/DoneScreen';
 import { PaymentSevice } from '../../../../api/services/payment.service';
-import { Alert, Button, CircularProgress, Divider, Paper, Stack, Typography } from '@mui/material';
+import { Alert, Box, Button, CircularProgress, Divider, Paper, Stack, Typography } from '@mui/material';
 import { moneyMask } from '../../../../utils/masks/mask';
 import { CreditCard } from '@mui/icons-material';
 interface PaymentFormProps {
@@ -38,6 +38,7 @@ function getRejectionMessage(statusDetail: string | null): string {
 export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFormProps) {
 
   const c = UseCardScreenController({order})
+  const [isBrickReady, setIsBrickReady] = useState(false);
 
   const isApproved = c.isPaid;
   const isInProcess = c.paymentStatus === 'in_process' || c.paymentStatus === 'pending';
@@ -47,6 +48,10 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
   useEffect(() => {
     if (isApproved) setDisabeHeader(true);
   }, [isApproved]);
+
+  useEffect(() => {
+    setIsBrickReady(false);
+  }, [c.brickKey]);
 
   const initialization = {
     amount
@@ -73,10 +78,11 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
 
   const onError = useCallback((error: unknown) => {
     console.error('Erro no Payment Brick:', error);
+    setIsBrickReady(true);
   }, []);
 
   const onReady = useCallback(() => {
-    // esconder loading
+    setIsBrickReady(true);
   }, []);
 
   return (
@@ -102,14 +108,37 @@ export function CardScreen({ amount, order, onNext, setDisabeHeader}: PaymentFor
           Dados do cartão
         </Typography>
 
-        <CardPayment
-          key={c.brickKey}
-          initialization={initialization}
-          customization={customization}
-          onSubmit={onSubmit}
-          onReady={onReady}
-          onError={onError}
-          />
+        <Box sx={{ position: 'relative', minHeight: isBrickReady ? undefined : 220 }}>
+          <Box sx={{ opacity: isBrickReady ? 1 : 0, transition: 'opacity 160ms ease' }}>
+            <CardPayment
+              key={c.brickKey}
+              initialization={initialization}
+              customization={customization}
+              onSubmit={onSubmit}
+              onReady={onReady}
+              onError={onError}
+            />
+          </Box>
+
+          {!isBrickReady && (
+            <Stack
+              spacing={1}
+              sx={{
+                position: 'absolute',
+                inset: 0,
+                alignItems: 'center',
+                justifyContent: 'center',
+                bgcolor: 'background.paper',
+                borderRadius: 2,
+              }}
+            >
+              <CircularProgress size={28} color="success" />
+              <Typography variant="body2" color="text.secondary">
+                Carregando pagamento...
+              </Typography>
+            </Stack>
+          )}
+        </Box>
       </Stack>
     )}
 

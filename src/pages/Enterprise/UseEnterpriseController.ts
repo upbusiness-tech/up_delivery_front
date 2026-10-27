@@ -1,26 +1,33 @@
-import { RestaurantService } from "../../api/services/restaurant.service";
-import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
+import {
+  useConnectMercadoPago,
+  useRestaurantMe,
+} from "../../hooks/queries/useRestaurantQueries";
 
 export default function UseEnterpriseController() {
 
-  const { data: restaurantInfos, isLoading } = useRestaurantData(RestaurantService.getMe, QueryCacheName.RESTAURANT)
+  const {
+    data: restaurantInfos,
+    isPending,
+    error,
+    refetch,
+  } = useRestaurantMe();
+  const connectMercadoPagoMutation = useConnectMercadoPago();
 
   async function connectRestaurant() {
-    try{
-      const response = await RestaurantService.restaurantConnectMp()
-      if(response){
-        const link = response.data.authorizationUrl;
-        console.log(link)
-        window.location.href = link;
-      }
-    }catch(err){
-      console.log(err)
+    try {
+      const data = await connectMercadoPagoMutation.mutateAsync();
+      window.location.href = data.authorizationUrl;
+    } catch {
+      return;
     }
   }
 
   return {
     restaurantInfos,
-    isLoading,
-    connectRestaurant
+    isLoading: isPending,
+    error,
+    refetch,
+    connectRestaurant,
+    isConnecting: connectMercadoPagoMutation.isPending,
   }
 }

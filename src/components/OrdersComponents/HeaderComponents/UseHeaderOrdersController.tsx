@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
-import { RestaurantService } from "../../../api/services/restaurant.service";
 import type { Order } from "../../../types/Order.type";
+import {
+  useRestaurantIsOpen,
+  useRestaurantMe,
+} from "../../../hooks/queries/useRestaurantQueries";
+import { useUpdateOrderReceived } from "../../../hooks/queries/useOrdersQueries";
+import { STATUS } from "../../../utils/texts/status.enum";
+import {
+  buildOrderMessage,
+  sendWhatsAppMessage,
+} from "../../../utils/whatsapp/orderMessage";
 
 interface props { orders?: Order[] }
 
@@ -10,22 +18,33 @@ export default function UseHeaderOrdersController({ orders }: props) {
   const handleOpenModalPendingOrders = () => setModalPendingOrders(true);
   const handleCloseModalPendingOrders = () => setModalPendingOrders(false);
 
-  const { data: restaurantIsOpen } = useRestaurantData(RestaurantService.restaurantIsopen, QueryCacheName.RESTAURANT_ISOPEN);
-  const { data: restaurantInfos } = useRestaurantData(RestaurantService.getMe, QueryCacheName.RESTAURANT);
+  const { data: restaurantIsOpen } = useRestaurantIsOpen();
+  const { data: restaurantInfos } = useRestaurantMe();
+  const updateReceivedMutation = useUpdateOrderReceived();
 
-  const pendingOrders = orders?.filter(order => !order.printed);
+  const pendingOrders = orders?.filter(
+    (order) => order.status !== STATUS.CANCELADO && !order.received,
+  );
 
-  const menuUrl = `${import.meta.env.VITE_MENU_BASE_URL}/${restaurantInfos?.slug}`;
-  const handleCopyMenuLink = () => navigator.clipboard.writeText(menuUrl);
+  async function handleReceiveOrder(order: Order) {
+    if (order.received) return;
+
+    try {
+      await updateReceivedMutation.mutateAsync(order.id);
+      sendWhatsAppMessage(order, buildOrderMessage(order));
+    } catch {
+      return;
+    }
+  }
 
   return {
     handleCloseModalPendingOrders,
     handleOpenModalPendingOrders,
+    handleReceiveOrder,
+    isUpdatingReceived: updateReceivedMutation.isPending,
     modalPendingOrders,
     restaurantIsOpen,
     restaurantInfos,
     pendingOrders,
-    menuUrl,
-    handleCopyMenuLink
   }
 }

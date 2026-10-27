@@ -1,24 +1,33 @@
-import { createContext, useContext } from "react";
-import { Outlet, useParams } from "react-router-dom";
+import { createContext, useContext, type ReactNode } from "react";
+import type { Restaurant } from "../types/Restaurant.type";
 
 interface PublicRestaurantContextValue {
-  slug: string | undefined;
+  /** Slug da URL (`/r/:slug`). Sempre definido dentro do layout público. */
+  slug: string;
+  /** Restaurante já carregado pelo `PublicRestaurantLayout`. */
+  restaurant: Restaurant;
 }
 
-export const PublicRestaurantContext = createContext<PublicRestaurantContextValue | undefined>(undefined);
+const PublicRestaurantContext = createContext<PublicRestaurantContextValue | undefined>(undefined);
 
-export function PublicRestaurantProvider() {
-  const { slug } = useParams<{ slug: string }>();
+interface PublicRestaurantProviderProps {
+  slug: string;
+  restaurant: Restaurant;
+  children: ReactNode;
+}
 
+export function PublicRestaurantProvider({ slug, restaurant, children }: PublicRestaurantProviderProps) {
   return (
-    <PublicRestaurantContext.Provider value={{ slug }}>
-      <Outlet />
+    <PublicRestaurantContext.Provider value={{ slug, restaurant }}>
+      {children}
     </PublicRestaurantContext.Provider>
   );
 }
 
 export function usePublicRestaurant() {
-  const ctx = useContext(PublicRestaurantContext);
-  if (!ctx) throw new Error("usePublicRestaurant deve ser usado dentro de <PublicRestaurantProvider>");
-  return ctx;
+  const context = useContext(PublicRestaurantContext);
+  if (!context) {
+    throw new Error("usePublicRestaurant deve ser usado dentro de <PublicRestaurantProvider>");
+  }
+  return context;
 }

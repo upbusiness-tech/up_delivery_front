@@ -14,6 +14,7 @@ export function useCashScreenController({ total, onBack, order }: UseCashScreenC
   const [noChange, setNoChange] = useState(false);
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState<boolean>(false)
+  const [submitting, setSubmitting] = useState(false)
 
   const troco = changeFor > total ? changeFor - total : 0;
   const insufficient = touched && !noChange && changeFor > 0 && changeFor < total;
@@ -38,6 +39,8 @@ export function useCashScreenController({ total, onBack, order }: UseCashScreenC
   };
 
   async function handleConfirm(){
+    if (submitting) return;
+    setSubmitting(true);
     try {
       const changeForBody = {
         value: changeFor
@@ -46,6 +49,8 @@ export function useCashScreenController({ total, onBack, order }: UseCashScreenC
       if(response){setStatus(true)}
     }catch(err){
       console.log(err)
+    }finally{
+      setSubmitting(false);
     }
   };
 
@@ -63,6 +68,7 @@ export function useCashScreenController({ total, onBack, order }: UseCashScreenC
     handleBlur,
     handleNoChangeToggle,
     handleConfirm,
-    status
+    status,
+    submitting
   };
 }

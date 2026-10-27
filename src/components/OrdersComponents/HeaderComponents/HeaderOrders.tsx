@@ -14,6 +14,8 @@ export function HeaderOrders({orders}: props) {
     restaurantInfos,
     handleOpenModalPendingOrders,
     handleCloseModalPendingOrders,
+    handleReceiveOrder,
+    isUpdatingReceived,
     modalPendingOrders,
     pendingOrders
   } = UseHeaderOrdersController({orders})
@@ -41,7 +43,7 @@ export function HeaderOrders({orders}: props) {
         <Button 
           variant="outlined" 
           endIcon={<Web />} 
-          onClick={() => window.open(`${import.meta.env.VITE_MENU_BASE_URL}/${restaurantInfos?.slug}`, "_blank")} 
+          onClick={() => window.open(`${import.meta.env.VITE_MENU_BASE_URL}/r/${restaurantInfos?.slug}`, "_blank")} 
           sx={{ textTransform: "none", width: { xs: '100%', sm: 'auto' } 
         }}>
           Cardápio
@@ -67,7 +69,13 @@ export function HeaderOrders({orders}: props) {
         </Typography>
       </Stack>
 
-      <PendingOrdersModal orders={orders} open={modalPendingOrders} onClose={handleCloseModalPendingOrders} />
+      <PendingOrdersModal
+        orders={pendingOrders ?? []}
+        open={modalPendingOrders}
+        onClose={handleCloseModalPendingOrders}
+        onReceive={handleReceiveOrder}
+        isReceiving={isUpdatingReceived}
+      />
     </Stack>
   );
 }

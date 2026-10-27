@@ -21,10 +21,14 @@ export enum QueryCacheName {
   
 }
 
-export function useRestaurantData<T>(fecthFunction: () => Promise<T>, queryKey: QueryCacheName) {
+/**
+ * @param scope valor que diferencia o cache (ex.: `slug` do restaurante).
+ * Sem ele, dois restaurantes diferentes compartilhariam o mesmo cache.
+ */
+export function useRestaurantData<T>(fecthFunction: () => Promise<T>, queryKey: QueryCacheName, scope?: string) {
   return useQuery<T>({
     queryFn: fecthFunction,
-    queryKey: [queryKey],
+    queryKey: scope ? [queryKey, scope] : [queryKey],
     staleTime: 5 * 60 * 1000, //Os dados são considerados atualizados por 5 minutos.
     gcTime: 30 * 60 * 1000, //Os dados inativos permanecem no cache por até 30 minutos.
     refetchOnWindowFocus: false // Não busca novamente ao voltar para a aba

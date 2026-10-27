@@ -1,15 +1,31 @@
-import { Box, Container, Typography, Tabs, Tab } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Button,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Typography,
+  Tabs,
+  Tab,
+} from "@mui/material";
 import { UseMenuScreenController } from "./UseMenuScreenController";
 import RestaurantInfo from "../RestaurantInfo/RestaurantInfo";
 import ProductCard from "../ProductCard/ProductCard";
 import { InputAdornment, IconButton, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
-import { UseProductSearch } from "../../../hooks/useProductSearch";
 import ProductSheet from "../ProductSheet/ProductSheet";
+import SizeCard from "../SizeCard/SizeCard";
 import { CartBar } from "../CartBar/CartBar";
-import { useNavigate } from "react-router-dom";
-import { useCart } from "../../../context/CartContext";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useCheckout } from "../../../checkout/CheckoutContext";
+import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
+import { usePublicRestaurantIsOpen } from "../../../hooks/usePublicRestaurantIsOpen";
+import { publicPaths } from "../../../routes/paths";
 
 export default function MenuScreen() {
 
@@ -18,17 +34,56 @@ export default function MenuScreen() {
     handleTabClick,
     produtosComuns,
     sectionRefs,
-    tamanhosDaCategoria,
+    sizesByCategory,
     visibleCategories,
     PRODUCTS,
     onSelectProduct,
     productSelected,
-    handleCloseProductSheet
+    handleCloseProductSheet,
+    search,
+    setSearch
   } = UseMenuScreenController();
 
-  const { search, setSearch } = UseProductSearch(PRODUCTS);
-  const { products } = useCart()
+  const { slug } = usePublicRestaurant();
+  const { products, subtotal } = useCheckout()
   const navigate = useNavigate();
+  const location = useLocation();
+  const { data: restaurantIsOpen } = usePublicRestaurantIsOpen(slug);
+
+  const redirectedBecauseClosed = Boolean(
+    (location.state as { restaurantClosed?: boolean } | null)?.restaurantClosed,
+  );
+  const [closedDialogOpen, setClosedDialogOpen] = useState(redirectedBecauseClosed);
+
+  useEffect(() => {
+    if (redirectedBecauseClosed) setClosedDialogOpen(true);
+  }, [redirectedBecauseClosed]);
+
+  const openClosedDialog = () => setClosedDialogOpen(true);
+
+  const closeClosedDialog = () => {
+    setClosedDialogOpen(false);
+    if (redirectedBecauseClosed) {
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  };
+
+  const navigateOrWarnClosed = (to: string) => {
+    if (restaurantIsOpen === false) {
+      openClosedDialog();
+      return;
+    }
+    navigate(to);
+  };
+
+  const handleProductClick = (product: (typeof PRODUCTS)[number]) => {
+    if (!product.productActive) return;
+    if (restaurantIsOpen === false) {
+      openClosedDialog();
+      return;
+    }
+    onSelectProduct(product);
+  };
 
   return (
     <Box sx={{minHeight: "100vh" }}>
@@ -42,7 +97,7 @@ export default function MenuScreen() {
         </Container>
         <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 } }}>
           <Tabs
-            value={activeTab}
+            value={activeTab || false}
             onChange={(_, value) => handleTabClick(value)}
             variant="scrollable"
             scrollButtons={false}
@@ -56,9 +111,19 @@ export default function MenuScreen() {
       </Box>
 
       <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 }, py: 3 }}>
+        {visibleCategories.length === 0 && (
+          <Box sx={{ py: 6, textAlign: "center" }}>
+            <Typography variant="body1" sx={{ fontWeight: 700 }}>
+              {search.trim() ? "Nenhum produto encontrado" : "Nenhum produto disponível"}
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+              {search.trim() ? "Tente buscar por outro nome." : "O cardápio ainda não possui produtos."}
+            </Typography>
+          </Box>
+        )}
         {visibleCategories.map((cat, index) => {
           const produtos = produtosComuns(cat.id);
-          const tamanhos = tamanhosDaCategoria(cat.id);
+          const tamanhos = sizesByCategory(cat.id);
           const totalItens = produtos.length + tamanhos.length;
           const isLast = index === visibleCategories.length - 1;
 
@@ -85,22 +150,48 @@ export default function MenuScreen() {
                     key={product.id} 
                     product={product} 
                     unavailable={!product.productActive} 
-                    onClick={() => { 
-                      if (!product.productActive) return; 
-                      onSelectProduct(product); 
+                    onClick={() => {
+                      handleProductClick(product);
                     }} />
                 ))}
-                {/* APROVEITAR ESSE SIZE QUE TA SENDO PASSADO AQUI */}
-                {/* {tamanhos.map((size) => (
-                  <SizeCard key={size.id} size={size} cat={cat.categoryName} onClick={onSelectSize} selectCategory={() => onSelectCategory(cat)} />
-                ))} */}
+
+                {tamanhos.map(({ size, priceFrom, image }) => (
+                  <SizeCard
+                    key={size.id}
+                    size={size}
+                    categoryName={cat.categoryName}
+                    priceFrom={priceFrom}
+                    image={image}
+                    onClick={() => navigateOrWarnClosed(publicPaths.size(slug, cat.id, size.id))}
+                  />
+                ))}
               </Box>
             </Box>
           );
         })}
       </Container>
       <ProductSheet item={productSelected} onClose={handleCloseProductSheet}/>
-      <CartBar itemCount={products.length}  onClick={() => navigate("/cart")}/>
+      <CartBar itemCount={products.length} subtotal={subtotal} onClick={() => navigateOrWarnClosed(publicPaths.cart(slug))} />
+
+      <Dialog open={closedDialogOpen} onClose={closeClosedDialog} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ fontWeight: 800 }}>Restaurante fechado</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            O restaurante está fechado neste momento. Você pode consultar o cardápio,
+            mas não é possível fazer pedidos agora.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={closeClosedDialog}
+            variant="contained"
+            color="success"
+            sx={{ textTransform: "none", borderRadius: 999, fontWeight: 700 }}
+          >
+            Entendi
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

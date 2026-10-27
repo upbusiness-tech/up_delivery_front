@@ -5,15 +5,9 @@ export function useOrderDetailController() {
   const handleOpenModalOrderCancel = () => setOpenModalOrderCancel(true)
   const handleCloseModalOrderCancel = () => setOpenModalOrderCancel(false)
 
-  function imprimir() {
-    window.print();
-  }
-
   return {
-    open,
     handleOpenModalOrderCancel,
     handleCloseModalOrderCancel,
     openModalOrderCancel,
-    imprimir 
   };
 }

@@ -1,13 +1,20 @@
 import { useEffect, useRef, useState } from "react";
-import type {ProducSizeDTO, ProductDTO } from "../../../types/Product.type";
-import { ProductService } from "../../../api/services/product.service";
-import { useRestaurantData } from "../../../hooks/useRestaurantData";
-import { RestaurantService } from "../../../api/services/restaurant.service";
+import type { ProducSizeDTO, ProductDTO } from "../../../types/Product.type";
+import {
+  useCategories,
+  useCreateProduct,
+  useSizes,
+} from "../../../hooks/queries/useMenuQueries";
 
-export default function UseModalRegisterProduct(){
-  const { data: categories = [] } = useRestaurantData(RestaurantService.restaurantCategories, 'categories');
-  const { data: sizesData = [] } = useRestaurantData(RestaurantService.restaurantSizes, 'sizes');
-  
+interface props {
+  onClose?: () => void;
+}
+
+export default function UseModalRegisterProduct({ onClose }: props = {}){
+  const { data: categories = [] } = useCategories();
+  const { data: sizesData = [] } = useSizes();
+  const createProductMutation = useCreateProduct();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -50,9 +57,9 @@ export default function UseModalRegisterProduct(){
   }, [imagePreview]);
 
   async function createProduct(){
-    try {
     let sizes: ProducSizeDTO[] = [];
-      if (manySizes) {
+
+    if (manySizes) {
       sizes = sizesData
         .filter(size => sizePrices[size.id] !== undefined)
         .map(size => ({
@@ -60,9 +67,12 @@ export default function UseModalRegisterProduct(){
           price: sizePrices[size.id]
         }));
     } else {
+      const commonSize = sizesData.find((size) => size.name === "COMUM");
+      if (!commonSize) return;
+
       sizes = [
         {
-          size: "0146a23d-5554-47b4-aa76-e16c0244597f",
+          size: commonSize.id,
           price: commonPrice
         }
       ];
@@ -74,13 +84,16 @@ export default function UseModalRegisterProduct(){
       sizes,
     }
 
-    const productCreated = await ProductService.createProduct(product, imageFile ?? undefined)
-    console.log(productCreated)
-    // addProduct(productCreated);
-    resetForm();
-    } catch (e) {
-      console.log(e);
-    } 
+    try {
+      await createProductMutation.mutateAsync({
+        product,
+        imageFile: imageFile ?? undefined,
+      });
+      resetForm();
+      onClose?.();
+    } catch {
+      // O erro fica disponível em `createProductMutation.error`.
+    }
   }
 
   function resetForm() {
@@ -117,7 +130,8 @@ export default function UseModalRegisterProduct(){
     handleSetSizePrice,
     commonPrice,
     setCommonPrice,
-    sizePrices
-
+    sizePrices,
+    isCreating: createProductMutation.isPending,
+    createError: createProductMutation.error,
   }
 }
