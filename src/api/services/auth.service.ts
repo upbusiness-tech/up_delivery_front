@@ -1,5 +1,11 @@
 // src/services/auth.service.ts
-import { signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  signInWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+} from "firebase/auth";
 import { auth } from "../firebase";
 
 export const AuthService = {
@@ -8,6 +14,18 @@ export const AuthService = {
     // const idToken = await userCredential.user.getIdToken();
     // return { idToken, uid: userCredential.user.uid };
     return userCredential.user;
+  },
+
+  // Valida a senha atual do restaurante sem encerrar a sessão.
+  async verifyPassword(password: string) {
+    const user = auth.currentUser;
+
+    if (!user?.email) {
+      throw new Error("Sessão inválida.");
+    }
+
+    const credential = EmailAuthProvider.credential(user.email, password);
+    await reauthenticateWithCredential(user, credential);
   },
 
   async signOut() {

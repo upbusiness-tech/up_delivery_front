@@ -18,6 +18,8 @@ export function usePublicRestaurantIsOpen(slug: string) {
     staleTime: PUBLIC_RESTAURANT_OPEN_STALE_TIME,
     gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: true,
+    refetchInterval: PUBLIC_RESTAURANT_OPEN_STALE_TIME,
+    refetchIntervalInBackground: true,
     enabled: Boolean(slug),
   });
 }

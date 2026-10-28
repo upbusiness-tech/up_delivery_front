@@ -1,6 +1,10 @@
 import axios from "axios";
 import { api } from "../axios"
 import type { Order } from "../../types/Order.type";
+import type {
+  OrderReportFilters,
+  OrderReportResponse,
+} from "../../types/Report.type";
 
 export const OrderService = {
   async listOrders(){
@@ -12,6 +16,19 @@ export const OrderService = {
         console.log(error.response?.data.message);
       }
       throw error
+    }
+  },
+  async getReports(filters: OrderReportFilters) {
+    try {
+      const { data } = await api.get<OrderReportResponse>(`/order/reports`, {
+        params: filters,
+      });
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
     }
   },
   async updateStatusOrder(status: string, orderId: string) {

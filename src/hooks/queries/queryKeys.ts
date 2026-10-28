@@ -1,4 +1,5 @@
 import { QueryCacheName } from "../useRestaurantData";
+import type { OrderReportFilters } from "../../types/Report.type";
 
 const ordersRoot = [QueryCacheName.ORDERS] as const;
 const restaurantRoot = [QueryCacheName.RESTAURANT] as const;
@@ -18,6 +19,8 @@ export const queryKeys = {
   orders: {
     all: ordersRoot,
     list: () => [...ordersRoot, "list"] as const,
+    report: (filters: OrderReportFilters) =>
+      [...ordersRoot, "report", filters] as const,
   },
   restaurant: {
     all: restaurantRoot,

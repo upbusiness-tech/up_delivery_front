@@ -6,6 +6,8 @@ import {
   useSizes,
 } from "../../../hooks/queries/useMenuQueries";
 
+const COMUM_SIZE_ID = "0146a23d-5554-47b4-aa76-e16c0244597f";
+
 interface props {
   onClose?: () => void;
 }
@@ -23,11 +25,12 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
   const [productDescription, setProductDescription] = useState<string>("")
   const [productCategory, setProductCategory] = useState<string>("")
   const [productSizes, setProductSizes] = useState<ProducSizeDTO[]>([])
-  const [sizePrices, setSizePrices] = useState<Record<string, number>>({});
+  const [sizePrices, setSizePrices] = useState<Record<string, number | undefined>>({});
   const [commonPrice, setCommonPrice] = useState<number>(0);
+  const [formError, setFormError] = useState<string | null>(null);
 
 
-  const handleSetSizePrice = (sizeId: string, price: number) => {
+  const handleSetSizePrice = (sizeId: string, price: number | undefined) => {
     setSizePrices(prev => ({
       ...prev,
       [sizeId]: price
@@ -41,7 +44,7 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
   const handleImageClick = () => {
     fileInputRef.current?.click();
   };
-  
+
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -49,42 +52,99 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
       setImagePreview(URL.createObjectURL(file));
     }
   };
-  
+
   useEffect(() => {
     return () => {
       if (imagePreview) URL.revokeObjectURL(imagePreview);
     };
   }, [imagePreview]);
 
+  function resetForm() {
+    setProductName("");
+    setProductDescription("");
+    setProductCategory("");
+    setProductSizes([]);
+    setSizePrices({});
+    setCommonPrice(0);
+    setManySizes(false);
+    setImageFile(null);
+    setImagePreview(null);
+    setFormError(null);
+  }
+
+  function closeAndReset() {
+    resetForm();
+    onClose?.();
+  }
+
   async function createProduct(){
+    const name = productName.trim();
+    const description = productDescription.trim();
+
+    if (!name) {
+      setFormError("Informe o nome do produto.");
+      return;
+    }
+    if (!productCategory) {
+      setFormError("Selecione a categoria do produto.");
+      return;
+    }
+    if (manySizes && sizesData.length === 0) {
+      setFormError("Nenhum tamanho cadastrado. Cadastre um tamanho antes de criar o produto.");
+      return;
+    }
+    if (createProductMutation.isPending) return;
+
     let sizes: ProducSizeDTO[] = [];
 
     if (manySizes) {
-      sizes = sizesData
-        .filter(size => sizePrices[size.id] !== undefined)
-        .map(size => ({
-          size: size.id,
-          price: sizePrices[size.id]
-        }));
+      const selectedSizes = sizesData.filter(
+        (size) => size.name !== "COMUM" && sizePrices[size.id] !== undefined,
+      );
+
+      if (selectedSizes.length === 0) {
+        setFormError("Informe o preço de pelo menos um tamanho.");
+        return;
+      }
+
+      const hasInvalidPrice = selectedSizes.some((size) => {
+        const price = sizePrices[size.id];
+        return price === undefined || !Number.isFinite(price) || price < 0;
+      });
+
+      if (hasInvalidPrice) {
+        setFormError("Informe preços válidos para os tamanhos selecionados.");
+        return;
+      }
+
+      sizes = selectedSizes.map(size => ({
+        size: size.id,
+        price: sizePrices[size.id] as number,
+      }));
     } else {
-      const commonSize = sizesData.find((size) => size.name === "COMUM");
-      if (!commonSize) return;
+      if (!Number.isFinite(commonPrice) || commonPrice < 0) {
+        setFormError("Informe um preço válido.");
+        return;
+      }
 
       sizes = [
         {
-          size: commonSize.id,
-          price: commonPrice
-        }
+          size: COMUM_SIZE_ID,
+          price: commonPrice,
+        },
       ];
     }
 
-    const product: ProductDTO = {
-      productName,
-      productCategory,
-      sizes,
-    }
+    setFormError(null);
 
     try {
+      const product: ProductDTO = {
+        productName: name,
+        productDescription: description || undefined,
+        productCategory,
+        sizes,
+      };
+
       await createProductMutation.mutateAsync({
         product,
         imageFile: imageFile ?? undefined,
@@ -92,18 +152,8 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
       resetForm();
       onClose?.();
     } catch {
-      // O erro fica disponível em `createProductMutation.error`.
+      setFormError("Não foi possível salvar o produto. Confira os dados e tente novamente.");
     }
-  }
-
-  function resetForm() {
-    setProductName("");
-    setProductDescription("");
-    setProductCategory("");
-    setSizePrices({});
-    setCommonPrice(0);
-    setImageFile(null);
-    setImagePreview(null);
   }
 
 
@@ -133,5 +183,7 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
     sizePrices,
     isCreating: createProductMutation.isPending,
     createError: createProductMutation.error,
+    formError,
+    closeAndReset,
   }
 }

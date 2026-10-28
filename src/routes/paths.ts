@@ -12,6 +12,7 @@ export const PUBLIC_ROOT = '/r'
 export const PATHS = {
   login: '/login',
   orders: '/orders',
+  reports: '/reports',
   enterprise: '/enterprise',
   menu: '/cardapio',
 } as const

@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { OrderService } from "../../api/services/order.service";
 import type { Order } from "../../types/Order.type";
+import type { OrderReportFilters } from "../../types/Report.type";
 import { queryKeys } from "./queryKeys";
 
 const ORDERS_STALE_TIME = 15_000;
@@ -10,6 +11,16 @@ export function useOrders() {
     queryKey: queryKeys.orders.list(),
     queryFn: () => OrderService.listOrders(),
     staleTime: ORDERS_STALE_TIME,
+    refetchInterval: ORDERS_STALE_TIME,
+  });
+}
+
+export function useOrderReports(filters: OrderReportFilters) {
+  return useQuery({
+    queryKey: queryKeys.orders.report(filters),
+    queryFn: () => OrderService.getReports(filters),
+    staleTime: 30_000,
+    placeholderData: keepPreviousData,
   });
 }
 
