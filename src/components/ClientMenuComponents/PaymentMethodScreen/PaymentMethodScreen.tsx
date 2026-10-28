@@ -41,6 +41,7 @@ export default function PaymentMethodScreen({ order, total, paymentMethod, userE
           <CardScreen
           amount={total}
           order={order}
+          userEmail={userEmail}
           onNext={onNext}
           setDisabeHeader={setDisabeHeader}
           />

@@ -36,6 +36,7 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
   card: 'Cartão',
   CREDITO: 'Crédito',
   DEBITO: 'Débito',
+  DEBIDO: 'Débito',
 };
 
 export function paymentMethodMask(method: string): string {
