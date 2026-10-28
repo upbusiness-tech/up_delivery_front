@@ -142,7 +142,7 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: "18px", fontWeight: "bold", marginTop: 5, paddingTop: 5, borderTop: "1px solid #000" }}>
           <span>TOTAL:</span>
-          <span>R$ {formatMoney(order.orderTotal + (order.neighborhood?.deliveryFee ?? 0))}</span>
+          <span>R$ {formatMoney(order.orderTotal)}</span>
         </div>
       </div>
     </div>
