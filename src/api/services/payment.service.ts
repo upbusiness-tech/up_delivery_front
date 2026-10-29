@@ -9,6 +9,44 @@ import type {
   RestaurantPublicKey,
 } from "../../types/Payment.type";
 
+function getPixPaymentErrorMessage(error: unknown) {
+  if (axios.isAxiosError(error)) {
+    const data = error.response?.data as
+      | { message?: unknown }
+      | string
+      | undefined;
+
+    const rawMessage =
+      typeof data === "string" ? data : data?.message;
+
+    const message = Array.isArray(rawMessage)
+      ? rawMessage
+          .filter((item): item is string => typeof item === "string")
+          .join(" ")
+      : typeof rawMessage === "string"
+        ? rawMessage
+        : "";
+
+    if (!error.response) {
+      return "Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.";
+    }
+
+    if (error.response.status >= 500) {
+      return "Não foi possível gerar o Pix agora. Tente novamente em instantes.";
+    }
+
+    if (message.trim()) return message.trim();
+
+    return "Não foi possível gerar o Pix. Tente novamente.";
+  }
+
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+
+  return "Não foi possível gerar o Pix. Tente novamente.";
+}
+
 export const PaymentSevice = {
 
   async createPixPayment(restaurantId: string, dto: CreatePixPayment){
@@ -16,9 +54,8 @@ export const PaymentSevice = {
       const { data } = await api.post<PixData>(`/payment/create-pix-payment/${restaurantId}`, dto)
       return data
     }catch (error) {
-      if (axios.isAxiosError(error)) {
-        console.log(error.response?.data.message);
-      }
+      console.error("Erro ao criar pagamento Pix:", error);
+      throw new Error(getPixPaymentErrorMessage(error));
     }
   },
 

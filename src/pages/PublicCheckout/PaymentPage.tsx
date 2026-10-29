@@ -38,8 +38,8 @@ export default function PaymentPage() {
           flavors: product.flavors,
           additionals: product.additionals?.map((additional) => additional.id),
         })),
-        costumerName: checkout.customer.name,
-        costumerPhone: checkout.customer.phone,
+        costumerName: checkout.customer.name.trim(),
+        costumerPhone: checkout.customer.phone.trim(),
         ...(checkout.mode === "delivery" && checkout.neighborhood
           ? { address: checkout.address, neighborhoodId: checkout.neighborhood.id }
           : {}),
@@ -83,9 +83,9 @@ export default function PaymentPage() {
         <PaymentMethodScreen
           order={order}
           total={order.orderTotal}
-          userName={checkout.customer.name}
-          userPhone={checkout.customer.phone}
-          userEmail={checkout.customer.email}
+          userName={checkout.customer.name.trim()}
+          userPhone={checkout.customer.phone.trim()}
+          userEmail={checkout.customer.email.trim()}
           paymentMethod={checkout.paymentMethod}
           onBack={() => setOrder(undefined)}
           onNext={handleFinish}

@@ -96,7 +96,7 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
                             sx={{
                               height: 20,
                               fontSize: 10.5,
-                              fontWeight: 800,
+                              fontWeight: 600,
                               bgcolor: accentColor,
                               color: "#fff",
                               "& .MuiChip-label": { px: 0.75 },
