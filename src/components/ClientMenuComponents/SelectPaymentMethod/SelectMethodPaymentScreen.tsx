@@ -1,4 +1,5 @@
 import { Avatar, Box, Chip, Container, Paper, Radio, Stack, Typography } from "@mui/material";
+import { alpha } from "@mui/material/styles";
 import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 import { BackHeader } from "../BackHeader/BackHeader";
 import { CheckoutBottomBar } from "../CheckoutBottomBar";
@@ -42,6 +43,7 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
             {c.opts.map((o) => {
               const active = paymentMethod === o.id;
               const highlighted = Boolean(o.highlight);
+              const accentColor = o.accent ?? "#2E7D32";
               return (
                 <Paper
                   key={o.id}
@@ -51,13 +53,21 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
                     p: 1.75,
                     cursor: loading ? "default" : "pointer",
                     border: 2,
-                    borderColor: active ? "success.main" : highlighted ? "success.light" : "transparent",
-                    bgcolor: active ? "success.50" : highlighted ? "rgba(46,125,50,0.035)" : "#fff",
+                    borderColor: active
+                      ? accentColor
+                      : highlighted
+                        ? alpha(accentColor, 0.55)
+                        : "transparent",
+                    bgcolor: active
+                      ? alpha(accentColor, 0.12)
+                      : highlighted
+                        ? alpha(accentColor, 0.04)
+                        : "#fff",
                     opacity: loading ? 0.6 : 1,
                     pointerEvents: loading ? "none" : "auto",
                     transition: "border-color 120ms ease, background-color 120ms ease, opacity 120ms ease",
                     "&:hover": {
-                      borderColor: active ? "success.main" : highlighted ? "success.main" : "grey.300",
+                      borderColor: active || highlighted ? accentColor : "grey.300",
                     },
                   }}
                 >
@@ -66,8 +76,12 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
                       sx={{
                         width: 40,
                         height: 40,
-                        bgcolor: active ? "success.main" : highlighted ? "success.50" : "grey.100",
-                        color: active ? "#fff" : highlighted ? "success.dark" : "text.primary",
+                        bgcolor: active
+                          ? accentColor
+                          : highlighted
+                            ? alpha(accentColor, 0.12)
+                            : "grey.100",
+                        color: active ? "#fff" : highlighted ? accentColor : "text.primary",
                       }}
                     >
                       <o.Icon fontSize="small" />
@@ -79,11 +93,12 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
                           <Chip
                             label={o.tag}
                             size="small"
-                            color="success"
                             sx={{
                               height: 20,
                               fontSize: 10.5,
                               fontWeight: 800,
+                              bgcolor: accentColor,
+                              color: "#fff",
                               "& .MuiChip-label": { px: 0.75 },
                             }}
                           />
@@ -108,7 +123,13 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
                         />
                       )}
                     </Box>
-                    <Radio checked={active} color="success" />
+                    <Radio
+                      checked={active}
+                      sx={{
+                        color: highlighted ? alpha(accentColor, 0.55) : undefined,
+                        "&.Mui-checked": { color: accentColor },
+                      }}
+                    />
                   </Stack>
                 </Paper>
               );

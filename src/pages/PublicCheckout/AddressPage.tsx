@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { RestaurantService } from "../../api/services/restaurant.service";
 import { BackHeader } from "../../components/ClientMenuComponents/BackHeader/BackHeader";
 import { ScreenFooterActions } from "../../components/ClientMenuComponents/ScreenFooterActions/ScreenFooterActions";
-import { CHECKOUT_TOTAL_STEPS, useCheckout } from "../../checkout/CheckoutContext";
+import { CHECKOUT_CITY, CHECKOUT_TOTAL_STEPS, useCheckout } from "../../checkout/CheckoutContext";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
 import { useAddressValidation } from "../../hooks/useInfoScreenValidation";
@@ -178,10 +178,9 @@ export default function AddressPage() {
             <TextField
               label="Cidade"
               fullWidth
-              value={address.city}
-              onChange={(event) => updateAddress({ city: event.target.value })}
-              error={!!address.city && !!errors.cityError}
-              helperText={!!address.city && errors.cityError}
+              value={CHECKOUT_CITY}
+              disabled
+              helperText="Cidade fixa para este restaurante"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
 

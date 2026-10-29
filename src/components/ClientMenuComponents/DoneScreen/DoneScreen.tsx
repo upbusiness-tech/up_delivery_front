@@ -6,6 +6,7 @@ import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
 import { useCheckout } from "../../../checkout/CheckoutContext";
+import { buildOrderMessage } from "../../../utils/whatsapp/orderMessage";
 
 interface DoneScreenProps {
   order: Order;
@@ -29,8 +30,14 @@ export default function DoneScreen({ order, onNext, total }: DoneScreenProps) {
   const handleContactRestaurant = () => {
     const phone = (restaurant?.restaurantPhone || "").replace(/\D/g, "");
     if (!phone) return;
-    const itemsText = items.map((item) => `- ${item.quantity}x ${item.name}`).join("\n");
-    const message = `Olá! Acabei de fazer meu pedido #${order.code} pelo app.\n\n*Cliente:* ${order.costumerName}\n*Itens:*\n${itemsText}\n\n*Total:* ${moneyMask(total)}\n*Pagamento:* ${paymentMethodMask(order.paymentMethod)}\n\nGostaria de confirmar se o pedido foi recebido. Obrigado!`;
+    // Mesmo modelo do texto de recebimento enviado ao cliente, com saudação
+    // adaptada para o restaurante que vai receber a mensagem.
+    const message = buildOrderMessage(
+      { ...order, items },
+      40,
+      undefined,
+      "restaurant",
+    );
     window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
   };
 

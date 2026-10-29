@@ -20,7 +20,11 @@ export interface CustomerData {
 }
 
 const EMPTY_CUSTOMER: CustomerData = { name: "", phone: "", email: "" };
-const EMPTY_ADDRESS: Address = { city: "", number: 0, streetName: "", complement: "" };
+
+/** Cidade fixa do checkout público. */
+export const CHECKOUT_CITY = "Quixadá-CE";
+
+const EMPTY_ADDRESS: Address = { city: CHECKOUT_CITY, number: 0, streetName: "", complement: "" };
 
 interface CheckoutContextValue {
   // Carrinho
@@ -146,7 +150,12 @@ function getProductQuantity(product: Pick<OrderItemBag, "quantity" | "minQuantit
 
 export function CheckoutProvider({ children }: { children: ReactNode }) {
   const { slug, restaurant } = usePublicRestaurant();
-  const { allowDelivery, allowPickup, loading: settingsLoading } = useRestaurantSettings(restaurant.id);
+  const {
+    allowDelivery,
+    allowPickup,
+    allowPixPayment,
+    loading: settingsLoading,
+  } = useRestaurantSettings(restaurant.id);
   const storageKey = `${STORAGE_PREFIX}:${slug}`;
   const deliveryStorageKey = `${DELIVERY_STORAGE_PREFIX}:${slug}`;
 
@@ -171,9 +180,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   });
   const [mode, setMode] = useState<OrderMode>(saved?.mode ?? "delivery");
   const [address, setAddress] = useState<Address>(() => {
-    if (hasAddressData(saved?.address, saved?.neighborhood)) return { ...EMPTY_ADDRESS, ...saved?.address };
+    if (hasAddressData(saved?.address, saved?.neighborhood)) {
+      return { ...EMPTY_ADDRESS, ...saved?.address, city: CHECKOUT_CITY };
+    }
     if (hasAddressData(savedDelivery?.address, savedDelivery?.neighborhood)) {
-      return { ...EMPTY_ADDRESS, ...savedDelivery?.address };
+      return { ...EMPTY_ADDRESS, ...savedDelivery?.address, city: CHECKOUT_CITY };
     }
     return { ...EMPTY_ADDRESS };
   });
@@ -183,6 +194,13 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     return undefined;
   });
   const [paymentMethod, setPaymentMethod] = useState(saved?.paymentMethod ?? "");
+
+  // Incentiva o Pix deixando-o pré-selecionado quando o cliente ainda não
+  // escolheu uma forma de pagamento e o restaurante aceita Pix.
+  useEffect(() => {
+    if (settingsLoading || !allowPixPayment || paymentMethod.trim()) return;
+    setPaymentMethod("pix");
+  }, [allowPixPayment, paymentMethod, settingsLoading]);
 
   /**
    * A modalidade vem das configurações do restaurante, não só da escolha salva
@@ -321,7 +339,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   }
 
   function updateAddress(patch: Partial<Address>) {
-    setAddress((previous) => ({ ...previous, ...patch }));
+    // A cidade é fixa no checkout. Ignora qualquer tentativa de alteração.
+    setAddress((previous) => ({ ...previous, ...patch, city: CHECKOUT_CITY }));
   }
 
   function getBlockedRedirect(step: CheckoutStep): CheckoutRedirect | null {

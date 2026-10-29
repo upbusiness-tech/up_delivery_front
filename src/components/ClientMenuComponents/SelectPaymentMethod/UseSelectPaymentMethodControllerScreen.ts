@@ -14,6 +14,8 @@ interface PaymentOption {
   enabled: boolean;
   /** Recebe destaque visual mesmo quando ainda não está selecionado. */
   highlight?: boolean;
+  /** Cor de destaque da opção (ex.: azul claro do Pix). */
+  accent?: string;
   /** Selo exibido ao lado do nome. */
   tag?: string;
   /** Informação adicional exibida abaixo da descrição. */
@@ -29,11 +31,12 @@ export function UsePaymentController({ setPaymentMethod, allowPixPayment, allowC
       Icon: PixIcon,
       enabled: allowPixPayment,
       highlight: true,
+      accent: "#32BCAD",
       tag: "Recomendado",
     },
     {
       id: "card",
-      label: "Cartão crédito/débito",
+      label: "Via Cartão",
       desc: "Crédito ou débito",
       Icon: CreditCard,
       enabled: allowCardPayment,
