@@ -22,7 +22,8 @@ export const ProductService = {
     }
   },
 
-  async createCategory(body: any){
+
+  async createCategory(body: { categoryName: string }){
     try {
       const { data } = await api.post<ProductCategory>("/product_category/create-category", body);
       return data;
@@ -60,7 +61,7 @@ export const ProductService = {
 
   async createAdditional(body: AdditionalDTO){
     try {
-      const { data } = await api.post(`additional/create-additional`, body);
+      const { data } = await api.post(`/additional/create-additional`, body);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

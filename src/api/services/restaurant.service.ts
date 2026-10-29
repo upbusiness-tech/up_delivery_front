@@ -118,6 +118,7 @@ export const RestaurantService = {
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) console.log(error.response?.data.message);
+      throw error;
     }
   },
 

@@ -1,7 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ProductService } from "../../api/services/product.service";
 import { RestaurantService } from "../../api/services/restaurant.service";
-import type { ProducSizeDTO, Product, ProductDTO } from "../../types/Product.type";
+import type {
+  AdditionalDTO,
+  Additionals,
+  ProducSizeDTO,
+  Product,
+  ProductCategory,
+  ProductDTO,
+} from "../../types/Product.type";
 import { queryKeys } from "./queryKeys";
 
 const MENU_STALE_TIME = 5 * 60 * 1000;
@@ -51,6 +58,31 @@ export function useCreateProduct() {
       ProductService.createProduct(product, imageFile),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+    },
+  });
+}
+
+
+export function useCreateCategory() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (categoryName: string) =>
+      ProductService.createCategory({ categoryName }) as Promise<ProductCategory>,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
+    },
+  });
+}
+
+export function useCreateAdditional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: AdditionalDTO) =>
+      ProductService.createAdditional(body) as Promise<Additionals>,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.additionals.all });
     },
   });
 }

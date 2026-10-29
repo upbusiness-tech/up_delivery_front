@@ -54,8 +54,29 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
         </Stack>
       )}
 
+      {!c.loading && !isApproved && c.error && (
+        <Stack role="alert" sx={{ alignItems: "center", justifyContent: "center", py: 6, gap: 2.5 }}>
+          <Box sx={{ width: 72, height: 72, borderRadius: "50%", bgcolor: "error.dark", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.9 }}>
+            <HighlightOffIcon sx={{ fontSize: 36, color: "white" }} />
+          </Box>
+
+          <Stack sx={{ alignItems: "center", gap: 0.5 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "text.primary" }}>
+              Não foi possível gerar o Pix
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ textAlign: "center", maxWidth: 320 }}>
+              {c.error}
+            </Typography>
+          </Stack>
+
+          <Button endIcon={<SettingsBackupRestoreIcon />} variant="contained" color="success" size="large" onClick={c.handleRetry} sx={{ mt: 1, px: 4, borderRadius: 2, textTransform: "none", fontWeight: 600 }}>
+            Tentar novamente
+          </Button>
+        </Stack>
+      )}
+
       {/* Se não estiver carregando, se não tiver sido aprovado e se tiver expirado */}
-      {!c.loading && !isApproved && c.expired && (
+      {!c.loading && !isApproved && !c.error && c.expired && (
         <Stack sx={{ alignItems: "center", justifyContent: "center", py: 6, gap: 2.5 }}>
           <Box sx={{ width: 72, height: 72, borderRadius: "50%", bgcolor: "error.dark", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.9 }}>
             <TimerOffIcon sx={{ fontSize: 36, color: "white" }} />
@@ -77,7 +98,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
       )}
 
       {/* Se não tiver carregando, se não tiver expirado, se tiver sido rejeitado */}
-      {!c.loading && !c.expired && isRejected && (
+      {!c.loading && !c.error && !c.expired && isRejected && (
         <Stack sx={{ alignItems: "center", justifyContent: "center", py: 6, gap: 2.5 }}>
           <Box sx={{ width: 72, height: 72, borderRadius: "50%", bgcolor: "error.dark", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0.9 }}>
             <HighlightOffIcon sx={{ fontSize: 36, color: "white" }} />
@@ -99,7 +120,7 @@ export default function PixScreen({total, order, userEmail, onNext, setDisabeHea
       )}
 
       {/* Se não estiver carregando, se não tiver sido aprovado, se não tiver expirado, se não tiver sido rejeitado, se não tiver sido cancelado */}
-      {!c.loading && !isApproved && !c.expired && !isRejected && !isCancelled && (
+      {!c.loading && !isApproved && !c.error && !c.expired && !isRejected && !isCancelled && (
         <Paper sx={{ mt: 1, p: 2.5, borderRadius: 4, border: "1px solid", borderColor: "grey.200", boxShadow: "0 1px 3px rgba(0,0,0,0.05)", textAlign: "center" }}>
           <Stack direction="row" sx={{position: "relative" }}>
             <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>

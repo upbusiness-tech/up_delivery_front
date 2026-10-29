@@ -20,7 +20,8 @@ export interface Additionals {
 export interface AdditionalDTO {
   additionalName: string;
   additionalPrice: number;
-  categoryId: string
+  additionalType: Additionals["additionalType"];
+  categoryId: string;
 }
 
 
@@ -75,6 +76,7 @@ export interface ProductBag {
 
 export interface ProductDTO {
 	productName: string,
+	productDescription?: string,
 	productCategory: string,
 	sizes: ProducSizeDTO[],
   image?: string;

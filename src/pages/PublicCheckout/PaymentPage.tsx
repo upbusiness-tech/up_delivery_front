@@ -20,7 +20,8 @@ export default function PaymentPage() {
   const submitting = useRef(false);
 
   async function handleCreateOrder() {
-    if (submitting.current) return;
+    // Não cria o pedido antes de saber se entrega/retirada estão liberadas.
+    if (submitting.current || checkout.settingsLoading) return;
     submitting.current = true;
     setError(null);
     setIsCreatingOrder(true);
@@ -37,8 +38,8 @@ export default function PaymentPage() {
           flavors: product.flavors,
           additionals: product.additionals?.map((additional) => additional.id),
         })),
-        costumerName: checkout.customer.name,
-        costumerPhone: checkout.customer.phone,
+        costumerName: checkout.customer.name.trim(),
+        costumerPhone: checkout.customer.phone.trim(),
         ...(checkout.mode === "delivery" && checkout.neighborhood
           ? { address: checkout.address, neighborhoodId: checkout.neighborhood.id }
           : {}),
@@ -82,9 +83,9 @@ export default function PaymentPage() {
         <PaymentMethodScreen
           order={order}
           total={order.orderTotal}
-          userName={checkout.customer.name}
-          userPhone={checkout.customer.phone}
-          userEmail={checkout.customer.email}
+          userName={checkout.customer.name.trim()}
+          userPhone={checkout.customer.phone.trim()}
+          userEmail={checkout.customer.email.trim()}
           paymentMethod={checkout.paymentMethod}
           onBack={() => setOrder(undefined)}
           onNext={handleFinish}

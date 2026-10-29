@@ -13,7 +13,7 @@ interface Props {
   userEmail: string;
 }
 
-const PIX_EXPIRATION_SECONDS = 60;
+const PIX_EXPIRATION_SECONDS = 10 * 60;
 
 export function UsePixScreenController({
   order,
@@ -29,46 +29,70 @@ export function UsePixScreenController({
   const [orderId, setOrderId] = useState<string | null>(null);
   const [expired, setExpired] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [dbIsPaid, setDbIsPaid] = useState(false);
 
   const paymentCreatedRef = useRef(false);
 
   // WebSocket
   const { status: paymentStatus, isPaid: paymentConfirmed } = usePaymentSocket(orderId);
 
-  const isApproved = paymentConfirmed;
+  const isApproved = paymentConfirmed || dbIsPaid;
   const isRejected = paymentStatus === "rejected";
   const isCancelled = paymentStatus === "cancelled";
+  const restaurantId = order.restaurant?.id;
 
   const fetchPayment = useCallback(async () => {
     setLoading(true);
     setExpired(false);
+    setError(null);
+    setQrCodeBase64("");
+    setQrCode("");
+    setExpiresAt("");
+
+    if (!restaurantId) {
+      setError("Não foi possível identificar o restaurante. Volte e tente novamente.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const payment: CreatePixPayment = {
         amount: total,
         paymentMethod: MethodPayment.PIX,
         description: "UPDELIVERY_ORDER",
-        payerEmail: userEmail,
+        payerEmail: userEmail.trim(),
         orderInternalId: order.id,
       };
 
       const data = await PaymentSevice.createPixPayment(
-        order.restaurant.id,
+        restaurantId,
         payment,
       );
 
-      if (data) {
-        setQrCodeBase64(data.qrCodeBase64);
-        setQrCode(data.qrCode);
-        setExpiresAt(data.expiresAt);
-        setOrderId(order.id);
+      if (!data) {
+        throw new Error("Não foi possível gerar o Pix. Tente novamente.");
+      }
+
+      setQrCodeBase64(data.qrCodeBase64 ?? "");
+      setQrCode(data.qrCode ?? "");
+      setExpiresAt(data.expiresAt ?? "");
+      setOrderId(order.id);
+
+      if (!data.qrCode && !data.qrCodeBase64) {
+        setError("O servidor não retornou o QR Code do Pix. Tente novamente.");
       }
     } catch (error) {
       console.error("Erro ao criar pagamento:", error);
+      setError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Não foi possível gerar o Pix. Tente novamente.",
+      );
     } finally {
       setLoading(false);
     }
-  }, [order.id, order.restaurant.id, total, userEmail]);
+  }, [order.id, restaurantId, total, userEmail]);
 
   // Cria o pagamento PIX
   useEffect(() => {
@@ -106,6 +130,53 @@ export function UsePixScreenController({
 
     return () => clearInterval(interval);
   }, [expiresAt]);
+
+  // Fallback do socket: se o webhook demorar, consulta o pedido no banco.
+  useEffect(() => {
+    if (!orderId || isApproved || isRejected || isCancelled) return;
+
+    let cancelled = false;
+    let attempts = 0;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    async function poll() {
+      if (cancelled) return;
+
+      if (document.visibilityState === "hidden") {
+        schedule();
+        return;
+      }
+
+      attempts += 1;
+
+      try {
+        const data = await PaymentSevice.getPaymentStatus(order.id);
+        if (cancelled) return;
+
+        if (data.isPaid) {
+          setDbIsPaid(true);
+          return;
+        }
+      } catch (error) {
+        console.error("Erro ao consultar status do Pix:", error);
+      }
+
+      schedule();
+    }
+
+    function schedule() {
+      // O QR Code vale por 10 minutos; cobre todo o período.
+      if (cancelled || attempts >= 120) return;
+      timer = setTimeout(poll, 5000);
+    }
+
+    schedule();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [isApproved, isCancelled, isRejected, order.id, orderId]);
 
   const formattedTime =
     secondsLeft !== null
@@ -169,6 +240,7 @@ export function UsePixScreenController({
     isRejected,
     isCancelled,
     expired,
+    error,
     handleRetry,
     handleCardPaymentCreated,
     handleCardSubmitError,

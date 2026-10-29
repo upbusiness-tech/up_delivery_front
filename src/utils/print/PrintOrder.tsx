@@ -17,15 +17,44 @@ export default function PrintOrder({ order }: PrintOrderProps) {
 
   if (!order) return null;
 
+  function findProductByFlavor(flavor: OrderFlavor) {
+    return products.find((p) => p.sizes?.some((ps) => ps.id === flavor.id));
+  }
+
   function getProductNameByProductSize(flavor: OrderFlavor): string {
-    const product = products.find((p) => p.sizes.some((ps) => ps.id === flavor.id));
-    return product?.productName ?? flavor.product?.productName ?? "Sabor não encontrado";
+    const product = findProductByFlavor(flavor);
+    return product?.productName ?? flavor.product?.productName ?? "";
+  }
+
+  function isSimpleProductFlavor(flavor: OrderFlavor, item: OrderItem): boolean {
+    const product = findProductByFlavor(flavor);
+    if (product) {
+      return product.sizes.length === 1 && product.sizes[0].size?.name === "COMUM";
+    }
+    return Boolean(
+      flavor.product?.productName &&
+        flavor.product.productName.trim().toLowerCase() === item.name.trim().toLowerCase(),
+    );
   }
 
   function getItemFlavorLines(item: OrderItem): string[] {
-    const names = item.flavors.map(getProductNameByProductSize);
-    if (names.length === 1 && names[0].trim().toLowerCase() === item.name.trim().toLowerCase()) return [];
-    return names.map((n) => names.length === 1 ? n : `1/${names.length} ${n}`);
+    const names = item.flavors
+      .map(getProductNameByProductSize)
+      .filter((name) => name.trim());
+
+    if (names.length === 0) return [];
+
+    // Em produtos simples o sabor é o próprio produto; não repetir o nome.
+    // Em pizzas, mesmo com um único sabor, o sabor precisa aparecer.
+    if (
+      names.length === 1 &&
+      item.flavors.every((flavor) => isSimpleProductFlavor(flavor, item)) &&
+      names[0].trim().toLowerCase() === item.name.trim().toLowerCase()
+    ) {
+      return [];
+    }
+
+    return names.map((name) => (names.length === 1 ? name : `1/${names.length} ${name}`));
   }
 
   function formatMoney(value: number | string | undefined | null) {

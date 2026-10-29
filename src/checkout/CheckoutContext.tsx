@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { Address, OrderItemBag, OrderMode } from "../types/Order.type";
 import type { Neighborhood } from "../types/Restaurant.type";
 import { useInfoScreenValidation } from "../hooks/useInfoScreenValidation";
+import { useRestaurantSettings } from "../hooks/useRestaurantSettings";
 import { usePublicRestaurant } from "../context/PublicRestaurantContext";
 
 /** Passos do checkout público, na ordem em que devem ser percorridos. */
@@ -19,12 +20,17 @@ export interface CustomerData {
 }
 
 const EMPTY_CUSTOMER: CustomerData = { name: "", phone: "", email: "" };
-const EMPTY_ADDRESS: Address = { city: "", number: 0, streetName: "", complement: "" };
+
+/** Cidade fixa do checkout público. */
+export const CHECKOUT_CITY = "Quixadá-CE";
+
+const EMPTY_ADDRESS: Address = { city: CHECKOUT_CITY, number: 0, streetName: "", complement: "" };
 
 interface CheckoutContextValue {
   // Carrinho
   products: OrderItemBag[];
   addProduct: (product: OrderItemBag) => void;
+  incrementProduct: (id: string) => void;
   updateProduct: (product: OrderItemBag) => void;
   decrementProduct: (product: OrderItemBag) => void;
   removeProduct: (id: string) => void;
@@ -42,6 +48,11 @@ interface CheckoutContextValue {
   updateAddress: (patch: Partial<Address>) => void;
   neighborhood: Neighborhood | undefined;
   setNeighborhood: (neighborhood: Neighborhood | undefined) => void;
+  /** Taxa efetivamente aplicada ao pedido (0 em retirada ou quando entrega está desativada). */
+  deliveryFee: number;
+  allowDelivery: boolean;
+  allowPickup: boolean;
+  settingsLoading: boolean;
 
   // Pagamento
   paymentMethod: string;
@@ -132,8 +143,19 @@ function hasAddressData(address: Partial<Address> | null | undefined, neighborho
   );
 }
 
+/** Garante que nenhum item fique abaixo da quantidade mínima configurada. */
+function getProductQuantity(product: Pick<OrderItemBag, "quantity" | "minQuantity">) {
+  return Math.max(1, Number(product.quantity) || 1, product.minQuantity ?? 1);
+}
+
 export function CheckoutProvider({ children }: { children: ReactNode }) {
-  const { slug } = usePublicRestaurant();
+  const { slug, restaurant } = usePublicRestaurant();
+  const {
+    allowDelivery,
+    allowPickup,
+    allowPixPayment,
+    loading: settingsLoading,
+  } = useRestaurantSettings(restaurant.id);
   const storageKey = `${STORAGE_PREFIX}:${slug}`;
   const deliveryStorageKey = `${DELIVERY_STORAGE_PREFIX}:${slug}`;
 
@@ -144,7 +166,12 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   );
 
   const [products, setProducts] = useState<OrderItemBag[]>(() =>
-    Array.isArray(saved?.products) ? saved.products : [],
+    Array.isArray(saved?.products)
+      ? saved.products.map((product) => ({
+          ...product,
+          quantity: getProductQuantity(product),
+        }))
+      : [],
   );
   const [customer, setCustomer] = useState<CustomerData>(() => {
     if (hasCustomerData(saved?.customer)) return { ...EMPTY_CUSTOMER, ...saved?.customer };
@@ -153,9 +180,11 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   });
   const [mode, setMode] = useState<OrderMode>(saved?.mode ?? "delivery");
   const [address, setAddress] = useState<Address>(() => {
-    if (hasAddressData(saved?.address, saved?.neighborhood)) return { ...EMPTY_ADDRESS, ...saved?.address };
+    if (hasAddressData(saved?.address, saved?.neighborhood)) {
+      return { ...EMPTY_ADDRESS, ...saved?.address, city: CHECKOUT_CITY };
+    }
     if (hasAddressData(savedDelivery?.address, savedDelivery?.neighborhood)) {
-      return { ...EMPTY_ADDRESS, ...savedDelivery?.address };
+      return { ...EMPTY_ADDRESS, ...savedDelivery?.address, city: CHECKOUT_CITY };
     }
     return { ...EMPTY_ADDRESS };
   });
@@ -166,17 +195,36 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   });
   const [paymentMethod, setPaymentMethod] = useState(saved?.paymentMethod ?? "");
 
+  // Incentiva o Pix deixando-o pré-selecionado quando o cliente ainda não
+  // escolheu uma forma de pagamento e o restaurante aceita Pix.
+  useEffect(() => {
+    if (settingsLoading || !allowPixPayment || paymentMethod.trim()) return;
+    setPaymentMethod("pix");
+  }, [allowPixPayment, paymentMethod, settingsLoading]);
+
+  /**
+   * A modalidade vem das configurações do restaurante, não só da escolha salva
+   * no dispositivo. Se a entrega estiver desativada, o checkout opera como
+   * retirada e nenhuma taxa de entrega é somada ao total.
+   */
+  const resolvedMode = useMemo<OrderMode>(() => {
+    if (settingsLoading) return mode;
+    if (!allowDelivery) return "pickup";
+    if (!allowPickup) return "delivery";
+    return mode;
+  }, [allowDelivery, allowPickup, mode, settingsLoading]);
+
   // Mantém o carrinho e o progresso do checkout ao recarregar a página.
   useEffect(() => {
     try {
       window.sessionStorage.setItem(
         storageKey,
-        JSON.stringify({ products, customer, address, neighborhood, mode, paymentMethod }),
+        JSON.stringify({ products, customer, address, neighborhood, mode: resolvedMode, paymentMethod }),
       );
     } catch {
       // sessionStorage indisponível (modo privado, cota cheia...) — segue sem persistir.
     }
-  }, [storageKey, products, customer, address, neighborhood, mode, paymentMethod]);
+  }, [storageKey, products, customer, address, neighborhood, resolvedMode, paymentMethod]);
 
   // Dados pessoais são salvos entre visitas para não serem digitados novamente.
   useEffect(() => {
@@ -201,14 +249,14 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   const hasPaymentMethod = paymentMethod.trim().length > 0;
 
   const hasAddress = useMemo(() => {
-    if (mode === "pickup") return true;
+    if (resolvedMode === "pickup") return true;
     return (
       address.streetName.trim().length >= 3 &&
       Number(address.number) > 0 &&
       address.city.trim().length > 0 &&
       Boolean(neighborhood)
     );
-  }, [mode, address, neighborhood]);
+  }, [resolvedMode, address, neighborhood]);
 
   const subtotal = useMemo(
     () =>
@@ -219,20 +267,48 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     [products],
   );
 
-  const total = subtotal + (mode === "delivery" ? neighborhood?.deliveryFee ?? 0 : 0);
+  const deliveryFee = useMemo(
+    () => (resolvedMode === "delivery" && allowDelivery ? Number(neighborhood?.deliveryFee ?? 0) : 0),
+    [allowDelivery, neighborhood, resolvedMode],
+  );
+
+  const total = subtotal + deliveryFee;
 
   function addProduct(product: OrderItemBag) {
+    // O ProductSheet pode enviar uma quantidade maior que 1 por causa do
+    // minQuantity. O carrinho precisa preservar essa quantidade, inclusive
+    // quando o mesmo produto é adicionado mais de uma vez.
+    const quantity = getProductQuantity(product);
+
     setProducts((previous) => {
       const existing = previous.find((item) => item.id === product.id);
       if (existing) {
         return previous.map((item) =>
           item.id === product.id
-            ? { ...item, quantity: item.quantity + 1, observation: product.observation }
+            ? {
+                ...item,
+                quantity: Math.max(item.quantity + quantity, item.minQuantity ?? 1),
+                observation: product.observation,
+              }
             : item,
         );
       }
-      return [...previous, { ...product, quantity: 1 }];
+      return [...previous, { ...product, quantity }];
     });
+  }
+
+  /** Incrementa em 1 unidade um item já existente, usado pelo botão "+" do carrinho. */
+  function incrementProduct(id: string) {
+    setProducts((previous) =>
+      previous.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              quantity: Math.max(item.quantity + 1, item.minQuantity ?? 1),
+            }
+          : item,
+      ),
+    );
   }
 
   /** Substitui um item existente, usado ao editar configurações do carrinho. */
@@ -263,7 +339,8 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
   }
 
   function updateAddress(patch: Partial<Address>) {
-    setAddress((previous) => ({ ...previous, ...patch }));
+    // A cidade é fixa no checkout. Ignora qualquer tentativa de alteração.
+    setAddress((previous) => ({ ...previous, ...patch, city: CHECKOUT_CITY }));
   }
 
   function getBlockedRedirect(step: CheckoutStep): CheckoutRedirect | null {
@@ -300,6 +377,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
       value={{
         products,
         addProduct,
+        incrementProduct,
         updateProduct,
         decrementProduct,
         removeProduct,
@@ -307,12 +385,16 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
         subtotal,
         customer,
         updateCustomer,
-        mode,
+        mode: resolvedMode,
         setMode,
         address,
         updateAddress,
         neighborhood,
         setNeighborhood,
+        deliveryFee,
+        allowDelivery,
+        allowPickup,
+        settingsLoading,
         paymentMethod,
         setPaymentMethod,
         hasProducts,

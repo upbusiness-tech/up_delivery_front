@@ -21,6 +21,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import MenuBookIcon from '@mui/icons-material/MenuBook';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import icon from '../../../public/icon-512.png'
 
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -55,6 +56,7 @@ function persistCollapsed(collapsed: boolean) {
 
 const NAV = [
   { label: "Pedidos", route: PATHS.orders, icon: ReceiptLongIcon },
+  { label: "Relatórios", route: PATHS.reports, icon: BarChartIcon },
   { label: "Empresa", route: PATHS.enterprise, icon: RestaurantMenuIcon },
   { label: "Cardápio", route: PATHS.menu, icon: MenuBookIcon },
 ];

@@ -25,7 +25,14 @@ export const getItemFlavorLines = (item: OrderItem, products?: Product[]): strin
   return names.map((n) => (names.length === 1 ? n : `1/${names.length} ${n}`));
 };
 
-export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product[]) => {
+export type OrderMessageAudience = "customer" | "restaurant";
+
+export const buildOrderMessage = (
+  order: Order,
+  avgTime = 40,
+  products?: Product[],
+  audience: OrderMessageAudience = "customer",
+) => {
   const sep = "━━━━━━━━━━━━━━━━━━━━";
   const items = order.items
     .map((i) => {
@@ -44,8 +51,22 @@ export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product
   const isDelivery = order.type === "delivery";
   const addr = order.costumerAddress;
   const fee = Number(order.neighborhood?.deliveryFee ?? 0);
-  const total = Number(order.orderTotal) + fee;
+  // O API já grava a taxa de entrega dentro de orderTotal. Somar novamente
+  // fazia o texto enviado ao cliente/restaurante mostrar um total maior.
+  const total = Number(order.orderTotal);
   const date = fixOrderDate(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" });
+  const toRestaurant = audience === "restaurant";
+  const greeting = toRestaurant
+    ? [`*Pedido #${order.code}*`, "Pedido confirmado pelo cliente 😁", date]
+    : [`Olá, *${order.costumerName}!* 👋`, "Recebemos seu pedido 😁", date];
+  const customer = toRestaurant
+    ? [
+        `*Cliente:* ${order.costumerName}`,
+        order.costumerPhone && `*WhatsApp:* ${order.costumerPhone}`,
+      ]
+        .filter(Boolean)
+        .join("\n")
+    : "";
   const address = isDelivery && addr?.streetName
     ? [
         `*Rua:* ${addr.streetName}, ${addr.number}`,
@@ -65,10 +86,9 @@ export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product
     .join("\n");
 
   return [
-    `Olá, *${order.costumerName}!* 👋`,
-    `Recebemos seu pedido 😁`,
-    date,
+    ...greeting,
     sep,
+    ...(customer ? [customer, sep] : []),
     `*Itens*\n${items}`,
     sep,
     payment,
@@ -78,11 +98,15 @@ export const buildOrderMessage = (order: Order, avgTime = 40, products?: Product
       .join("\n"),
     sep,
     `Pedido gerado via UpDelivery`,
-    "━━━━━━━━━━━━━━━━━━━━",
-    "⭐*DEIXE SUA OPINIÃO!*⭐",
-    "Queremos melhorar sua experiência!💛",
-    "📝 *Avalie sua experiência aqui:*",
-    "https://forms.gle/tZPJg3dVz2dCt5QB9",
+    ...(toRestaurant
+      ? [sep]
+      : [
+          "━━━━━━━━━━━━━━━━━━━━",
+          "⭐*DEIXE SUA OPINIÃO!*⭐",
+          "Queremos melhorar sua experiência!💛",
+          "📝 *Avalie sua experiência aqui:*",
+          "https://forms.gle/tZPJg3dVz2dCt5QB9",
+        ]),
   ].join("\n");
 };
 

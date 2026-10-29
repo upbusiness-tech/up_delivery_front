@@ -1,37 +1,88 @@
-// import { useState } from "react";
-// import { ProductService } from "../../../api/services/product.service";
-// import type { AdditionalDTO } from "../../../types/Product.type";
-// import { useRestaurant } from "../../../context/RestaurantContext";
+import { useState } from "react";
+import { useCategories, useCreateAdditional } from "../../../hooks/queries/useMenuQueries";
+import type { AdditionalDTO } from "../../../types/Product.type";
 
-// export default function UseRegisterAdditionalModalController(){
-//   const {categories, addAdditional} = useRestaurant()
-//   const CATEGORIES = categories ?? [];
+interface props {
+  onClose?: () => void;
+}
 
-//   const [additionalName, setAdditionalName] = useState<string>("")
-//   const [additionalPrice, setAdditionalPrice] = useState<number>(0)
-//   const [categoryId, setCategoryId] = useState<string>("")
+function parsePrice(value: string) {
+  if (!value.trim()) return null;
+  const parsed = Number(value.replace(",", "."));
+  return Number.isFinite(parsed) ? parsed : null;
+}
 
-//   async function createAdditional(){
-//     const body: AdditionalDTO = {
-//       additionalName,
-//       additionalPrice,
-//       categoryId
-//     }
+export default function UseRegisterAdditionalModalController({ onClose }: props = {}) {
+  const { data: categories = [] } = useCategories();
+  const createAdditionalMutation = useCreateAdditional();
 
-//     const additionalCreated = await ProductService.createAdditional(body);
-//     if(!additionalCreated) return
-//     addAdditional(additionalCreated)
-//     console.log(additionalCreated)
-//   }
+  const [additionalName, setAdditionalName] = useState("");
+  const [additionalPrice, setAdditionalPrice] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [additionalType, setAdditionalType] =
+    useState<AdditionalDTO["additionalType"]>("multiple");
+  const [formError, setFormError] = useState<string | null>(null);
 
-//   return {
-//     additionalName,
-//     setAdditionalName,
-//     categoryId,
-//     setCategoryId,
-//     additionalPrice,
-//     setAdditionalPrice,
-//     createAdditional,
-//     CATEGORIES
-//   }
-// }
+  const resetForm = () => {
+    setAdditionalName("");
+    setAdditionalPrice("");
+    setCategoryId("");
+    setAdditionalType("multiple");
+    setFormError(null);
+  };
+
+  const closeAndReset = () => {
+    resetForm();
+    onClose?.();
+  };
+
+  async function createAdditional() {
+    const name = additionalName.trim();
+    const price = parsePrice(additionalPrice);
+
+    if (!name) {
+      setFormError("Informe o nome do adicional.");
+      return;
+    }
+    if (!categoryId) {
+      setFormError("Selecione a categoria do adicional.");
+      return;
+    }
+    if (price === null || price < 0) {
+      setFormError("Informe um preço válido.");
+      return;
+    }
+    if (createAdditionalMutation.isPending) return;
+
+    setFormError(null);
+
+    try {
+      await createAdditionalMutation.mutateAsync({
+        additionalName: name,
+        additionalPrice: price,
+        categoryId,
+        additionalType,
+      });
+      resetForm();
+      onClose?.();
+    } catch {
+      setFormError("Não foi possível salvar o adicional. Confira os dados e tente novamente.");
+    }
+  }
+
+  return {
+    CATEGORIES: categories,
+    additionalName,
+    setAdditionalName,
+    additionalPrice,
+    setAdditionalPrice,
+    categoryId,
+    setCategoryId,
+    additionalType,
+    setAdditionalType,
+    createAdditional,
+    closeAndReset,
+    isCreating: createAdditionalMutation.isPending,
+    formError,
+  };
+}

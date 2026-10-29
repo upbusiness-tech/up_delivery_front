@@ -40,6 +40,7 @@ export default function InfoScreen({ name, setName, phone, setPhone, email, setE
             fullWidth
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onBlur={() => setName(name.trim())}
             autoFocus
             placeholder="José Ferreira"
             error={!!name && !!errors.nameError}
@@ -71,6 +72,7 @@ export default function InfoScreen({ name, setName, phone, setPhone, email, setE
             fullWidth
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onBlur={() => setEmail(email.trim())}
             placeholder="jose@email.com"
             inputMode="email"
             error={!!email && !!errors.emailError}

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { AccessTime, LocationOn, Storefront } from "@mui/icons-material";
 import {
+  Alert,
   Box,
   Container,
   InputAdornment,
@@ -16,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { RestaurantService } from "../../api/services/restaurant.service";
 import { BackHeader } from "../../components/ClientMenuComponents/BackHeader/BackHeader";
 import { ScreenFooterActions } from "../../components/ClientMenuComponents/ScreenFooterActions/ScreenFooterActions";
-import { CHECKOUT_TOTAL_STEPS, useCheckout } from "../../checkout/CheckoutContext";
+import { CHECKOUT_CITY, CHECKOUT_TOTAL_STEPS, useCheckout } from "../../checkout/CheckoutContext";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
 import { useAddressValidation } from "../../hooks/useInfoScreenValidation";
@@ -38,7 +39,7 @@ export default function AddressPage() {
   const navigate = useNavigate();
   const { slug, restaurant } = usePublicRestaurant();
   const { mode, setMode, address, updateAddress, neighborhood, setNeighborhood, hasAddress } = useCheckout();
-  const { allowDelivery, allowPickup } = useRestaurantSettings(restaurant.id);
+  const { allowDelivery, allowPickup, loading: settingsLoading } = useRestaurantSettings(restaurant.id);
 
   const { data: neighborhoods = [] } = useRestaurantData(
     () => RestaurantService.restaurantNeighborhoodsPublic(slug),
@@ -47,6 +48,13 @@ export default function AddressPage() {
   );
 
   const { errors } = useAddressValidation(mode, address, neighborhood);
+
+  const noModesAvailable = !settingsLoading && !allowDelivery && !allowPickup;
+  const modeNotice = noModesAvailable
+    ? "Este restaurante não está aceitando entregas nem retiradas no momento. Não é possível concluir o pedido."
+    : !allowDelivery
+      ? "Este restaurante não está aceitando entregas no momento. Seu pedido será para retirada no local."
+      : "Este restaurante não está aceitando retiradas no momento. Seu pedido será para entrega.";
 
   // Se o restaurante só permite um modo, seleciona automaticamente.
   useEffect(() => {
@@ -75,13 +83,25 @@ export default function AddressPage() {
       <BackHeader title="Endereço" step={3} totalSteps={CHECKOUT_TOTAL_STEPS} onBack={() => navigate(publicPaths.customer(slug))} />
 
       <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
+        {!settingsLoading && (!allowDelivery || !allowPickup) && (
+          <Alert severity={noModesAvailable ? "warning" : "info"} sx={{ mb: 2, borderRadius: 2 }}>
+            {modeNotice}
+          </Alert>
+        )}
+
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {mode === "delivery" ? "Onde vamos entregar?" : "Retire seu pedido no local"}
+          {noModesAvailable
+            ? "Pedidos indisponíveis no momento"
+            : mode === "delivery"
+              ? "Onde vamos entregar?"
+              : "Retire seu pedido no local"}
         </Typography>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {mode === "delivery"
-            ? "Confirme seu endereço para calcularmos a entrega."
-            : "O restaurante enviará uma mensagem quando o seu pedido estiver pronto."}
+          {noModesAvailable
+            ? "O restaurante não está aceitando entregas nem retiradas."
+            : mode === "delivery"
+              ? "Confirme seu endereço para calcularmos a entrega."
+              : "O restaurante enviará uma mensagem quando o seu pedido estiver pronto."}
         </Typography>
 
         {allowDelivery && allowPickup && (
@@ -101,7 +121,7 @@ export default function AddressPage() {
           </ToggleButtonGroup>
         )}
 
-        {mode === "pickup" ? (
+        {!noModesAvailable && (mode === "pickup" ? (
           <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 3, borderColor: "grey.200" }}>
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
               Retire seu pedido em:
@@ -158,10 +178,9 @@ export default function AddressPage() {
             <TextField
               label="Cidade"
               fullWidth
-              value={address.city}
-              onChange={(event) => updateAddress({ city: event.target.value })}
-              error={!!address.city && !!errors.cityError}
-              helperText={!!address.city && errors.cityError}
+              value={CHECKOUT_CITY}
+              disabled
+              helperText="Cidade fixa para este restaurante"
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
 
@@ -196,15 +215,15 @@ export default function AddressPage() {
               sx={{ "& .MuiOutlinedInput-root": { borderRadius: 3 } }}
             />
           </Stack>
-        )}
+        ))}
       </Container>
 
       <Container maxWidth="sm">
         <ScreenFooterActions
           onBack={() => navigate(publicPaths.customer(slug))}
           onNext={() => navigate(publicPaths.payment(slug))}
-          nextLabel="Pagamento"
-          nextDisabled={!hasAddress}
+          nextLabel={noModesAvailable ? "Indisponível" : "Pagamento"}
+          nextDisabled={!hasAddress || settingsLoading || noModesAvailable}
         />
       </Container>
     </Box>

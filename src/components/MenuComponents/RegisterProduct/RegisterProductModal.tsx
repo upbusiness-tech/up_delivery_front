@@ -34,10 +34,17 @@ export default function RegisterProductModal({open, onClose }: props) {
     sizePrices,
     isCreating,
     createError,
+    formError,
+    closeAndReset,
   } = UseModalRegisterProduct({ onClose })
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={isCreating ? undefined : closeAndReset}
+      maxWidth="sm"
+      fullWidth
+    >
       <DialogTitle>
         <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
           <Box>
@@ -46,7 +53,8 @@ export default function RegisterProductModal({open, onClose }: props) {
         </Stack>
         <IconButton
           aria-label="Fechar"
-          onClick={onClose}
+          onClick={closeAndReset}
+          disabled={isCreating}
           sx={{
             position: "absolute",
             right: 12,
@@ -119,6 +127,8 @@ export default function RegisterProductModal({open, onClose }: props) {
                   onChange={(e) => setProductDescription(e.target.value)}
                   size="small"
                   fullWidth
+                  multiline
+                  minRows={2}
                   placeholder="Ex: Pão brioche, hambúrguer 180g, queijo e molho especial"
                   sx={{ fontWeight: 600 }}
                 />
@@ -183,7 +193,14 @@ export default function RegisterProductModal({open, onClose }: props) {
               {!manySizes && (
                 <Stack direction="row" spacing={1} sx={{mt: 1, alignItems: 'center'}}>
                   <TextField value="COMUM" size="small" sx={{width: 160}} disabled />
-                  <TextField value={commonPrice} onChange={(e) => setCommonPrice(Number(e.target.value))} placeholder="R$ 0,00" size="small" sx={{width: 120}}
+                  <TextField
+                    value={commonPrice}
+                    onChange={(e) => setCommonPrice(e.target.value === "" ? 0 : Number(e.target.value))}
+                    placeholder="R$ 0,00"
+                    size="small"
+                    type="number"
+                    sx={{width: 120}}
+                    slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
                   />
                 </Stack>
               )}
@@ -193,14 +210,19 @@ export default function RegisterProductModal({open, onClose }: props) {
                   {sizesData.filter((s) => s.name !== "COMUM").map((s, index) => (
                     <Stack key={index} direction="row" spacing={1} sx={{alignItems: 'center'}}>
                       <TextField value={s.name} size="small" sx={{width: 160}} disabled />
-                      <TextField placeholder="R$ 0,00" size="small" sx={{width: 120}}
+                      <TextField
+                        placeholder="R$ 0,00"
+                        size="small"
+                        type="number"
+                        sx={{width: 120}}
                         value={sizePrices[s.id] ?? ""}
-                        onChange={(e) => 
+                        slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
+                        onChange={(e) =>
                           handleSetSizePrice(
                             s.id,
-                            Number(e.target.value)
+                            e.target.value === "" ? undefined : Number(e.target.value)
                           )
-                        } 
+                        }
                       />
                     </Stack>
                   ))}
@@ -209,21 +231,21 @@ export default function RegisterProductModal({open, onClose }: props) {
             </Stack>
           </Grid>
         </Grid>
-        {createError && (
+        {(formError || createError) && (
           <Alert severity="error" sx={{ mt: 2 }}>
-            Não foi possível salvar o produto. Tente novamente.
+            {formError ?? "Não foi possível salvar o produto. Tente novamente."}
           </Alert>
         )}
       </DialogContent>
 
       <DialogActions>
         <Stack direction="row" spacing={1}>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={onClose} disabled={isCreating}>
+          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={closeAndReset} disabled={isCreating}>
             Cancelar
           </Button>
           <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium"
             onClick={createProduct}
-            disabled={isCreating}
+            disabled={isCreating || !productName.trim() || !productCategory}
           >
             {isCreating ? "Salvando..." : "Salvar Produto"}
           </Button>
