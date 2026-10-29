@@ -1,4 +1,4 @@
-import { Box, IconButton, Typography, Card, Chip } from "@mui/material";
+import { Box, Button, IconButton, Typography, Card, Chip } from "@mui/material";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import AddIcon from "@mui/icons-material/Add";
@@ -67,30 +67,8 @@ export function CartItem({ item, remove, onEdit }: Props) {
             {item.name}
           </Typography>
 
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 0.5, mt: 0.25 }}>
+          <Box sx={{ mt: 0.25 }}>
             <PriceLine itemPrice={item.price} total={total} />
-            <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-              {onEdit && (
-                <IconButton
-                  size="small"
-                  aria-label="Editar item"
-                  title="Editar item"
-                  onClick={onEdit}
-                  sx={{ p: 0.5, color: "text.secondary" }}
-                >
-                  <EditOutlinedIcon sx={{ fontSize: 16 }} />
-                </IconButton>
-              )}
-              <IconButton
-                size="small"
-                aria-label="Remover item"
-                title="Remover item"
-                onClick={remove}
-                sx={{ p: 0.5, color: "#910404" }}
-              >
-                <DeleteOutlineIcon sx={{ fontSize: 16 }} />
-              </IconButton>
-            </Box>
           </Box>
         </Box>
 
@@ -177,6 +155,58 @@ export function CartItem({ item, remove, onEdit }: Props) {
         </Box>
       )}
 
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+          mt: 0.75,
+          pt: 0.5,
+          borderTop: "1px solid",
+          borderColor: "grey.100",
+        }}
+      >
+        {onEdit ? (
+          <Button
+            size="small"
+            onClick={onEdit}
+            startIcon={<EditOutlinedIcon sx={{ fontSize: 15 }} />}
+            sx={{
+              minWidth: 0,
+              px: 0.75,
+              py: 0.25,
+              fontSize: 11.5,
+              fontWeight: 600,
+              color: "text.secondary",
+              textTransform: "none",
+              "&:hover": { bgcolor: "grey.100" },
+            }}
+          >
+            Editar
+          </Button>
+        ) : (
+          <Box />
+        )}
+
+        <Button
+          size="small"
+          onClick={remove}
+          startIcon={<DeleteOutlineIcon sx={{ fontSize: 15 }} />}
+          sx={{
+            minWidth: 0,
+            px: 0.75,
+            py: 0.25,
+            fontSize: 11.5,
+            fontWeight: 600,
+            color: "#910404",
+            textTransform: "none",
+            "&:hover": { bgcolor: "rgba(145, 4, 4, 0.06)" },
+          }}
+        >
+          Remover
+        </Button>
+      </Box>
     </Card>
   );
 }
