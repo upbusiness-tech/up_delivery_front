@@ -20,7 +20,8 @@ export default function PaymentPage() {
   const submitting = useRef(false);
 
   async function handleCreateOrder() {
-    if (submitting.current) return;
+    // Não cria o pedido antes de saber se entrega/retirada estão liberadas.
+    if (submitting.current || checkout.settingsLoading) return;
     submitting.current = true;
     setError(null);
     setIsCreatingOrder(true);

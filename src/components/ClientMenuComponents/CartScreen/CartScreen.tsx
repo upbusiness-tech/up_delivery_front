@@ -1,22 +1,20 @@
 import { useState } from "react";
-import { Alert, Box, Container, Paper, Snackbar, Typography } from "@mui/material";
+import { Alert, Box, Container, Snackbar, Typography } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { CHECKOUT_TOTAL_STEPS, useCheckout } from "../../../checkout/CheckoutContext";
 import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
 import { publicPaths } from "../../../routes/paths";
-import { moneyMask } from "../../../utils/masks/mask";
 import { RestaurantService } from "../../../api/services/restaurant.service";
 import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
 import type { OrderItemBag } from "../../../types/Order.type";
 import { BackHeader } from "../BackHeader/BackHeader";
+import { CheckoutBottomBar } from "../CheckoutBottomBar";
 import ProductSheet from "../ProductSheet/ProductSheet";
-import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
 import { CartItem } from "./CartScreenComponents/CartItem";
-import Row from "../Row";
 
 /** Passo 1 do checkout: revisão do carrinho. */
 export function CartScreen() {
-  const { products, removeProduct, subtotal } = useCheckout();
+  const { products, removeProduct } = useCheckout();
   const { slug } = usePublicRestaurant();
   const navigate = useNavigate();
   const [editingItem, setEditingItem] = useState<OrderItemBag | null>(null);
@@ -64,20 +62,24 @@ export function CartScreen() {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <BackHeader title="Sua sacola" step={1} totalSteps={CHECKOUT_TOTAL_STEPS} onBack={goToMenu} />
       {products.length === 0 ? (
-        <Container maxWidth="sm" sx={{ py: 2, flex: 1, display: "flex", flexDirection: "column" }}>
-          <Box sx={{ textAlign: "center", py: 8, flex: 1 }}>
-            <Typography variant="h6" gutterBottom>
-              Sua sacola está vazia
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-              Adicione itens do cardápio para continuar.
-            </Typography>
+        <>
+          <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+            <Container maxWidth="sm" sx={{ py: 2, flex: 1, display: "flex", flexDirection: "column" }}>
+              <Box sx={{ textAlign: "center", py: 8, flex: 1 }}>
+                <Typography variant="h6" gutterBottom>
+                  Sua sacola está vazia
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                  Adicione itens do cardápio para continuar.
+                </Typography>
+              </Box>
+            </Container>
           </Box>
-          <ScreenFooterActions onBack={goToMenu} />
-        </Container>
+          <CheckoutBottomBar showSummary={false} onBack={goToMenu} />
+        </>
       ) : (
         <>
           <Box sx={{ flex: 1, overflowY: "auto", py: 1.5 }}>
@@ -96,34 +98,11 @@ export function CartScreen() {
             </Container>
           </Box>
 
-          <Box
-            sx={{
-              position: "sticky",
-              bottom: 0,
-              bgcolor: "background.default",
-            }}
-          >
-            <Container maxWidth="sm">
-              <Paper
-                sx={{
-                  p: 1.5,
-                  borderRadius: 4,
-                  mb: 1,
-                  boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-                  border: "1px solid",
-                  borderColor: "grey.200",
-                  transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-                }}
-              >
-                <Row label="Subtotal" value={moneyMask(subtotal)} bold color="#008000" />
-              </Paper>
-              <ScreenFooterActions
-                onBack={goToMenu}
-                onNext={() => navigate(publicPaths.customer(slug))}
-                nextLabel="Continuar"
-              />
-            </Container>
-          </Box>
+          <CheckoutBottomBar
+            onBack={goToMenu}
+            onNext={() => navigate(publicPaths.customer(slug))}
+            nextLabel="Continuar"
+          />
         </>
       )}
 

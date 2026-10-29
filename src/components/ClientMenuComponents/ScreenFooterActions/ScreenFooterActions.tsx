@@ -8,6 +8,8 @@ interface ScreenFooterActionsProps {
   nextLabel?: string;
   nextDisabled?: boolean;
   loading?: boolean;
+  /** Quando verdadeiro, o rodapé não fixa sozinho (usado dentro da barra fixa do checkout). */
+  embedded?: boolean;
 }
 
 /**
@@ -21,9 +23,27 @@ export function ScreenFooterActions({
   nextLabel = "Continuar",
   nextDisabled = false,
   loading = false,
+  embedded = false,
 }: ScreenFooterActionsProps) {
   return (
-    <Box sx={{ position: "sticky", bottom: 0, left: 0, right: 0, mt: "auto", pt: 2, pb: 2, bgcolor: "background.paper", borderTop: "1px solid", borderColor: "grey.200" }}>
+    <Box
+      sx={{
+        ...(embedded
+          ? {}
+          : {
+              position: "sticky",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              mt: "auto",
+              bgcolor: "background.paper",
+              borderTop: "1px solid",
+              borderColor: "grey.200",
+            }),
+        pt: embedded ? 1.5 : 2,
+        pb: 2,
+      }}
+    >
       <Stack direction="row" spacing={1.5}>
         {onBack && (
           <Button

@@ -79,7 +79,7 @@ function OrderTotalCard({ amount }: { amount: number }) {
             sx={{
               color: 'text.secondary',
               fontWeight: 800,
-              letterSpacing: '0.06em',
+              letterSpacing: '0.01em',
               textTransform: 'uppercase',
             }}
           >
@@ -88,7 +88,7 @@ function OrderTotalCard({ amount }: { amount: number }) {
           <Typography
             sx={{
               fontWeight: 800,
-              fontSize: { xs: '1.65rem', sm: '1.85rem' },
+              fontSize: { xs: '1.2rem', sm: '1.85rem' },
               lineHeight: 1.1,
             }}
           >
