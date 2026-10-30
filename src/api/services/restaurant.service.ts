@@ -112,16 +112,6 @@ export const RestaurantService = {
   
   //-------------------------------------------------------- ROTAS SLUGS
 
-  async restaurantIsopenSlug(slug: string) {
-    try {
-      const { data } = await api.get<boolean>(`/restaurant/${slug}/restaurant-isopen`);
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
-      throw error;
-    }
-  },
-
   async getPublicRestaurantInfos(slug: string) {
     try {
       const { data } = await api.get<Restaurant>(`/restaurant/public/${slug}`);
@@ -134,15 +124,6 @@ export const RestaurantService = {
   async restaurantProductsPublic(slug: string) {
     try {
       const { data } = await api.get<Product[]>(`/product/public/${slug}`);
-      return data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) console.log(error.response?.data.message);
-    }
-  },
-
-  async restaurantCategoriesPublic(slug: string) {
-    try {
-      const { data } = await api.get<ProductCategory[]>(`/product_category/public/${slug}`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) console.log(error.response?.data.message);

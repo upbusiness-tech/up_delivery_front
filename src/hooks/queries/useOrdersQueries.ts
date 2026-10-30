@@ -11,7 +11,10 @@ export function useOrders() {
     queryKey: queryKeys.orders.list(),
     queryFn: () => OrderService.listOrders(),
     staleTime: ORDERS_STALE_TIME,
-    refetchInterval: ORDERS_STALE_TIME,
+    // A lista é mantida pelo socket `newOrder` e pelas mutações otimistas.
+    // Evitamos polling da lista completa para não sobrecarregar a API em
+    // restaurantes com muitos pedidos.
+    refetchInterval: false,
   });
 }
 

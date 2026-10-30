@@ -48,7 +48,7 @@ export default function MenuScreen() {
   const { products, subtotal } = useCheckout()
   const navigate = useNavigate();
   const location = useLocation();
-  const { data: restaurantIsOpen } = usePublicRestaurantIsOpen(slug);
+  const restaurantIsOpen = usePublicRestaurantIsOpen();
 
   const redirectedBecauseClosed = Boolean(
     (location.state as { restaurantClosed?: boolean } | null)?.restaurantClosed,

@@ -1,5 +1,4 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { FullPageLoader } from "../../components/Loading/FullPageLoader";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 import { usePublicRestaurantIsOpen } from "../../hooks/usePublicRestaurantIsOpen";
 import { publicPaths } from "../paths";
@@ -13,14 +12,10 @@ import { publicPaths } from "../paths";
  */
 export function RestaurantOpenGuard() {
   const { slug } = usePublicRestaurant();
-  const { data: restaurantIsOpen, isLoading } = usePublicRestaurantIsOpen(slug);
+  const restaurantIsOpen = usePublicRestaurantIsOpen();
   const location = useLocation();
 
-  if (isLoading) {
-    return <FullPageLoader label="Verificando o restaurante..." />;
-  }
-
-  if (restaurantIsOpen === false) {
+  if (!restaurantIsOpen) {
     return (
       <Navigate
         to={publicPaths.menu(slug)}

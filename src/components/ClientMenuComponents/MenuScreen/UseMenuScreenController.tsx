@@ -1,8 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Product, Size } from "../../../types/Product.type";
-import { RestaurantService } from "../../../api/services/restaurant.service";
-import { usePublicRestaurant } from "../../../context/PublicRestaurantContext";
-import { QueryCacheName, useRestaurantData } from "../../../hooks/useRestaurantData";
+import { usePublicMenuData } from "../../../hooks/usePublicMenuData";
 import { UseProductSearch } from "../../../hooks/useProductSearch";
 
 export interface SizeOption {
@@ -12,15 +10,9 @@ export interface SizeOption {
 }
 
 export function UseMenuScreenController() {
-  
-  const { slug } = usePublicRestaurant()
-  const {data: productsData = [] } = useRestaurantData(() => RestaurantService.restaurantProductsPublic(slug), QueryCacheName.PRODUCTS_PUBLIC, slug)
-  const {data: categoriesData = [] } = useRestaurantData(() => RestaurantService.restaurantCategoriesPublic(slug), QueryCacheName.CATEGORIES_PUBLIC, slug)
+  const { products: PRODUCTS, categories: CATEGORIES } = usePublicMenuData();
+  const [productSelected, setProductSelected] = useState<Product>();
 
-  const [productSelected, setProductSelected] = useState<Product>()
-  
-  const PRODUCTS = productsData;
-  const CATEGORIES = categoriesData;
   const { search, setSearch, filteredProducts } = UseProductSearch(PRODUCTS, true);
   
   const visibleCategories = useMemo(

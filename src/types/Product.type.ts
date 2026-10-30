@@ -34,7 +34,8 @@ export interface Product {
   productCategory: ProductCategory;
   minQuantity: number;
   sizes: ProducSize[];
-  restaurant: ProductRestaurant;
+  /** Não é enviado pelos endpoints atuais; mantido para compatibilidade. */
+  restaurant?: ProductRestaurant;
   created_at: Date;
 }
 

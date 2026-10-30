@@ -11,10 +11,8 @@ export enum QueryCacheName {
   ADDITIONALS = "additionals",
   SIZES = "sizes",
   
-  RESTAURANT_PUBLIC_ISOPEN = "restaurant_public_open",
   RESTAURANT_PUBLIC_INFOS = "restaurant_public_infos",
   PRODUCTS_PUBLIC = "products_public",
-  CATEGORIES_PUBLIC = "categories_public",
   ADDITIONALS_PUBLIC = "additionals_public",
   SIZES_PUBLIC = "sizes_public",
   NEIGHBORHOODS_PUBLIC = "neighborhoods_public"
