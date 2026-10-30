@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { RestaurantService } from "../../api/services/restaurant.service";
-import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
+import { usePublicMenuData } from "../../hooks/usePublicMenuData";
 import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
 
 interface UseSizeOrderDataParams {
@@ -11,23 +11,16 @@ interface UseSizeOrderDataParams {
 /**
  * Dados compartilhados pelas telas de pedido por tamanho.
  *
- * Produtos e categorias usam as mesmas query keys do cardápio, então o React
- * Query reaproveita o cache quando o cliente sai do menu para escolher sabores.
+ * Produtos e categorias vêm do mesmo cache do cardápio. A categoria é
+ * derivada dos próprios produtos, sem uma requisição separada.
  */
 export function useSizeOrderData({ categoryId, sizeId }: UseSizeOrderDataParams) {
-  const { slug } = usePublicRestaurant();
-
-  const { data: products = [], isLoading: loadingProducts } = useRestaurantData(
-    () => RestaurantService.restaurantProductsPublic(slug),
-    QueryCacheName.PRODUCTS_PUBLIC,
+  const {
     slug,
-  );
-
-  const { data: categories = [], isLoading: loadingCategories } = useRestaurantData(
-    () => RestaurantService.restaurantCategoriesPublic(slug),
-    QueryCacheName.CATEGORIES_PUBLIC,
-    slug,
-  );
+    products,
+    categories,
+    isLoading: loadingMenu,
+  } = usePublicMenuData();
 
   const { data: additionals = [], isLoading: loadingAdditionals } = useRestaurantData(
     () => RestaurantService.restaurantAdditionalsPublic(slug),
@@ -67,6 +60,6 @@ export function useSizeOrderData({ categoryId, sizeId }: UseSizeOrderDataParams)
     size,
     productsBySize,
     additionals,
-    isLoading: loadingProducts || loadingCategories || loadingAdditionals,
+    isLoading: loadingMenu || loadingAdditionals,
   };
 }
