@@ -10,6 +10,7 @@ export enum QueryCacheName {
   CATEGORIES = "categories",
   ADDITIONALS = "additionals",
   SIZES = "sizes",
+  NEIGHBORHOODS = "neighborhoods",
   
   RESTAURANT_PUBLIC_INFOS = "restaurant_public_infos",
   PRODUCTS_PUBLIC = "products_public",

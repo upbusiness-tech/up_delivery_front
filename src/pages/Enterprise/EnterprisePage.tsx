@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
 import UseEnterpriseController from "./UseEnterpriseController";
+import NeighborhoodsTab from "../../components/EnterpriseComponents/Neighborhoods/NeighborhoodsTab";
 import { DAYS_LABEL, DAYS_ORDER } from "../../types/Restaurant.type";
 import { useRestaurantSettings } from "../../hooks/useRestaurantSettings";
 import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
@@ -21,7 +22,8 @@ import EmailIcon from '@mui/icons-material/Email';
 const TABS = {
   GENERAL: 0,
   PAYMENTS: 1,
-  PERMISSIONS: 2,
+  TAXES: 2,
+  PERMISSIONS: 3,
 } as const;
 
 interface TabPanelProps {
@@ -83,6 +85,7 @@ export function EnterprisePage() {
         >
           <Tab sx={{textTransform: 'none'}} label="Informações gerais" />
           <Tab sx={{textTransform: 'none'}} label="Pagamentos" />
+          <Tab sx={{textTransform: 'none'}} label="Taxas" />
           <Tab sx={{textTransform: 'none'}} label="Permissões" />
         </Tabs>
       </Paper>
@@ -266,6 +269,10 @@ export function EnterprisePage() {
             </FormGroup>
           </Paper>
         </Stack>
+      </TabPanel>
+
+      <TabPanel value={tab} index={TABS.TAXES}>
+        <NeighborhoodsTab />
       </TabPanel>
 
       <TabPanel value={tab} index={TABS.PERMISSIONS}>

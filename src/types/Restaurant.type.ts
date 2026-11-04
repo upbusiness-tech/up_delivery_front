@@ -23,6 +23,11 @@ export interface Neighborhood {
   deliveryFee: number
 }
 
+export interface NeighborhoodDTO {
+  neighborhoodName: string;
+  deliveryFee: number;
+}
+
 export type BusinessHours = Record<string, BusinessHourInterval[]>;
 
 export const DAYS_ORDER = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
