@@ -20,6 +20,7 @@ import {
 import { type Order } from "../../../types/Order.type";
 import { moneyMask, paymentMethodMask } from "../../../utils/masks/mask";
 import { openWhatsAppChat } from "../../../utils/whatsapp/orderMessage";
+import { formatOrderDate } from "../../../utils/orderDate";
 import { useOrderDetailController } from "./UseOrderDetailController";
 import { usePrintQueue } from "../../../context/PrintQueueContext";
 
@@ -35,15 +36,28 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
   if (!order) return null;
 
   const isDelivery = order.type === "delivery";
-  const deliveryFee = isDelivery ? Number(order.neighborhood?.deliveryFee ?? 0) : 0;
-  const createdAt = order.created_at ? new Date(order.created_at) : null;
+  const total = Number(order.orderTotal);
+  const discount = Number(order.discount ?? 0);
+  const itemsTotal = order.items?.length
+    ? order.items.reduce(
+        (sum, item) => sum + Number(item.price) * Number(item.quantity),
+        0,
+      )
+    : null;
+  // O orderTotal já inclui a taxa de entrega. Quando os itens estão
+  // disponíveis, usamos a diferença para refletir a taxa realmente cobrada.
+  const deliveryFee = isDelivery
+    ? itemsTotal !== null
+      ? Math.max(0, total + discount - itemsTotal)
+      : Number(order.neighborhood?.deliveryFee ?? 0)
+    : 0;
+  const subtotal =
+    itemsTotal ?? Math.max(0, total + discount - deliveryFee);
   const createdAtLabel =
-    createdAt && !Number.isNaN(createdAt.getTime())
-      ? createdAt.toLocaleString("pt-BR", {
-          dateStyle: "short",
-          timeStyle: "short",
-        })
-      : "Não informado";
+    formatOrderDate(order.created_at, {
+      dateStyle: "short",
+      timeStyle: "short",
+    }) ?? "Não informado";
   const isThisOrderPrinting = activeOrder?.id === order.id;
 
   return (
@@ -197,21 +211,25 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                 </Paper>
                 <Divider sx={{ my: 1 }} />
                 <Paper elevation={0} sx={{ p: 1 }}>
-                  <Stack direction="row" sx={{ justifyContent: "space-between" }}>
-                    {isDelivery && (
-                      <>
-                        <Typography variant="subtitle1">Taxa entrega</Typography>
-                        <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(deliveryFee)}</Typography>
-                      </>
-                    )}
-                  </Stack>
+                  {isDelivery && (
+                    <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                      <Typography variant="subtitle1">Taxa entrega</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(deliveryFee)}</Typography>
+                    </Stack>
+                  )}
+                  {discount > 0 && (
+                    <Stack direction="row" sx={{ justifyContent: "space-between" }}>
+                      <Typography variant="subtitle1">Desconto</Typography>
+                      <Typography variant="h6" sx={{ fontWeight: "600" }}>- {moneyMask(discount)}</Typography>
+                    </Stack>
+                  )}
                   <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="subtitle1">Subtotal</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(order.orderTotal)}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(subtotal)}</Typography>
                   </Stack>
                   <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                     <Typography variant="subtitle1">Total</Typography>
-                    <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(Number(order.orderTotal) + deliveryFee)}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: "600" }}>{moneyMask(total)}</Typography>
                   </Stack>
                   <Stack direction="row" sx={{ justifyContent: "space-between" }}>
                   {order.paymentMethod == 'cash' && (

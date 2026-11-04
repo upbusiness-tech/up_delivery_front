@@ -1,11 +1,7 @@
 import type { Order, OrderItem } from "../../types/Order.type";
 import type { Product } from "../../types/Product.type";
 import { moneyMask, paymentMethodMask } from "../masks/mask";
-
-const fixOrderDate = (d: Date | string | undefined) => {
-  if (!d) return new Date();
-  return new Date(new Date(d).getTime() - 3 * 60 * 60 * 1000);
-};
+import { formatOrderDate, ORDER_TIME_ZONE } from "../orderDate";
 
 export const getItemFlavorLines = (item: OrderItem, products?: Product[]): string[] => {
   if (!item.flavors || item.flavors.length === 0) return [];
@@ -54,7 +50,9 @@ export const buildOrderMessage = (
   // O API já grava a taxa de entrega dentro de orderTotal. Somar novamente
   // fazia o texto enviado ao cliente/restaurante mostrar um total maior.
   const total = Number(order.orderTotal);
-  const date = fixOrderDate(order.created_at).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" });
+  const date =
+    formatOrderDate(order.created_at) ??
+    new Date().toLocaleString("pt-BR", { timeZone: ORDER_TIME_ZONE });
   const toRestaurant = audience === "restaurant";
   const greeting = toRestaurant
     ? [`*Pedido #${order.code}*`, "Pedido confirmado pelo cliente 😁", date]
