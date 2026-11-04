@@ -31,6 +31,7 @@ export interface Product {
   productDescription: string;
   image: string;
   productActive: boolean;
+  isFeatured: boolean;
   productCategory: ProductCategory;
   minQuantity: number;
   sizes: ProducSize[];

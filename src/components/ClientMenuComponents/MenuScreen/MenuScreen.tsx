@@ -14,6 +14,7 @@ import {
 } from "@mui/material";
 import { UseMenuScreenController } from "./UseMenuScreenController";
 import RestaurantInfo from "../RestaurantInfo/RestaurantInfo";
+import FeaturedProductsCarousel from "../FeaturedProductsCarousel/FeaturedProductsCarousel";
 import ProductCard from "../ProductCard/ProductCard";
 import { InputAdornment, IconButton, TextField } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
@@ -33,6 +34,7 @@ export default function MenuScreen() {
     activeTab,
     handleTabClick,
     produtosComuns,
+    featuredProducts,
     sectionRefs,
     sizesByCategory,
     visibleCategories,
@@ -85,10 +87,45 @@ export default function MenuScreen() {
     onSelectProduct(product);
   };
 
+  const handleFeaturedProductClick = (product: (typeof PRODUCTS)[number]) => {
+    if (!product.productActive) return;
+    if (restaurantIsOpen === false) {
+      openClosedDialog();
+      return;
+    }
+
+    const isCommonProduct =
+      product.sizes.length === 1 && product.sizes[0].size.name === "COMUM";
+
+    if (isCommonProduct) {
+      onSelectProduct(product);
+      return;
+    }
+
+    const cheapestSize = [...product.sizes].sort(
+      (a, b) => Number(a.price) - Number(b.price),
+    )[0];
+
+    if (cheapestSize) {
+      navigate(
+        publicPaths.size(slug, product.productCategory.id, cheapestSize.size.id),
+      );
+    }
+  };
+
   return (
     <Box sx={{minHeight: "100vh" }}>
       
       <RestaurantInfo />
+
+      {!search.trim() && featuredProducts.length > 0 && (
+        <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
+          <FeaturedProductsCarousel
+            products={featuredProducts}
+            onProductClick={handleFeaturedProductClick}
+          />
+        </Container>
+      )}
 
       <Box sx={{ position: "sticky", top: 0, zIndex: 10, bgcolor: "background.paper", borderBottom: "1px solid", borderColor: "grey.200", boxShadow: "0 2px 6px rgba(0,0,0,0.04)" }}>
         <Container maxWidth="md" sx={{ px: { xs: 1, sm: 3 }, pt: 1 }}>

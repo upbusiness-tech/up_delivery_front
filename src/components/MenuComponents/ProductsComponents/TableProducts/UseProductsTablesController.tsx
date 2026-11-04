@@ -4,6 +4,7 @@ import {
   useCategories,
   useProducts,
   useUpdateProductActive,
+  useUpdateProductFeatured,
 } from "../../../../hooks/queries/useMenuQueries";
 import { normalizeSearchText } from "../../../../utils/search/search";
 
@@ -12,6 +13,7 @@ export default function UseProductsTablesController(){
   const productsQuery = useProducts();
   const categoriesQuery = useCategories();
   const updateActiveProductMutation = useUpdateProductActive();
+  const updateFeaturedProductMutation = useUpdateProductFeatured();
 
   const products = productsQuery.data ?? [];
   const categories = categoriesQuery.data ?? [];
@@ -61,6 +63,10 @@ export default function UseProductsTablesController(){
     updateActiveProductMutation.mutate(productId);
   }
 
+  function updateFeaturedProduct(productId: string) {
+    updateFeaturedProductMutation.mutate(productId);
+  }
+
   function refetch() {
     void productsQuery.refetch();
     void categoriesQuery.refetch();
@@ -83,8 +89,12 @@ export default function UseProductsTablesController(){
     closeProductDetail,
     openProductDetail,
     updateActiveProduct,
+    updateFeaturedProduct,
     togglingProductId: updateActiveProductMutation.isPending
       ? updateActiveProductMutation.variables
+      : null,
+    togglingFeaturedProductId: updateFeaturedProductMutation.isPending
+      ? updateFeaturedProductMutation.variables
       : null,
   }
 }

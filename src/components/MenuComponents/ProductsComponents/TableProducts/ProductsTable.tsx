@@ -1,7 +1,9 @@
-import { Alert, Box, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, IconButton, InputAdornment, Paper, TextField, Tooltip, Typography, Stack, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Chip, Switch } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import StarIcon from "@mui/icons-material/Star";
+import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { moneyMask } from "../../../../utils/masks/mask";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseProductsTablesController from "./UseProductsTablesController";
@@ -20,7 +22,9 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
     error,
     refetch,
     updateActiveProduct,
+    updateFeaturedProduct,
     togglingProductId,
+    togglingFeaturedProductId,
     selectedProduct,
     closeProductDetail,
     search,
@@ -127,7 +131,8 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                         <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Produto</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#6b7280" }} align="center">Tamanhos</TableCell>
                         <TableCell sx={{ fontWeight: 600, color: "#6b7280" }} align="center">Preços</TableCell>
-                        <TableCell sx={{ fontWeight: 600, color: "#6b7280", width: 88 }} align="center">Ações</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: "#6b7280", width: 100 }} align="center">Destaque</TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: "#6b7280", width: 88 }} align="center">Ativo</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -184,6 +189,40 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                             </Box>
                           </TableCell>
 
+                          <TableCell align="center">
+                            <Tooltip
+                              title={
+                                p.isFeatured
+                                  ? "Remover destaque"
+                                  : "Destacar no cardápio"
+                              }
+                            >
+                              <span>
+                                <IconButton
+                                  size="small"
+                                  aria-label={
+                                    p.isFeatured
+                                      ? `Remover destaque de ${p.productName}`
+                                      : `Destacar ${p.productName}`
+                                  }
+                                  disabled={togglingFeaturedProductId === p.id}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    updateFeaturedProduct(p.id);
+                                  }}
+                                  sx={{
+                                    color: p.isFeatured ? "#F59E0B" : "#9CA3AF",
+                                  }}
+                                >
+                                  {p.isFeatured ? (
+                                    <StarIcon />
+                                  ) : (
+                                    <StarBorderIcon />
+                                  )}
+                                </IconButton>
+                              </span>
+                            </Tooltip>
+                          </TableCell>
                           <TableCell align="center">
                             <Stack sx={{alignItems: 'center'}}>
                               <Typography variant="caption">Ativo</Typography>

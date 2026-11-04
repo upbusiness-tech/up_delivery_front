@@ -9,6 +9,7 @@ import type {
   ProductCategory,
   ProductDTO,
 } from "../../types/Product.type";
+import { QueryCacheName } from "../useRestaurantData";
 import { queryKeys } from "./queryKeys";
 
 const MENU_STALE_TIME = 5 * 60 * 1000;
@@ -116,6 +117,45 @@ export function useUpdateProductActive() {
     },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      void queryClient.invalidateQueries({
+        queryKey: [QueryCacheName.PRODUCTS_PUBLIC],
+      });
+    },
+  });
+}
+
+export function useUpdateProductFeatured() {
+  const queryClient = useQueryClient();
+  const productsKey = queryKeys.products.list();
+
+  return useMutation({
+    mutationFn: (productId: string) =>
+      ProductService.updateFeaturedProduct(productId),
+    onMutate: async (productId) => {
+      await queryClient.cancelQueries({ queryKey: productsKey });
+
+      const previousProducts = queryClient.getQueryData<Product[]>(productsKey);
+
+      queryClient.setQueryData<Product[]>(productsKey, (products) =>
+        products?.map((product) =>
+          product.id === productId
+            ? { ...product, isFeatured: !product.isFeatured }
+            : product,
+        ),
+      );
+
+      return { previousProducts };
+    },
+    onError: (_error, _productId, context) => {
+      if (context?.previousProducts) {
+        queryClient.setQueryData(productsKey, context.previousProducts);
+      }
+    },
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      void queryClient.invalidateQueries({
+        queryKey: [QueryCacheName.PRODUCTS_PUBLIC],
+      });
     },
   });
 }
