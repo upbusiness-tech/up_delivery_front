@@ -52,6 +52,7 @@ import { AuthService } from "../../api/services/auth.service";
 import { moneyMask, paymentMethodMask, phoneMask } from "../../utils/masks/mask";
 import { STATUS, STATUS_LABEL } from "../../utils/texts/status.enum";
 import STATUS_COLOR from "../../utils/colors/colors";
+import { formatOrderDate } from "../../utils/orderDate";
 import type {
   OrderReportProductSummary,
   OrderReportSummary,
@@ -73,13 +74,12 @@ const INFO_PANEL_WIDTH = 300;
 const INFO_RAIL_WIDTH = 48;
 
 function formatDateTime(value?: string) {
-  if (!value) return "—";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  return (
+    formatOrderDate(value, {
+      dateStyle: "short",
+      timeStyle: "short",
+    }) ?? "—"
+  );
 }
 
 function SummaryCard({

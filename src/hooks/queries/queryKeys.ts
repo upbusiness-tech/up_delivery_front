@@ -7,6 +7,7 @@ const productsRoot = [QueryCacheName.PRODUCTS] as const;
 const categoriesRoot = [QueryCacheName.CATEGORIES] as const;
 const additionalsRoot = [QueryCacheName.ADDITIONALS] as const;
 const sizesRoot = [QueryCacheName.SIZES] as const;
+const neighborhoodsRoot = [QueryCacheName.NEIGHBORHOODS] as const;
 const settingsRoot = [QueryCacheName.SETTINGS] as const;
 
 /**
@@ -42,6 +43,10 @@ export const queryKeys = {
   sizes: {
     all: sizesRoot,
     list: () => [...sizesRoot, "list"] as const,
+  },
+  neighborhoods: {
+    all: neighborhoodsRoot,
+    list: () => [...neighborhoodsRoot, "list"] as const,
   },
   settings: {
     all: settingsRoot,

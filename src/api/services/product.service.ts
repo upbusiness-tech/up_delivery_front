@@ -96,6 +96,18 @@ export const ProductService = {
     }
   },
 
+  async updateFeaturedProduct(productId: string) {
+    try {
+      const { data } = await api.patch(`/product/toggle-featured-product/${productId}/featured`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
   async updateProductSize(productSizeid: string, body: any){
     try{
       const { data } = await api.patch(`product_size/${productSizeid}`, body)

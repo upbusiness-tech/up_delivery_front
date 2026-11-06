@@ -2,7 +2,7 @@ import { type CreateOrder } from './../../types/Order.type';
 import axios from "axios";
 import { api } from "../axios"
 import type { Additionals, Product, ProductCategory, Size } from "../../types/Product.type";
-import type { Neighborhood, Restaurant } from '../../types/Restaurant.type';
+import type { Neighborhood, NeighborhoodDTO, Restaurant } from '../../types/Restaurant.type';
 
 export const RestaurantService = {
   
@@ -75,6 +75,48 @@ export const RestaurantService = {
   async restaurantNeighborhoods() {
     try {
       const { data } = await api.get<Neighborhood[]>(`/neighborhood/neighborhoods-restaurant`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async createNeighborhood(body: NeighborhoodDTO) {
+    try {
+      const { data } = await api.post<{ savedNeighborhood: Neighborhood }>(
+        `/neighborhood/create-neighborhood`,
+        body,
+      );
+      return data.savedNeighborhood;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async updateNeighborhood(neighborhoodId: string, body: Partial<NeighborhoodDTO>) {
+    try {
+      const { data } = await api.patch<Neighborhood>(
+        `/neighborhood/${neighborhoodId}`,
+        body,
+      );
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async deleteNeighborhood(neighborhoodId: string) {
+    try {
+      const { data } = await api.delete(`/neighborhood/${neighborhoodId}`);
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {

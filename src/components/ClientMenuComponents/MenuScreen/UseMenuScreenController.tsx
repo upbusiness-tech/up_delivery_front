@@ -14,6 +14,17 @@ export function UseMenuScreenController() {
   const [productSelected, setProductSelected] = useState<Product>();
 
   const { search, setSearch, filteredProducts } = UseProductSearch(PRODUCTS, true);
+
+  const featuredProducts = useMemo(
+    () =>
+      PRODUCTS.filter(
+        (product) =>
+          product.isFeatured &&
+          product.productActive &&
+          product.sizes.length > 0,
+      ),
+    [PRODUCTS],
+  );
   
   const visibleCategories = useMemo(
     () =>
@@ -111,6 +122,7 @@ export function UseMenuScreenController() {
   return {
     CATEGORIES,
     PRODUCTS,
+    featuredProducts,
     produtosPorCategoria,
     sizesByCategory,
     produtosComuns,

@@ -3,6 +3,7 @@ import { useRestaurantMe } from "../../hooks/queries/useRestaurantQueries";
 import type { Order, OrderFlavor, OrderItem } from "../../types/Order.type";
 // import type { ProducSize } from "../../types/Product.type";
 import { paymentMethodMask } from "../masks/mask";
+import { formatOrderDate, ORDER_TIME_ZONE } from "../orderDate";
 
 interface PrintOrderProps {
   order: Order | null;
@@ -62,14 +63,16 @@ export default function PrintOrder({ order }: PrintOrderProps) {
   }
 
   const itemsTotal = order.items?.reduce((total, item) => total + Number(item.price) * Number(item.quantity), 0) ?? 0;
-  const fixOrderDate = (d: Date | string) => new Date(new Date(d).getTime() - 3 * 60 * 60 * 1000);
+  const orderDateLabel =
+    formatOrderDate(order.created_at) ??
+    new Date().toLocaleString("pt-BR", { timeZone: ORDER_TIME_ZONE });
 
   return (
     <div id="print-order" className="print-only" style={{ width: "100%", maxWidth: "80mm", padding: "4mm", boxSizing: "border-box", fontFamily: "Arial, Helvetica, sans-serif", fontSize: "13px", color: "#000", background: "#fff" }}>
       <div style={{ textAlign: "center", lineHeight: 1.2, marginBottom: 8 }}>
         <div style={{ fontSize: "20px", fontWeight: "bold", textTransform: "uppercase" }}>{restaurantInfos?.restaurantName}</div>
         <div style={{ fontSize: "11px", fontWeight: "bold", marginTop: 3 }}>
-          {fixOrderDate(order.created_at ?? new Date()).toLocaleString("pt-BR", { timeZone: "America/Fortaleza" })}
+          {orderDateLabel}
         </div>
       </div>
 
