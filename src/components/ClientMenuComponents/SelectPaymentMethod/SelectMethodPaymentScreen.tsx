@@ -35,7 +35,7 @@ export default function PaymentScreen({onBack, setPaymentMethod, paymentMethod, 
     <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <BackHeader onBack={onBack} title="Pagamento" step={step} totalSteps={totalSteps} />
 
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
         <Container maxWidth="sm" sx={{ py: 1 }}>
           <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>Como você quer pagar?</Typography>
 

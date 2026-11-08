@@ -5,6 +5,7 @@ import AddIcon from "@mui/icons-material/Add";
 import StarIcon from "@mui/icons-material/Star";
 import StarBorderIcon from "@mui/icons-material/StarBorder";
 import { moneyMask } from "../../../../utils/masks/mask";
+import type { Product } from "../../../../types/Product.type";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseProductsTablesController from "./UseProductsTablesController";
 
@@ -32,6 +33,41 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
     isSearching,
     hasSearchResults,
   } = UseProductsTablesController()
+
+  const featuredButton = (product: Product) => (
+    <Tooltip
+      title={product.isFeatured ? "Remover destaque" : "Destacar no cardápio"}
+    >
+      <span>
+        <IconButton
+          size="small"
+          aria-label={
+            product.isFeatured
+              ? `Remover destaque de ${product.productName}`
+              : `Destacar ${product.productName}`
+          }
+          disabled={togglingFeaturedProductId === product.id}
+          onClick={(event) => {
+            event.stopPropagation();
+            updateFeaturedProduct(product.id);
+          }}
+          sx={{ color: product.isFeatured ? "#F59E0B" : "#9CA3AF" }}
+        >
+          {product.isFeatured ? <StarIcon /> : <StarBorderIcon />}
+        </IconButton>
+      </span>
+    </Tooltip>
+  );
+
+  const activeSwitch = (product: Product) => (
+    <Switch
+      checked={product.productActive}
+      disabled={togglingProductId === product.id}
+      onChange={() => updateActiveProduct(product.id)}
+      onClick={(event) => event.stopPropagation()}
+      slotProps={{ input: { "aria-label": `Produto ${product.productName} ativo` } }}
+    />
+  );
 
   if (isLoading) {
     return (
@@ -116,7 +152,7 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
           {categories.map((cat) => {
             const produtos = produtosPorCategoria(cat.id)
             return (
-              <Paper key={cat.id} elevation={1} sx={{p: 2, mb: 4}}>
+              <Paper key={cat.id} elevation={1} sx={{ p: { xs: 1.5, sm: 2 }, mb: { xs: 2.5, sm: 4 }, borderRadius: 2.5 }}>
                 <Stack direction="row" spacing={1.5} sx={{ mb: 1.5, alignItems: "center", justifyContent: "space-between" }}>
                   <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
                     <Typography variant="h6" sx={{ fontWeight: 700, color: "#1f2937" }}>{cat.categoryName}</Typography>
@@ -124,8 +160,95 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                   </Stack>
                 </Stack>
 
-                <TableContainer component={Paper} elevation={0} sx={{ border: "1px solid #e5e7eb", borderRadius: 2, overflow: "hidden" }}>
-                  <Table size="medium">
+                <Box sx={{ display: { xs: "block", md: "none" } }}>
+                  <Stack spacing={1.25}>
+                    {produtos.map((p) => (
+                      <Paper
+                        key={p.id}
+                        variant="outlined"
+                        onClick={() => openProductDetail(p)}
+                        sx={{
+                          p: 1.5,
+                          borderRadius: 2.5,
+                          borderColor: "#e5e7eb",
+                          cursor: "pointer",
+                          "&:active": { bgcolor: "#f8fafc" },
+                        }}
+                      >
+                        <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+                          <Box
+                            component="img"
+                            src={p.image}
+                            alt={p.productName}
+                            sx={{
+                              width: 64,
+                              height: 64,
+                              borderRadius: 2,
+                              objectFit: "cover",
+                              flexShrink: 0,
+                              bgcolor: "#f3f4f6",
+                            }}
+                          />
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography sx={{ fontWeight: 700, color: "#111827" }}>
+                              {p.productName}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "#6b7280", display: "block" }}>
+                              {p.productCategory.categoryName}
+                            </Typography>
+                            <Stack direction="row" sx={{ flexWrap: "wrap", gap: 0.75, mt: 1 }}>
+                              {p.sizes.map((size) => (
+                                <Chip
+                                  key={size.id}
+                                  label={`${size.size.name} · ${moneyMask(size.price)}`}
+                                  size="small"
+                                  sx={{ borderRadius: 2, bgcolor: "#f8fafc" }}
+                                />
+                              ))}
+                            </Stack>
+                          </Box>
+                        </Stack>
+
+                        <Stack
+                          direction="row"
+                          sx={{
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            gap: 1,
+                            mt: 1.25,
+                            pt: 1.25,
+                            borderTop: "1px solid #f1f5f9",
+                          }}
+                        >
+                          <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
+                            {featuredButton(p)}
+                            <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                              {p.isFeatured ? "Destaque" : "Destacar"}
+                            </Typography>
+                          </Stack>
+                          <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
+                            <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                              Ativo
+                            </Typography>
+                            {activeSwitch(p)}
+                          </Stack>
+                        </Stack>
+                      </Paper>
+                    ))}
+                  </Stack>
+                </Box>
+
+                <TableContainer
+                  component={Paper}
+                  elevation={0}
+                  sx={{
+                    display: { xs: "none", md: "block" },
+                    border: "1px solid #e5e7eb",
+                    borderRadius: 2,
+                    overflowX: "auto",
+                  }}
+                >
+                  <Table size="medium" sx={{ minWidth: 720 }}>
                     <TableHead>
                       <TableRow sx={{ bgcolor: "#fafafa" }}>
                         <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Produto</TableCell>
@@ -189,51 +312,11 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                             </Box>
                           </TableCell>
 
+                          <TableCell align="center">{featuredButton(p)}</TableCell>
                           <TableCell align="center">
-                            <Tooltip
-                              title={
-                                p.isFeatured
-                                  ? "Remover destaque"
-                                  : "Destacar no cardápio"
-                              }
-                            >
-                              <span>
-                                <IconButton
-                                  size="small"
-                                  aria-label={
-                                    p.isFeatured
-                                      ? `Remover destaque de ${p.productName}`
-                                      : `Destacar ${p.productName}`
-                                  }
-                                  disabled={togglingFeaturedProductId === p.id}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    updateFeaturedProduct(p.id);
-                                  }}
-                                  sx={{
-                                    color: p.isFeatured ? "#F59E0B" : "#9CA3AF",
-                                  }}
-                                >
-                                  {p.isFeatured ? (
-                                    <StarIcon />
-                                  ) : (
-                                    <StarBorderIcon />
-                                  )}
-                                </IconButton>
-                              </span>
-                            </Tooltip>
-                          </TableCell>
-                          <TableCell align="center">
-                            <Stack sx={{alignItems: 'center'}}>
+                            <Stack sx={{ alignItems: "center" }}>
                               <Typography variant="caption">Ativo</Typography>
-                              <Switch
-                                checked={p.productActive}
-                                disabled={togglingProductId === p.id}
-                                onChange={() => updateActiveProduct(p.id)}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                }}
-                              />
+                              {activeSwitch(p)}
                             </Stack>
                           </TableCell>
                         </TableRow>

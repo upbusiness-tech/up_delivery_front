@@ -37,9 +37,22 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
   }, [status]);
 
   return (
-    <Paper elevation={0} sx={{p: 3, borderRadius: 4, border: '1px solid', borderColor: 'divider' }}>
+    <Paper
+      elevation={0}
+      sx={{
+        flex: 1,
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRadius: 4,
+        border: '1px solid',
+        borderColor: 'divider',
+        overflow: 'hidden',
+      }}
+    >
       {!status && (
       <>
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', p: 3 }}>
         <Stack spacing={1.5}>
           <Box>
             <Typography variant='h6' sx={{ fontWeight: 700 }}>Pagamento em Dinheiro</Typography>
@@ -133,20 +146,34 @@ export function CashScreen({ order, total, onBack, onNext, setDisabeHeader}: Pro
             </Box>
           </Box>
         </Stack>
+        </Box>
 
-        <ScreenFooterActions
-          onNext={handleConfirm}
-          onBack={onBack}
-          backLabel='Voltar'
-          nextLabel={submitting ? 'Confirmando...' : 'Confirmar Pedido'}
-          nextDisabled={!canConfirm}
-          loading={submitting}
-        />
+        <Box
+          sx={{
+            flexShrink: 0,
+            px: 3,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            pb: 'env(safe-area-inset-bottom, 0px)',
+          }}
+        >
+          <ScreenFooterActions
+            onNext={handleConfirm}
+            onBack={onBack}
+            backLabel='Voltar'
+            nextLabel={submitting ? 'Confirmando...' : 'Confirmar Pedido'}
+            nextDisabled={!canConfirm}
+            loading={submitting}
+            embedded
+          />
+        </Box>
       </>
       )}
       
       {status && (
-        <DoneScreen total={total} onNext={onNext} order={order}/>
+        <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+          <DoneScreen total={total} onNext={onNext} order={order}/>
+        </Box>
       )}
     </Paper>
   );

@@ -239,7 +239,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
             </Typography>
           </Toolbar>
         </AppBar>
-        <Box sx={{ p: 2 }}>{children}</Box>
+        <Box sx={{ p: { xs: 1.5, sm: 2 } }}>{children}</Box>
       </Box>
     </Box>
   );

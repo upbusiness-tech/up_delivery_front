@@ -1,7 +1,7 @@
 import { Box, Container, Stack, TextField, Typography, InputAdornment } from "@mui/material";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutlineOutlined";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
-import { ScreenFooterActions } from "../ScreenFooterActions/ScreenFooterActions";
+import { CheckoutBottomBar } from "../CheckoutBottomBar";
 import { phoneMask } from "../../../utils/masks/mask";
 import { BackHeader } from "../BackHeader/BackHeader";
 import { useInfoScreenValidation } from "../../../hooks/useInfoScreenValidation";
@@ -24,9 +24,9 @@ export default function InfoScreen({ name, setName, phone, setPhone, email, setE
   const { errors, isValid } = useInfoScreenValidation(name, phone, email);
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <BackHeader onBack={onBack} title="Dados pessoais" step={step} totalSteps={totalSteps} />
-      <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
+      <Container maxWidth="sm" sx={{ py: 1, flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
           Quem está pedindo?
         </Typography>
@@ -87,9 +87,13 @@ export default function InfoScreen({ name, setName, phone, setPhone, email, setE
         </Typography>
       </Container>
 
-      <Container maxWidth="sm">
-        <ScreenFooterActions onBack={onBack} onNext={onNext} nextLabel="Endereço" nextDisabled={!isValid} />
-      </Container>
+      <CheckoutBottomBar
+        showSummary={false}
+        onBack={onBack}
+        onNext={onNext}
+        nextLabel="Endereço"
+        nextDisabled={!isValid}
+      />
     </Box>
   );
 }

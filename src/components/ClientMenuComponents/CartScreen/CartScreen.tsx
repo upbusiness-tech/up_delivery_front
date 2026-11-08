@@ -66,7 +66,7 @@ export function CartScreen() {
       <BackHeader title="Sua sacola" step={1} totalSteps={CHECKOUT_TOTAL_STEPS} onBack={goToMenu} />
       {products.length === 0 ? (
         <>
-          <Box sx={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column" }}>
+          <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
             <Container maxWidth="sm" sx={{ py: 2, flex: 1, display: "flex", flexDirection: "column" }}>
               <Box sx={{ textAlign: "center", py: 8, flex: 1 }}>
                 <Typography variant="h6" gutterBottom>
@@ -82,7 +82,7 @@ export function CartScreen() {
         </>
       ) : (
         <>
-          <Box sx={{ flex: 1, overflowY: "auto", py: 1.5 }}>
+          <Box sx={{ flex: 1, minHeight: 0, overflowY: "auto", py: 1.5 }}>
             <Container maxWidth="sm">
               <Typography variant="body1" sx={{ mb: 1.5, fontWeight: 600 }}>
                 Itens do pedido:

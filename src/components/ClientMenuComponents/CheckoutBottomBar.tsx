@@ -30,6 +30,7 @@ export function CheckoutBottomBar({ showSummary = true, ...footerProps }: Checko
         borderTop: "1px solid",
         borderColor: "grey.200",
         boxShadow: "0 -8px 24px rgba(0,0,0,0.08)",
+        pb: "env(safe-area-inset-bottom, 0px)",
       }}
     >
       <Container maxWidth="sm" sx={{ pt: showSummary ? 1.25 : 0 }}>
