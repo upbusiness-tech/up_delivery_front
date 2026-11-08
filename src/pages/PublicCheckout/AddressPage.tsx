@@ -16,7 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { RestaurantService } from "../../api/services/restaurant.service";
 import { BackHeader } from "../../components/ClientMenuComponents/BackHeader/BackHeader";
-import { ScreenFooterActions } from "../../components/ClientMenuComponents/ScreenFooterActions/ScreenFooterActions";
+import { CheckoutBottomBar } from "../../components/ClientMenuComponents/CheckoutBottomBar";
 import { CHECKOUT_CITY, CHECKOUT_TOTAL_STEPS, useCheckout } from "../../checkout/CheckoutContext";
 import { usePublicRestaurant } from "../../context/PublicRestaurantContext";
 import { QueryCacheName, useRestaurantData } from "../../hooks/useRestaurantData";
@@ -79,10 +79,10 @@ export default function AddressPage() {
   }, [neighborhood, neighborhoods, setNeighborhood]);
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <BackHeader title="Endereço" step={3} totalSteps={CHECKOUT_TOTAL_STEPS} onBack={() => navigate(publicPaths.customer(slug))} />
 
-      <Container maxWidth="sm" sx={{ py: 1, flex: 1, display: "flex", flexDirection: "column" }}>
+      <Container maxWidth="sm" sx={{ py: 1, flex: 1, minHeight: 0, overflowY: "auto", display: "flex", flexDirection: "column" }}>
         {!settingsLoading && (!allowDelivery || !allowPickup) && (
           <Alert severity={noModesAvailable ? "warning" : "info"} sx={{ mb: 2, borderRadius: 2 }}>
             {modeNotice}
@@ -218,14 +218,13 @@ export default function AddressPage() {
         ))}
       </Container>
 
-      <Container maxWidth="sm">
-        <ScreenFooterActions
-          onBack={() => navigate(publicPaths.customer(slug))}
-          onNext={() => navigate(publicPaths.payment(slug))}
-          nextLabel={noModesAvailable ? "Indisponível" : "Pagamento"}
-          nextDisabled={!hasAddress || settingsLoading || noModesAvailable}
-        />
-      </Container>
+      <CheckoutBottomBar
+        showSummary={false}
+        onBack={() => navigate(publicPaths.customer(slug))}
+        onNext={() => navigate(publicPaths.payment(slug))}
+        nextLabel={noModesAvailable ? "Indisponível" : "Pagamento"}
+        nextDisabled={!hasAddress || settingsLoading || noModesAvailable}
+      />
     </Box>
   );
 }

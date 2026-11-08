@@ -88,9 +88,14 @@ export default function ProductSheet({ item, initialItem, onClose }: ProductShee
   const price = (basePrice + additionalsTotal) * qty;
 
   const body = (
-    <Box>
-      <Box sx={{ position: "relative" }}>
-        <img src={item.image}  alt={item.productName} style={{ width: "100%", height: 240, objectFit: "cover", display: "block" }} />
+    <Box sx={{ display: "flex", flexDirection: "column", maxHeight: isDesktop ? "85vh" : "92dvh" }}>
+      <Box sx={{ position: "relative", flexShrink: 0 }}>
+        <Box
+          component="img"
+          src={item.image}
+          alt={item.productName}
+          sx={{ width: "100%", height: { xs: 180, sm: 240 }, objectFit: "cover", display: "block" }}
+        />
         <IconButton
           onClick={closeSheet}
           sx={{ position: "absolute", top: 8, right: 8, bgcolor: "rgba(0,0,0,0.5)", color: "#fff", "&:hover": { bgcolor: "rgba(0,0,0,0.7)" } }}
@@ -98,7 +103,7 @@ export default function ProductSheet({ item, initialItem, onClose }: ProductShee
           <Close />
         </IconButton>
       </Box>
-      <Box sx={{ p: 2, pb: 5}}>
+      <Box sx={{ p: 2, flex: 1, minHeight: 0, overflowY: "auto" }}>
         <Typography variant="h6" sx={{ fontWeight: 700 }}>{item?.productName}</Typography>
         <Typography variant="caption">{item?.productDescription}</Typography>
         <Typography variant="caption">{item?.productDescription}</Typography>
@@ -125,7 +130,15 @@ export default function ProductSheet({ item, initialItem, onClose }: ProductShee
         </Box>
       </Box>
 
-      <Box sx={{ position: "sticky", bottom: 0, bgcolor: "#fff", borderTop: "1px solid #E5E7EB", p: 2 }}>
+      <Box
+        sx={{
+          flexShrink: 0,
+          bgcolor: "#fff",
+          borderTop: "1px solid #E5E7EB",
+          p: 2,
+          pb: "calc(16px + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
           <Stack direction="row" sx={{ border: "1px solid #E5E7EB", borderRadius: 2, alignItems: "center" }}>
             <IconButton size="small" onClick={() => setQty(q => Math.max(item.minQuantity ?? 1, q - 1))}><Remove fontSize="small" /></IconButton>

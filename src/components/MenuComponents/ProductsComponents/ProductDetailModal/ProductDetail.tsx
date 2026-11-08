@@ -12,6 +12,7 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import type { Product } from "../../../../types/Product.type";
 import imagemGenerica from "../../../../assets/imgNull.png";
@@ -42,9 +43,10 @@ export default function ProductDetail({ product, onClose }: props) {
 
 function ProductDetailContent({ product, onClose }: { product: Product; onClose: () => void }) {
   const c = UseProductDetailModalController({ product, onClose });
+  const isMobile = useMediaQuery("(max-width:599.95px)");
 
   return (
-    <Dialog open onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
       <DialogTitle sx={{ pr: 6 }}>
         <Typography variant="body1" sx={{ fontWeight: 700 }}>
           Informações do produto
@@ -152,9 +154,9 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
 
           <Box>
             <Stack
-              direction="row"
+              direction={{ xs: "column", sm: "row" }}
               sx={{
-                alignItems: "center",
+                alignItems: { xs: "stretch", sm: "center" },
                 justifyContent: "space-between",
                 gap: 1,
                 mb: 1.5,
@@ -188,9 +190,18 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2, justifyContent: "space-between" }}>
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          gap: 1.5,
+          flexDirection: { xs: "column", sm: "row" },
+          alignItems: { xs: "stretch", sm: "center" },
+          justifyContent: "space-between",
+        }}
+      >
         <Button
-          sx={{ textTransform: "none" }}
+          sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
           variant="outlined"
           color="error"
           size="medium"
@@ -199,9 +210,13 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
         >
           {c.isDeleting ? "Excluindo..." : "Excluir"}
         </Button>
-        <Stack direction="row" spacing={1}>
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
+          spacing={1}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           <Button
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
             variant="outlined"
             color="inherit"
             size="medium"
@@ -211,7 +226,7 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
             Cancelar
           </Button>
           <Button
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
             variant="contained"
             color="success"
             size="medium"

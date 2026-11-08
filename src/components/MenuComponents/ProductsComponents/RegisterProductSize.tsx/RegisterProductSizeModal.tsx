@@ -11,6 +11,7 @@ import {
   Stack,
   TextField,
   Typography,
+  useMediaQuery,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import UseRegisterProductSizeModalController from "./UseRegisterProductSizeModalController";
@@ -25,9 +26,10 @@ interface props {
 export default function RegisterProductSizetModal({ open, onClose, product }: props) {
 
   const c = UseRegisterProductSizeModalController({ product, onClose })
+  const isMobile = useMediaQuery("(max-width:599.95px)")
 
   return (
-    <Dialog open={open} onClose={c.handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={c.handleClose} maxWidth="sm" fullWidth fullScreen={isMobile}>
       <DialogTitle sx={{ pr: 6 }}>
         <Typography variant="body1" sx={{ fontWeight: 700 }}>
           Novo tamanho
@@ -64,12 +66,17 @@ export default function RegisterProductSizetModal({ open, onClose, product }: pr
             <Stack spacing={1.5}>
               {c.availableSizes.map((size) => (
                 <Stack key={size.id} direction="row" spacing={1} sx={{ alignItems: "center" }}>
-                  <TextField value={size.name} size="small" sx={{ width: 160 }} disabled />
+                  <TextField
+                    value={size.name}
+                    size="small"
+                    sx={{ flex: 1, minWidth: 0 }}
+                    disabled
+                  />
                   <TextField
                     type="number"
                     placeholder="R$ 0,00"
                     size="small"
-                    sx={{ width: 160 }}
+                    sx={{ flex: 1, minWidth: 0 }}
                     value={c.sizePrices[size.id] || ""}
                     onChange={(event) =>
                       c.handleSetSizePrice(size.id, Number(event.target.value))
@@ -83,10 +90,14 @@ export default function RegisterProductSizetModal({ open, onClose, product }: pr
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Stack direction="row" spacing={1}>
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          spacing={1}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
           <Button
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
             variant="outlined"
             color="inherit"
             size="medium"
@@ -96,7 +107,7 @@ export default function RegisterProductSizetModal({ open, onClose, product }: pr
             Cancelar
           </Button>
           <Button
-            sx={{ textTransform: "none" }}
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
             variant="contained"
             color="success"
             size="medium"

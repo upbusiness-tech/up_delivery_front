@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, MenuItem, Select, Stack, Switch, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Divider, Grid, IconButton, MenuItem, Select, Stack, Switch, TextField, Typography, useMediaQuery } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import imagemGenerica from '../../../assets/imgNull.png'
 import UseModalRegisterProduct from "./UseModalRegisterProduct";
@@ -37,6 +37,7 @@ export default function RegisterProductModal({open, onClose }: props) {
     formError,
     closeAndReset,
   } = UseModalRegisterProduct({ onClose })
+  const isMobile = useMediaQuery("(max-width:599.95px)");
 
   return (
     <Dialog
@@ -44,6 +45,7 @@ export default function RegisterProductModal({open, onClose }: props) {
       onClose={isCreating ? undefined : closeAndReset}
       maxWidth="sm"
       fullWidth
+      fullScreen={isMobile}
     >
       <DialogTitle>
         <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
@@ -67,9 +69,17 @@ export default function RegisterProductModal({open, onClose }: props) {
 
       <DialogContent dividers>
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12 }} sx={{ display: "flex", gap: 2 }}>
-            <Box sx={{display: 'flex', flexDirection: 'column'}}>
-              <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+          <Grid
+            size={{ xs: 12 }}
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              alignItems: { xs: "center", sm: "flex-start" },
+              gap: 2,
+            }}
+          >
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: { xs: '100%', sm: 'auto' } }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <input
                 type="file"
                 accept="image/*"
@@ -104,7 +114,7 @@ export default function RegisterProductModal({open, onClose }: props) {
               </Typography>
             </Box>
             </Box>
-            <Stack spacing={1} sx={{ flex: 1 }}>
+            <Stack spacing={1} sx={{ flex: 1, minWidth: 0, width: { xs: "100%", sm: "auto" } }}>
               <Box>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
                   Nome
@@ -139,6 +149,7 @@ export default function RegisterProductModal({open, onClose }: props) {
                 </Typography>
                 <Select
                   size="small"
+                  fullWidth
                   value={productCategory ?? ""}
                   displayEmpty
                   onChange={(event) => setProductCategory(event.target.value)}
@@ -160,9 +171,6 @@ export default function RegisterProductModal({open, onClose }: props) {
             </Stack>
           </Grid>
           
-          <Grid size={{ xs: 12 }} sx={{ display: "flex", gap: 2 }}>
-          </Grid>
-
           <Grid size={{ xs: 12 }}>
             <Divider sx={{ my: 1 }} />
            <Stack sx={{py: 1}}>
@@ -179,27 +187,32 @@ export default function RegisterProductModal({open, onClose }: props) {
                 <Switch checked={manySizes} onChange={handleSetManySizes}/>
               </Stack>
 
-              <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}>
-                <Box sx={{width: 160}}>
-                  <Typography variant="caption" sx={{color: '#6b7280'}}>Tamanho</Typography>
+              <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+                <Box sx={{ flex: { xs: 1, sm: '0 0 160px' }, minWidth: 0 }}>
+                  <Typography variant="caption" sx={{ color: '#6b7280' }}>Tamanho</Typography>
                 </Box>
-                <Box sx={{width: 120}}>
-                  <Typography variant="caption" sx={{color: '#6b7280'}}>Preço</Typography>
+                <Box sx={{ flex: { xs: 1, sm: '0 0 120px' }, minWidth: 0 }}>
+                  <Typography variant="caption" sx={{ color: '#6b7280' }}>Preço</Typography>
                 </Box>
-                <Box sx={{width: 120}}>
+                <Box sx={{ display: { xs: 'none', sm: 'block' }, width: 120 }}>
                 </Box>
               </Stack>
                 
               {!manySizes && (
-                <Stack direction="row" spacing={1} sx={{mt: 1, alignItems: 'center'}}>
-                  <TextField value="COMUM" size="small" sx={{width: 160}} disabled />
+                <Stack direction="row" spacing={1} sx={{ mt: 1, alignItems: 'center' }}>
+                  <TextField
+                    value="COMUM"
+                    size="small"
+                    sx={{ flex: { xs: 1, sm: '0 0 160px' }, minWidth: 0 }}
+                    disabled
+                  />
                   <TextField
                     value={commonPrice}
                     onChange={(e) => setCommonPrice(e.target.value === "" ? 0 : Number(e.target.value))}
                     placeholder="R$ 0,00"
                     size="small"
                     type="number"
-                    sx={{width: 120}}
+                    sx={{ flex: { xs: 1, sm: '0 0 120px' }, minWidth: 0 }}
                     slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
                   />
                 </Stack>
@@ -209,12 +222,17 @@ export default function RegisterProductModal({open, onClose }: props) {
                 <Stack spacing={1} sx={{mt: 1}}>
                   {sizesData.filter((s) => s.name !== "COMUM").map((s, index) => (
                     <Stack key={index} direction="row" spacing={1} sx={{alignItems: 'center'}}>
-                      <TextField value={s.name} size="small" sx={{width: 160}} disabled />
+                      <TextField
+                        value={s.name}
+                        size="small"
+                        sx={{ flex: { xs: 1, sm: '0 0 160px' }, minWidth: 0 }}
+                        disabled
+                      />
                       <TextField
                         placeholder="R$ 0,00"
                         size="small"
                         type="number"
-                        sx={{width: 120}}
+                        sx={{ flex: { xs: 1, sm: '0 0 120px' }, minWidth: 0 }}
                         value={sizePrices[s.id] ?? ""}
                         slotProps={{ htmlInput: { min: 0, step: "0.01" } }}
                         onChange={(e) =>
@@ -238,12 +256,27 @@ export default function RegisterProductModal({open, onClose }: props) {
         )}
       </DialogContent>
 
-      <DialogActions>
-        <Stack direction="row" spacing={1}>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="inherit" size="medium" onClick={closeAndReset} disabled={isCreating}>
+      <DialogActions sx={{ px: { xs: 2, sm: 3 }, py: 2 }}>
+        <Stack
+          direction={{ xs: "column-reverse", sm: "row" }}
+          spacing={1}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
+        >
+          <Button
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
+            variant="contained"
+            color="inherit"
+            size="medium"
+            onClick={closeAndReset}
+            disabled={isCreating}
+          >
             Cancelar
           </Button>
-          <Button sx={{ textTransform: "none" }} variant="contained" color="success" size="medium"
+          <Button
+            sx={{ textTransform: "none", width: { xs: "100%", sm: "auto" } }}
+            variant="contained"
+            color="success"
+            size="medium"
             onClick={createProduct}
             disabled={isCreating || !productName.trim() || !productCategory}
           >

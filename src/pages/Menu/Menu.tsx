@@ -41,7 +41,7 @@ export default function Menu() {
 
   return (
     <Stack spacing={2}>
-      <Paper elevation={1} sx={{ overflow: "hidden", p: 2 }}>
+      <Paper elevation={1} sx={{ overflow: "hidden", p: { xs: 1.5, sm: 2 } }}>
         <Stack
           direction={{ xs: "column", sm: "row" }}
           spacing={1.5}

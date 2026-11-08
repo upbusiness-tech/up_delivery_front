@@ -20,42 +20,61 @@ interface PaymentMethodScreenProps {
 
 export default function PaymentMethodScreen({ order, total, paymentMethod, userEmail, onBack, onNext }: PaymentMethodScreenProps) {
   const [disabeHeader, setDisabeHeader] = useState(false)
+  const isCash = paymentMethod === MethodPayment.CASH;
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-      {!disabeHeader && (
-        <BackHeader onBack={onBack} title="Voltar"/>
-      )}
-      <Container maxWidth="sm" sx={{flex: 1, display: "flex", flexDirection: "column" }}>
-        {paymentMethod === MethodPayment.PIX && (
-          <PixScreen
-            total={total}
-            order={order}
-            userEmail={userEmail}
-            onNext={onNext}
-            onBack={onBack}
-            setDisabeHeader={setDisabeHeader}
+    <Box sx={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {!disabeHeader && <BackHeader onBack={onBack} title="Voltar" />}
+
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          overflowY: isCash ? "hidden" : "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Container
+          maxWidth="sm"
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            display: "flex",
+            flexDirection: "column",
+            py: { xs: 1, sm: 0 },
+          }}
+        >
+          {paymentMethod === MethodPayment.PIX && (
+            <PixScreen
+              total={total}
+              order={order}
+              userEmail={userEmail}
+              onNext={onNext}
+              onBack={onBack}
+              setDisabeHeader={setDisabeHeader}
             />
           )}
-        {paymentMethod === MethodPayment.CARD && ( 
-          <CardScreen
-          amount={total}
-          order={order}
-          userEmail={userEmail}
-          onNext={onNext}
-          setDisabeHeader={setDisabeHeader}
-          />
-        )}
-        {paymentMethod === MethodPayment.CASH && ( 
-          <CashScreen
-            order={order}
-            total={total}
-            onBack={onBack}
-            onNext={onNext}
-            setDisabeHeader={setDisabeHeader}
+          {paymentMethod === MethodPayment.CARD && (
+            <CardScreen
+              amount={total}
+              order={order}
+              userEmail={userEmail}
+              onNext={onNext}
+              setDisabeHeader={setDisabeHeader}
             />
-        )}
-      </Container>
+          )}
+          {paymentMethod === MethodPayment.CASH && (
+            <CashScreen
+              order={order}
+              total={total}
+              onBack={onBack}
+              onNext={onNext}
+              setDisabeHeader={setDisabeHeader}
+            />
+          )}
+        </Container>
+      </Box>
     </Box>
   );
 }

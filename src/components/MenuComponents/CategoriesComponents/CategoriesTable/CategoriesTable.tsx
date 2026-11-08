@@ -120,9 +120,9 @@ export default function CategoriesTable({ onCreateCategory }: CategoriesTablePro
         <TableContainer
           component={Paper}
           elevation={1}
-          sx={{ border: "1px solid #E5E7EB", borderRadius: 3, overflow: "hidden" }}
+          sx={{ border: "1px solid #E5E7EB", borderRadius: 3, overflowX: "auto" }}
         >
-          <Table size="medium">
+          <Table size="medium" sx={{ minWidth: 420 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: "#fafafa" }}>
                 <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Categoria</TableCell>

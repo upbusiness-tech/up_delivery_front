@@ -27,8 +27,8 @@ export default function ProductsSizesTable({ sizes, product }: Props) {
   const c = UseProductsSizesTableController({ sizes, product });
 
   return (
-    <TableContainer sx={{ border: "1px solid #e5e7eb", borderRadius: 2 }}>
-      <Table size="small">
+    <TableContainer sx={{ border: "1px solid #e5e7eb", borderRadius: 2, overflowX: "auto" }}>
+      <Table size="small" sx={{ minWidth: 320 }}>
         <TableHead>
           <TableRow sx={{ bgcolor: "#fafafa" }}>
             <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Tamanho</TableCell>
@@ -57,6 +57,7 @@ export default function ProductsSizesTable({ sizes, product }: Props) {
                       size="small"
                       value={c.editedPrice}
                       onChange={(e) => c.changeEditedPrice(Number(e.target.value))}
+                      sx={{ width: { xs: 96, sm: 140 } }}
                       autoFocus
                     />
                   ) : (
