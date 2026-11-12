@@ -1,5 +1,17 @@
 import { Store, Web } from "@mui/icons-material";
-import { Badge, Box, Button, Stack, Typography } from "@mui/material";
+import {
+  Alert,
+  Badge,
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Stack,
+  Typography,
+} from "@mui/material";
 import UseHeaderOrdersController from "./UseHeaderOrdersController";
 import type { Order } from "../../../types/Order.type";
 import PendingOrdersModal from "./PendingOrdersModal/PendingOrdersModal";
@@ -15,9 +27,17 @@ export function HeaderOrders({orders}: props) {
     handleOpenModalPendingOrders,
     handleCloseModalPendingOrders,
     handleReceiveOrder,
+    handleCloseToggleOpenDialog,
+    handleConfirmToggleOpen,
+    handleOpenToggleOpenDialog,
+    isLoadingRestaurant,
+    isTogglingRestaurant,
     isUpdatingReceived,
     modalPendingOrders,
-    pendingOrders
+    nextRestaurantIsOpen,
+    pendingOrders,
+    toggleOpenDialog,
+    toggleRestaurantError,
   } = UseHeaderOrdersController({orders})
 
 
@@ -35,9 +55,15 @@ export function HeaderOrders({orders}: props) {
         <Button 
           variant="contained" 
           endIcon={<Store />}
+          onClick={handleOpenToggleOpenDialog}
+          disabled={isLoadingRestaurant || isTogglingRestaurant}
           sx={{ bgcolor: restaurantIsOpen ? "success.main" : "error.main", color: "#fff", textTransform: "none", width: { xs: '100%', sm: 'auto' } 
         }}>
-          {restaurantIsOpen ? "Aberto" : "Fechado"}
+          {isTogglingRestaurant
+            ? "Atualizando..."
+            : restaurantIsOpen
+              ? "Aberto"
+              : "Fechado"}
         </Button>
 
         <Button 
@@ -76,6 +102,52 @@ export function HeaderOrders({orders}: props) {
         onReceive={handleReceiveOrder}
         isReceiving={isUpdatingReceived}
       />
+
+      <Dialog
+        open={toggleOpenDialog}
+        onClose={handleCloseToggleOpenDialog}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>
+          {nextRestaurantIsOpen ? "Abrir restaurante agora?" : "Fechar restaurante agora?"}
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            {nextRestaurantIsOpen
+              ? "O restaurante será aberto fora do horário programado. A abertura manual vale até o próximo fechamento da agenda ou até o fim do dia."
+              : "O restaurante será fechado fora do horário programado. O fechamento manual vale até a próxima abertura da agenda."}
+          </DialogContentText>
+
+          {toggleRestaurantError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Não foi possível alterar o status do restaurante.
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={handleCloseToggleOpenDialog}
+            disabled={isTogglingRestaurant}
+            sx={{ textTransform: "none" }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            color={nextRestaurantIsOpen ? "success" : "error"}
+            onClick={() => void handleConfirmToggleOpen()}
+            disabled={isTogglingRestaurant}
+            sx={{ textTransform: "none", fontWeight: 700 }}
+          >
+            {isTogglingRestaurant
+              ? "Atualizando..."
+              : nextRestaurantIsOpen
+                ? "Abrir agora"
+                : "Fechar agora"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Stack>
   );
 }

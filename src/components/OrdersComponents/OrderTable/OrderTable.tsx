@@ -86,7 +86,16 @@ export function OrderTable({ orders, loading, isDesktop, openOrderDetail, emptyM
                   <TableRow
                     key={order.id}
                     onClick={() => openOrderDetail(order)}
-                    sx={{ cursor: "pointer", backgroundColor: isCancelled ? "#FFF7F7" : "#fff", "&:hover": { backgroundColor: isCancelled ? "#FFF1F2" : "#F8FAFC" } }}
+                    sx={{
+                      cursor: "pointer",
+                      "&.MuiTableRow-root": {
+                        backgroundColor: isCancelled ? "#FFF7F7" : "#fff",
+                      },
+                      "&.MuiTableRow-root:hover": {
+                        backgroundColor: isCancelled ? "#FFF1F2" : "#F8FAFC",
+                      },
+                      boxShadow: isCancelled ? "inset 4px 0 0 #EF4444" : "none",
+                    }}
                   >
                     <TableCell align="center">
                       <Tooltip title={activeOrder?.id === order.id ? "Imprimindo..." : "Imprimir pedido"}>
@@ -215,7 +224,7 @@ export function OrderTable({ orders, loading, isDesktop, openOrderDetail, emptyM
             key={order.id}
             elevation={0}
             onClick={() => openOrderDetail(order)}
-            sx={{ p: 2, cursor: "pointer", border: "1px solid #E5E7EB", borderRadius: 3, backgroundColor: isCancelled ? "#FFF7F7" : "#fff", transition: "all 0.15s ease", "&:hover": { backgroundColor: isCancelled ? "#FFF1F2" : "#F8FAFC", borderColor: "#CBD5E1" } }}
+            sx={{ p: 2, cursor: "pointer", border: `1px solid ${isCancelled ? "#FCA5A5" : "#E5E7EB"}`, borderRadius: 3, backgroundColor: isCancelled ? "#FFF7F7" : "#fff", transition: "all 0.15s ease", "&:hover": { backgroundColor: isCancelled ? "#FFF1F2" : "#F8FAFC", borderColor: isCancelled ? "#F87171" : "#CBD5E1" } }}
           >
             <Stack direction="row" sx={{ justifyContent: "space-between", alignItems: "center" }}>
               <Box>

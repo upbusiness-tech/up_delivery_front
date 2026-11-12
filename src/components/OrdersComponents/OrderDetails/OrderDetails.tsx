@@ -1,11 +1,14 @@
 import CloseIcon from "@mui/icons-material/Close";
+import CancelOutlinedIcon from "@mui/icons-material/CancelOutlined";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import PrintIcon from "@mui/icons-material/Print";
 import ScheduleIcon from "@mui/icons-material/Schedule";
 import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 import {
+  Alert,
   Box,
   Button,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -23,6 +26,8 @@ import { openWhatsAppChat } from "../../../utils/whatsapp/orderMessage";
 import { formatOrderDate } from "../../../utils/orderDate";
 import { useOrderDetailController } from "./UseOrderDetailController";
 import { usePrintQueue } from "../../../context/PrintQueueContext";
+import { STATUS, STATUS_LABEL } from "../../../utils/texts/status.enum";
+import STATUS_COLOR from "../../../utils/colors/colors";
 
 interface OrderDetailProps {
   order: Order | null;
@@ -30,7 +35,14 @@ interface OrderDetailProps {
 }
 
 export default function OrderDetail({ order, onClose }: OrderDetailProps) {
-  const { openModalOrderCancel, handleCloseModalOrderCancel } = useOrderDetailController();
+  const {
+    openModalOrderCancel,
+    handleOpenModalOrderCancel,
+    handleCloseModalOrderCancel,
+    cancelOrder,
+    isCancelling,
+    cancelError,
+  } = useOrderDetailController(order?.id);
   const { activeOrder, printOrder } = usePrintQueue();
 
   if (!order) return null;
@@ -88,6 +100,16 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
                   Feito em {createdAtLabel}
                 </Typography>
               </Stack>
+              <Chip
+                size="small"
+                label={STATUS_LABEL[order.status as STATUS] ?? order.status}
+                sx={{
+                  mt: 1,
+                  fontWeight: 700,
+                  backgroundColor: STATUS_COLOR(order.status),
+                  color: "#0F172A",
+                }}
+              />
             </Box>
           </Stack>
           <IconButton aria-label="Fechar" onClick={onClose} sx={{ position: "absolute", right: 12, top: 12 }}>
@@ -96,6 +118,11 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
         </DialogTitle>
 
         <DialogContent dividers>
+          {order.status === STATUS.CANCELADO && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              Este pedido foi cancelado e não é contabilizado nos relatórios financeiros.
+            </Alert>
+          )}
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 7 }}>
               <Typography variant="subtitle1" gutterBottom>Itens do pedido:</Typography>
@@ -245,58 +272,78 @@ export default function OrderDetail({ order, onClose }: OrderDetailProps) {
           </Grid>
         </DialogContent>
 
-        <DialogActions>
-          {/* <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => handleOpenModalOrderCancel()}>
-            Cancelar
-          </Button> */}
+        <DialogActions sx={{ flexWrap: "wrap", gap: 1, justifyContent: "space-between" }}>
+          <Box>
+            {order.status !== STATUS.CANCELADO && (
+              <Button
+                variant="outlined"
+                color="error"
+                size="large"
+                startIcon={<CancelOutlinedIcon />}
+                onClick={handleOpenModalOrderCancel}
+                sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }}
+              >
+                Cancelar pedido
+              </Button>
+            )}
+          </Box>
 
-          <Stack direction="row" spacing={1}>
-          </Stack>
           <Stack direction="row" spacing={1}>
             <Button disabled={Boolean(activeOrder)} onClick={() => printOrder(order)} sx={{ textTransform: "none", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2 }} variant="contained" color="primary" size="large" startIcon={<PrintIcon />}>
               {isThisOrderPrinting ? "Imprimindo..." : "Imprimir"}
             </Button>
-            {/* <Select
-              value={order.status}
-              onChange={(e) => updateStatusOrder(e.target.value, order.id)}
-              onClick={(e) => e.stopPropagation()}
-              sx={{ minWidth: 135, height: 40, color: "#fff", fontWeight: 700, fontSize: "0.78rem", borderRadius: 2, backgroundColor: STATUS_COLOR(order.status), "& .MuiOutlinedInput-notchedOutline": { border: "none" }, "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" }, "& .MuiSelect-icon": { color: "#fff" } }}
-            >
-              {Object.values(STATUS)
-                .filter((status) => status !== STATUS.CANCELADO)
-                .map((status) => (
-                  <MenuItem key={status} value={status}>{STATUS_LABEL[status]}</MenuItem>
-                ))}
-            </Select> */}
           </Stack>
         </DialogActions>
       </Dialog>
 
-      <Dialog open={openModalOrderCancel} onClose={handleCloseModalOrderCancel}>
-        <DialogTitle>
-          <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
-            <Box>
-              <Typography variant="body1">Cancelar pedido</Typography>
-            </Box>
-          </Stack>
-          <IconButton aria-label="Fechar" onClick={handleCloseModalOrderCancel} sx={{ position: "absolute", right: 12, top: 12 }}>
+      <Dialog open={openModalOrderCancel} onClose={handleCloseModalOrderCancel} maxWidth="xs" fullWidth>
+        <DialogTitle sx={{ pr: 6 }}>
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>
+            Cancelar pedido {order.code}?
+          </Typography>
+          <IconButton
+            aria-label="Fechar"
+            onClick={handleCloseModalOrderCancel}
+            disabled={isCancelling}
+            sx={{ position: "absolute", right: 12, top: 12 }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
-        <DialogContent>
-          <Grid size={{ xs: 12, md: 7 }}>
-            <Typography variant="subtitle2" gutterBottom>Essa ação não poderá ser desfeita!</Typography>
-          </Grid>
+        <DialogContent dividers>
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            Essa ação não poderá ser desfeita.
+          </Alert>
+          <Typography variant="body2" color="text.secondary">
+            O pedido será marcado como cancelado e deixará de ser contabilizado nos relatórios financeiros.
+          </Typography>
+          {cancelError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              Não foi possível cancelar o pedido. Tente novamente.
+            </Alert>
+          )}
         </DialogContent>
-        <DialogActions>
-          <Stack direction="row" spacing={1}>
-            <Button sx={{ textTransform: "none" }} disableElevation variant="contained" color="inherit" size="medium" onClick={() => handleCloseModalOrderCancel()}>
-              Voltar
-            </Button>
-            {/* <Button sx={{ textTransform: "none" }} variant="contained" color="error" size="medium" onClick={() => cancelOrder()}>
-              Cancelar
-            </Button> */}
-          </Stack>
+        <DialogActions sx={{ gap: 1 }}>
+          <Button
+            sx={{ textTransform: "none" }}
+            variant="contained"
+            color="inherit"
+            size="medium"
+            disabled={isCancelling}
+            onClick={handleCloseModalOrderCancel}
+          >
+            Voltar
+          </Button>
+          <Button
+            sx={{ textTransform: "none" }}
+            variant="contained"
+            color="error"
+            size="medium"
+            disabled={isCancelling}
+            onClick={() => void cancelOrder()}
+          >
+            {isCancelling ? "Cancelando..." : "Cancelar pedido"}
+          </Button>
         </DialogActions>
       </Dialog>
 

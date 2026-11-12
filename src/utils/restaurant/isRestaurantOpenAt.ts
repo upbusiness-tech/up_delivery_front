@@ -27,14 +27,25 @@ function toMinutes(time: string | null | undefined) {
 /**
  * Calcula se o restaurante está aberto em um determinado instante.
  *
- * A regra é a mesma da API hoje: verifica apenas os intervalos de
- * `businessHours` do dia atual, no fuso de São Paulo. O campo `isOpen` não
- * participa do cálculo.
+ * Um abrir/fechar manual (`isOpenOverrideUntil`) tem prioridade sobre a
+ * agenda. Quando o override expira, volta a valer o `businessHours` do dia,
+ * no fuso de São Paulo.
  */
 export function isRestaurantOpenAt(
-  restaurant: Pick<Restaurant, "businessHours">,
+  restaurant: Pick<Restaurant, "businessHours" | "isOpen" | "isOpenOverrideUntil">,
   date = new Date(),
 ) {
+  if (restaurant.isOpenOverrideUntil) {
+    const overrideUntil = new Date(restaurant.isOpenOverrideUntil);
+
+    if (
+      !Number.isNaN(overrideUntil.getTime()) &&
+      overrideUntil.getTime() > date.getTime()
+    ) {
+      return restaurant.isOpen;
+    }
+  }
+
   const parts = dateTimeFormatter.formatToParts(date);
   const weekday = parts.find((part) => part.type === "weekday")?.value.toLowerCase();
   const hour = Number(parts.find((part) => part.type === "hour")?.value);

@@ -1,12 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { SettingsService } from "../api/services/settings.service";
+import type { Restaurant } from "../types/Restaurant.type";
 import type { RestaurantSettingUsage } from "../types/Settings.type";
+import { isOrderModeCutoffReached } from "../utils/restaurant/orderModeAvailability";
 import { queryKeys } from "./queries/queryKeys";
 
 type ResolvedSettings = Record<string, Record<string, boolean>>;
+type OrderModeSchedule = Pick<
+  Restaurant,
+  "deliveryCutoffTime" | "pickupCutoffTime"
+>;
 
-export function useRestaurantSettings(restaurantId: string) {
+/** Reavalia o corte automático sem gerar requisições. */
+const CUTOFF_REFRESH_INTERVAL = 30_000;
+
+export function useRestaurantSettings(
+  restaurantId: string,
+  modeSchedule?: OrderModeSchedule,
+) {
+  const [now, setNow] = useState(() => new Date());
   const queryClient = useQueryClient();
   const queryKey = queryKeys.settings.byRestaurant(restaurantId);
 
@@ -22,6 +35,30 @@ export function useRestaurantSettings(restaurantId: string) {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
+
+  const hasCutoff = Boolean(
+    modeSchedule?.deliveryCutoffTime || modeSchedule?.pickupCutoffTime,
+  );
+
+  useEffect(() => {
+    if (!hasCutoff) return;
+
+    const refresh = () => setNow(new Date());
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refresh, CUTOFF_REFRESH_INTERVAL);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
+  }, [hasCutoff]);
 
   const toggleSettingMutation = useMutation({
     mutationFn: (usageId: string) => SettingsService.toggleActive(usageId),
@@ -97,11 +134,31 @@ export function useRestaurantSettings(restaurantId: string) {
     await toggleSetting(key);
   }
 
+  const manualAllowDelivery = resolved.Restaurant?.allow_delivery ?? false;
+  const manualAllowPickup = resolved.Restaurant?.allow_pickup ?? false;
+  const deliveryCutoffReached = isOrderModeCutoffReached(
+    modeSchedule?.deliveryCutoffTime,
+    now,
+  );
+  const pickupCutoffReached = isOrderModeCutoffReached(
+    modeSchedule?.pickupCutoffTime,
+    now,
+  );
+
   return {
     settings,
     resolved,
-    allowDelivery: resolved.Restaurant?.allow_delivery ?? false,
-    allowPickup: resolved.Restaurant?.allow_pickup ?? false,
+    // Permissões manuais, usadas na tela de configurações.
+    manualAllowDelivery,
+    manualAllowPickup,
+    // Disponibilidade efetiva, usada pelo cardápio/checkout: a modalidade
+    // precisa estar permitida e o corte automático do dia não pode ter chegado.
+    allowDelivery: manualAllowDelivery && !deliveryCutoffReached,
+    allowPickup: manualAllowPickup && !pickupCutoffReached,
+    deliveryCutoffReached,
+    pickupCutoffReached,
+    deliveryCutoffTime: modeSchedule?.deliveryCutoffTime ?? null,
+    pickupCutoffTime: modeSchedule?.pickupCutoffTime ?? null,
     separetePayments: resolved.Payment?.separete_payments ?? false,
     paymentsPlatform: resolved.Payment?.payments_via_the_platform ?? false,
     allowPixPayment: resolved.Payment?.allow_pix_payment ?? false,

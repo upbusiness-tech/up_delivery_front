@@ -39,7 +39,15 @@ export default function AddressPage() {
   const navigate = useNavigate();
   const { slug, restaurant } = usePublicRestaurant();
   const { mode, setMode, address, updateAddress, neighborhood, setNeighborhood, hasAddress } = useCheckout();
-  const { allowDelivery, allowPickup, loading: settingsLoading } = useRestaurantSettings(restaurant.id);
+  const {
+    allowDelivery,
+    allowPickup,
+    loading: settingsLoading,
+    deliveryCutoffReached,
+    pickupCutoffReached,
+    deliveryCutoffTime,
+    pickupCutoffTime,
+  } = useRestaurantSettings(restaurant.id, restaurant);
 
   const { data: neighborhoods = [] } = useRestaurantData(
     () => RestaurantService.restaurantNeighborhoodsPublic(slug),
@@ -50,11 +58,26 @@ export default function AddressPage() {
   const { errors } = useAddressValidation(mode, address, neighborhood);
 
   const noModesAvailable = !settingsLoading && !allowDelivery && !allowPickup;
+  const deliveryStoppedByCutoff =
+    deliveryCutoffReached && Boolean(deliveryCutoffTime);
+  const pickupStoppedByCutoff =
+    pickupCutoffReached && Boolean(pickupCutoffTime);
+
   const modeNotice = noModesAvailable
-    ? "Este restaurante não está aceitando entregas nem retiradas no momento. Não é possível concluir o pedido."
+    ? deliveryStoppedByCutoff && pickupStoppedByCutoff
+      ? `As entregas foram encerradas automaticamente às ${deliveryCutoffTime} e as retiradas às ${pickupCutoffTime}. Não é possível concluir o pedido.`
+      : deliveryStoppedByCutoff
+        ? `As entregas foram encerradas automaticamente às ${deliveryCutoffTime}. As retiradas também estão indisponíveis no momento.`
+        : pickupStoppedByCutoff
+          ? `As retiradas foram encerradas automaticamente às ${pickupCutoffTime}. As entregas também estão indisponíveis no momento.`
+          : "Este restaurante não está aceitando entregas nem retiradas no momento. Não é possível concluir o pedido."
     : !allowDelivery
-      ? "Este restaurante não está aceitando entregas no momento. Seu pedido será para retirada no local."
-      : "Este restaurante não está aceitando retiradas no momento. Seu pedido será para entrega.";
+      ? deliveryStoppedByCutoff
+        ? `As entregas foram encerradas automaticamente às ${deliveryCutoffTime}. Seu pedido será para retirada no local.`
+        : "Este restaurante não está aceitando entregas no momento. Seu pedido será para retirada no local."
+      : pickupStoppedByCutoff
+        ? `As retiradas foram encerradas automaticamente às ${pickupCutoffTime}. Seu pedido será para entrega.`
+        : "Este restaurante não está aceitando retiradas no momento. Seu pedido será para entrega.";
 
   // Se o restaurante só permite um modo, seleciona automaticamente.
   useEffect(() => {

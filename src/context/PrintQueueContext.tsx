@@ -14,7 +14,9 @@ import { createSocket } from "../api/services/socket";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 import { queryKeys } from "../hooks/queries/queryKeys";
 import { useRestaurantMe } from "../hooks/queries/useRestaurantQueries";
+import { useRestaurantOpenStatus } from "../hooks/useRestaurantOpenStatus";
 import type { Order } from "../types/Order.type";
+import { STATUS } from "../utils/texts/status.enum";
 import PrintOrder from "../utils/print/PrintOrder";
 
 interface PrintQueueContextValue {
@@ -109,6 +111,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { data: restaurant } = useRestaurantMe();
   const restaurantId = restaurant?.id;
+  const restaurantIsOpen = useRestaurantOpenStatus(restaurant);
   const { play: playNotificationSound } = useNotificationSound();
 
   const [queue, setQueue] = useState<Order[]>([]);
@@ -120,6 +123,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   const forcedPrintIdsRef = useRef(new Set<string>());
   const printInProgressRef = useRef(false);
   const printStartedRef = useRef(false);
+  const hasEverConnectedSocketRef = useRef(false);
 
   const mergeOrdersIntoCache = useCallback(
     (orders: Order[]) => {
@@ -168,6 +172,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
       const additions: Order[] = [];
 
       orders.forEach((order) => {
+        if (order.status === STATUS.CANCELADO) return;
         if (order.printed) return;
         if (cachedPrintedIds.has(order.id)) return;
         if (handledIdsRef.current.has(order.id)) return;
@@ -340,6 +345,12 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
     // porém, deve funcionar como reimpressão.
     const isForcedManualPrint = forcedPrintIdsRef.current.has(activeOrder.id);
 
+    if (cachedOrder?.status === STATUS.CANCELADO && !isForcedManualPrint) {
+      handledIdsRef.current.add(activeOrder.id);
+      removeFromQueue(activeOrder.id);
+      return;
+    }
+
     if (cachedOrder?.printed && !isForcedManualPrint) {
       handledIdsRef.current.add(activeOrder.id);
       removeFromQueue(activeOrder.id);
@@ -378,20 +389,24 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   }, [activeOrder, finishPrint, queryClient, removeFromQueue]);
 
   // Socket global do painel. Fica no Layout protegido, então não afeta o
-  // cardápio público e é encerrado junto com a sessão.
+  // cardápio público e é encerrado junto com a sessão. Com o restaurante
+  // fechado não há como entrar pedido novo, então mantemos a conexão desligada
+  // para não segurar uma instância do Cloud Run à toa.
   useEffect(() => {
-    if (!restaurantId) return;
+    if (!restaurantId || !restaurantIsOpen) return;
 
     const socket = createSocket(restaurantId);
     let hasConnected = false;
 
     const handleConnect = () => {
-      // Ao reconectar depois de uma impressão longa, recupera os eventos perdidos.
-      if (hasConnected) {
+      // Ao reconectar depois de uma impressão longa ou de uma abertura
+      // anterior, recupera eventos que possam ter ficado para trás.
+      if (hasConnected || hasEverConnectedSocketRef.current) {
         void syncPendingOrders();
       }
 
       hasConnected = true;
+      hasEverConnectedSocketRef.current = true;
     };
 
     const handleNewOrder = (newOrder: Order) => {
@@ -413,6 +428,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
     mergeOrdersIntoCache,
     playNotificationSound,
     restaurantId,
+    restaurantIsOpen,
     syncPendingOrders,
   ]);
 

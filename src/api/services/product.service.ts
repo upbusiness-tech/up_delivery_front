@@ -1,6 +1,6 @@
 import axios from "axios";
 import { api } from "../axios"
-import type { ProductDTO, Product, ProductCategory, ProducSizeDTO, AdditionalDTO } from "../../types/Product.type";
+import type { ProductDTO, Product, ProductCategory, ProducSizeDTO, AdditionalDTO, UpdateAdditionalDTO, UpdateProductDetailsDTO } from "../../types/Product.type";
 import { uploadToCloudinary } from "../../lib/claudinary";
 
 export const ProductService = {
@@ -71,10 +71,38 @@ export const ProductService = {
     }
   },
 
-  async updateProduct(productId: string, body: any){
+  async updateAdditional(additionalId: string, body: UpdateAdditionalDTO) {
     try {
-      const { data } = await api.patch(`product/${productId}`, body)
-      return data
+      const { data } = await api.patch(`/additional/update-additional/${additionalId}`, body);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async deleteAdditional(additionalId: string) {
+    try {
+      const { data } = await api.delete(`/additional/delete-additional/${additionalId}`);
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async updateProduct(productId: string, body: UpdateProductDetailsDTO, imageFile?: File){
+    try {
+      if (imageFile) {
+        body.image = await uploadToCloudinary(imageFile);
+      }
+
+      const { data } = await api.patch(`/product/update-product/${productId}`, body)
+      return data as Product
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);

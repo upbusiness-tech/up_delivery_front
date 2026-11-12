@@ -1,8 +1,8 @@
 import { useState } from "react";
 import type { Order } from "../../../types/Order.type";
 import {
-  useRestaurantIsOpen,
   useRestaurantMe,
+  useRestaurantOpenToggle,
 } from "../../../hooks/queries/useRestaurantQueries";
 import { useUpdateOrderReceived } from "../../../hooks/queries/useOrdersQueries";
 import { STATUS } from "../../../utils/texts/status.enum";
@@ -15,10 +15,17 @@ interface props { orders?: Order[] }
 
 export default function UseHeaderOrdersController({ orders }: props) {
   const [modalPendingOrders, setModalPendingOrders] = useState(false);
+  const [toggleOpenDialog, setToggleOpenDialog] = useState(false);
   const handleOpenModalPendingOrders = () => setModalPendingOrders(true);
   const handleCloseModalPendingOrders = () => setModalPendingOrders(false);
 
-  const { data: restaurantIsOpen } = useRestaurantIsOpen();
+  const {
+    isOpen: restaurantIsOpen,
+    isLoading: isLoadingRestaurant,
+    isToggling: isTogglingRestaurant,
+    error: toggleRestaurantError,
+    toggle: toggleRestaurant,
+  } = useRestaurantOpenToggle();
   const { data: restaurantInfos } = useRestaurantMe();
   const updateReceivedMutation = useUpdateOrderReceived();
 
@@ -37,14 +44,40 @@ export default function UseHeaderOrdersController({ orders }: props) {
     }
   }
 
+  function handleOpenToggleOpenDialog() {
+    setToggleOpenDialog(true);
+  }
+
+  function handleCloseToggleOpenDialog() {
+    if (isTogglingRestaurant) return;
+    setToggleOpenDialog(false);
+  }
+
+  async function handleConfirmToggleOpen() {
+    try {
+      await toggleRestaurant();
+      setToggleOpenDialog(false);
+    } catch {
+      return;
+    }
+  }
+
   return {
     handleCloseModalPendingOrders,
     handleOpenModalPendingOrders,
     handleReceiveOrder,
+    handleCloseToggleOpenDialog,
+    handleConfirmToggleOpen,
+    handleOpenToggleOpenDialog,
+    isLoadingRestaurant,
+    isTogglingRestaurant,
     isUpdatingReceived: updateReceivedMutation.isPending,
     modalPendingOrders,
+    nextRestaurantIsOpen: !restaurantIsOpen,
     restaurantIsOpen,
     restaurantInfos,
     pendingOrders,
+    toggleOpenDialog,
+    toggleRestaurantError,
   }
 }

@@ -61,6 +61,11 @@ export function UseProductBySizeScreenController(
 
   const ADDITIONALS = additionals ?? [];
 
+  const categoryAdditionals = useMemo(
+    () => ADDITIONALS.filter((additional) => additional.category.id === category.id),
+    [ADDITIONALS, category.id],
+  );
+
   // Garante que o estado seja reiniciado se o tamanho, a quantidade de sabores
   // ou o item editado mudar.
   useEffect(() => {
@@ -88,7 +93,7 @@ export function UseProductBySizeScreenController(
   }, [size.id, flavorCount, initialItem, products]);
 
   function additionalsByCategory() {
-    return ADDITIONALS.filter((additional) => additional.category.id === category.id);
+    return availableAdditionals;
   }
 
   const additionalsByType = (type: Additionals["additionalType"]) =>
@@ -147,6 +152,56 @@ export function UseProductBySizeScreenController(
   const selectedFlavorProducts = selectedFlavors.filter(
     (product): product is Product => product !== null,
   );
+  const selectedFlavorKey = selectedFlavorProducts
+    .map((product) =>
+      product.useCategoryAdditionals === false
+        ? `${product.id}:${(product.additionals ?? [])
+            .map(
+              (additional) =>
+                `${additional.id}:${additional.additionalName}:${additional.additionalPrice}:${additional.additionalType}`,
+            )
+            .join(",")}`
+        : `${product.id}:category`,
+    )
+    .join("|");
+
+  const availableAdditionals = useMemo(() => {
+    if (selectedFlavorProducts.length === 0) {
+      return categoryAdditionals;
+    }
+
+    const byId = new Map<string, Additionals>();
+
+    selectedFlavorProducts.forEach((product) => {
+      const productAdditionals =
+        product.useCategoryAdditionals === false
+          ? (product.additionals ?? [])
+          : categoryAdditionals;
+
+      productAdditionals.forEach((additional) => {
+        byId.set(additional.id, additional);
+      });
+    });
+
+    return Array.from(byId.values());
+  }, [categoryAdditionals, selectedFlavorKey]);
+
+  const availableAdditionalIds = useMemo(
+    () => new Set(availableAdditionals.map((additional) => additional.id)),
+    [availableAdditionals],
+  );
+
+  useEffect(() => {
+    setCheckedSingle((previous) =>
+      previous && !availableAdditionalIds.has(previous.id) ? null : previous,
+    );
+    setCheckedMultiple((previous) => {
+      const next = previous.filter((additional) =>
+        availableAdditionalIds.has(additional.id),
+      );
+      return next.length === previous.length ? previous : next;
+    });
+  }, [availableAdditionalIds]);
 
   const unitPrice = selectedFlavorProducts.reduce(
     (highest, product) => Math.max(highest, getPriceBySize(product, size.id) ?? 0),

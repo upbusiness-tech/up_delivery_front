@@ -24,6 +24,13 @@ export interface AdditionalDTO {
   categoryId: string;
 }
 
+export interface UpdateAdditionalDTO {
+  additionalName?: string;
+  additionalPrice?: number;
+  additionalType?: Additionals["additionalType"];
+  categoryId?: string;
+}
+
 
 export interface Product {
   id: string;
@@ -35,6 +42,9 @@ export interface Product {
   productCategory: ProductCategory;
   minQuantity: number;
   sizes: ProducSize[];
+  /** Adicionais personalizados. Quando `useCategoryAdditionals` é true, o cardápio usa os da categoria. */
+  additionals?: Additionals[];
+  useCategoryAdditionals?: boolean;
   /** Não é enviado pelos endpoints atuais; mantido para compatibilidade. */
   restaurant?: ProductRestaurant;
   created_at: Date;
@@ -82,6 +92,19 @@ export interface ProductDTO {
 	productCategory: string,
 	sizes: ProducSizeDTO[],
   image?: string;
+}
+
+export interface UpdateProductDetailsDTO {
+  productName?: string;
+  productDescription?: string;
+  image?: string;
+  useCategoryAdditionals?: boolean;
+  additionalIds?: string[];
+}
+
+export interface SizeDTO {
+  name: string;
+  limitFlavors: number;
 }
 
 

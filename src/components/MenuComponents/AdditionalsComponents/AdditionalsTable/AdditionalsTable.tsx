@@ -15,23 +15,29 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
 import TuneIcon from "@mui/icons-material/Tune";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import type { Additionals } from "../../../../types/Product.type";
 import { moneyMask } from "../../../../utils/masks/mask";
 import UseAdditionalsTableController from "./UseAdditionalsTableController";
 
 interface AdditionalsTableProps {
   onCreateAdditional?: () => void;
   onCreateCategory?: () => void;
+  onEditAdditional?: (additional: Additionals) => void;
 }
 
 export default function AdditionalsTable({
   onCreateAdditional,
   onCreateCategory,
+  onEditAdditional,
 }: AdditionalsTableProps) {
   const {
     additionals,
@@ -43,6 +49,10 @@ export default function AdditionalsTable({
     isLoading,
     error,
     refetch,
+    deleteAdditional,
+    deletingId,
+    deleteError,
+    clearDeleteError,
   } = UseAdditionalsTableController();
 
   if (isLoading) {
@@ -70,6 +80,12 @@ export default function AdditionalsTable({
 
   return (
     <Box>
+      {deleteError && (
+        <Alert severity="error" sx={{ mb: 2 }} onClose={clearDeleteError}>
+          {deleteError}
+        </Alert>
+      )}
+
       <Paper elevation={0} sx={{ p: 1.5, mb: 2, border: "1px solid #E5E7EB", borderRadius: 3 }}>
         <TextField
           fullWidth
@@ -142,7 +158,7 @@ export default function AdditionalsTable({
           elevation={1}
           sx={{ border: "1px solid #E5E7EB", borderRadius: 3, overflowX: "auto" }}
         >
-          <Table size="medium" sx={{ minWidth: 560 }}>
+          <Table size="medium" sx={{ minWidth: 680 }}>
             <TableHead>
               <TableRow sx={{ bgcolor: "#fafafa" }}>
                 <TableCell sx={{ fontWeight: 600, color: "#6b7280" }}>Adicional</TableCell>
@@ -153,11 +169,24 @@ export default function AdditionalsTable({
                 <TableCell sx={{ fontWeight: 600, color: "#6b7280" }} align="right">
                   Preço
                 </TableCell>
+                <TableCell sx={{ fontWeight: 600, color: "#6b7280" }} align="right">
+                  Ações
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {additionals.map((additional) => (
-                <TableRow key={additional.id} hover sx={{ "&:last-child td": { borderBottom: 0 } }}>
+              {additionals.map((additional) => {
+                const isDeleting = deletingId === additional.id;
+
+                return (
+                <TableRow
+                  key={additional.id}
+                  hover
+                  sx={{
+                    "&:last-child td": { borderBottom: 0 },
+                    opacity: isDeleting ? 0.6 : 1,
+                  }}
+                >
                   <TableCell sx={{ py: 2 }}>
                     <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
                       <Box
@@ -199,8 +228,37 @@ export default function AdditionalsTable({
                       {moneyMask(Number(additional.additionalPrice))}
                     </Typography>
                   </TableCell>
+                  <TableCell align="right">
+                    <Stack direction="row" spacing={0.5} sx={{ justifyContent: "flex-end" }}>
+                      <Tooltip title="Editar adicional">
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="primary"
+                            disabled={isDeleting}
+                            onClick={() => onEditAdditional?.(additional)}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                      <Tooltip title="Excluir adicional">
+                        <span>
+                          <IconButton
+                            size="small"
+                            color="error"
+                            disabled={isDeleting}
+                            onClick={() => void deleteAdditional(additional)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </span>
+                      </Tooltip>
+                    </Stack>
+                  </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>
