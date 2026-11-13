@@ -35,7 +35,7 @@ export interface Order {
 export interface OrderFlavor {
   id: string;
   price: number;
-  // O evento de socket `newOrder` pode vir sem essas relações carregadas.
+  // Alguns payloads de pedido podem vir sem essas relações carregadas.
   product?: {
     id: string;
     productName: string;

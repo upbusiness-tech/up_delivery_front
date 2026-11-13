@@ -2,14 +2,18 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   Divider,
+  FormControlLabel,
   IconButton,
+  Paper,
   Stack,
+  Switch,
   TextField,
   Typography,
   useMediaQuery,
@@ -18,9 +22,13 @@ import type { Product } from "../../../../types/Product.type";
 import imagemGenerica from "../../../../assets/imgNull.png";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 import UseProductDetailModalController from "./UseProductDetailModalController";
 import RegisterProductSizetModal from "../RegisterProductSize.tsx/RegisterProductSizeModal";
 import ProductsSizesTable from "../SizesTable/ProductsSizesTable";
+import { moneyMask } from "../../../../utils/masks/mask";
+import ProductImage from "../../../Common/ProductImage";
+import { PRODUCT_IMAGE_ACCEPT } from "../../../../lib/firebaseStorage";
 
 interface props {
   product: Product | null;
@@ -44,6 +52,9 @@ export default function ProductDetail({ product, onClose }: props) {
 function ProductDetailContent({ product, onClose }: { product: Product; onClose: () => void }) {
   const c = UseProductDetailModalController({ product, onClose });
   const isMobile = useMediaQuery("(max-width:599.95px)");
+  const categoryAdditionals = c.additionals.filter(
+    (additional) => additional.category?.id === product.productCategory.id,
+  );
 
   return (
     <Dialog open onClose={onClose} maxWidth="md" fullWidth fullScreen={isMobile}>
@@ -75,20 +86,50 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
             </Alert>
           )}
 
+          {c.additionalsError && (
+            <Alert severity="warning">
+              Não foi possível carregar os adicionais cadastrados.
+            </Alert>
+          )}
+
+          {c.imageError && <Alert severity="error">{c.imageError}</Alert>}
+
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-            <Box
-              component="img"
-              src={product.image || imagemGenerica}
-              alt={product.productName}
-              sx={{
-                width: { xs: "100%", sm: 150 },
-                height: { xs: 180, sm: 150 },
-                borderRadius: 2,
-                objectFit: "cover",
-                flexShrink: 0,
-                bgcolor: "#f3f4f6",
-              }}
-            />
+            <Stack spacing={1} sx={{ width: { xs: "100%", sm: 150 }, flexShrink: 0 }}>
+              <ProductImage
+                src={c.imagePreview || product.image}
+                fallbackSrc={imagemGenerica}
+                alt={product.productName}
+                lazy={false}
+                sx={{
+                  width: "100%",
+                  height: { xs: 180, sm: 150 },
+                  borderRadius: 2,
+                  objectFit: "cover",
+                  bgcolor: "#f3f4f6",
+                }}
+              />
+              <input
+                ref={c.fileInputRef}
+                type="file"
+                accept={PRODUCT_IMAGE_ACCEPT}
+                hidden
+                onChange={c.handleImageChange}
+              />
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<EditIcon />}
+                onClick={c.handleImageClick}
+                disabled={c.isBusy}
+                sx={{ textTransform: "none" }}
+              >
+                Alterar imagem
+              </Button>
+              <Typography variant="caption" sx={{ color: "#6b7280", textAlign: "center" }}>
+                JPG ou PNG
+              </Typography>
+            </Stack>
             <Stack spacing={1.5} sx={{ flex: 1 }}>
               <Box>
                 <Typography variant="caption" sx={{ color: "#6b7280" }}>
@@ -186,6 +227,131 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
               sizes={product.sizes}
               product={product}
             />
+          </Box>
+
+          <Divider />
+
+          <Box>
+            <Stack
+              direction={{ xs: "column", sm: "row" }}
+              sx={{
+                alignItems: { xs: "stretch", sm: "center" },
+                justifyContent: "space-between",
+                gap: 1,
+                mb: 1.5,
+              }}
+            >
+              <Box>
+                <Typography variant="subtitle2">Adicionais do produto</Typography>
+                <Typography variant="caption" sx={{ color: "#6b7280" }}>
+                  Por padrão, o produto usa todos os adicionais da categoria{" "}
+                  {product.productCategory.categoryName}.
+                </Typography>
+              </Box>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={c.useCategoryAdditionals}
+                    onChange={(event) =>
+                      c.handleUseCategoryAdditionalsChange(event.target.checked)
+                    }
+                    disabled={c.isBusy || c.additionalsLoading}
+                  />
+                }
+                label="Usar adicionais da categoria"
+                sx={{ m: 0 }}
+              />
+            </Stack>
+
+            {c.useCategoryAdditionals ? (
+              <Paper
+                elevation={0}
+                sx={{ p: 1.5, border: "1px solid #E5E7EB", borderRadius: 2 }}
+              >
+                {categoryAdditionals.length === 0 ? (
+                  <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+                    A categoria ainda não possui adicionais cadastrados.
+                  </Typography>
+                ) : (
+                  <Stack direction="row" sx={{ flexWrap: "wrap", gap: 1 }}>
+                    {categoryAdditionals.map((additional) => (
+                      <Chip
+                        key={additional.id}
+                        label={`${additional.additionalName} · ${moneyMask(Number(additional.additionalPrice))}`}
+                        size="small"
+                        variant="outlined"
+                        sx={{ borderRadius: 2 }}
+                      />
+                    ))}
+                  </Stack>
+                )}
+                <Typography
+                  variant="caption"
+                  sx={{ color: "#6b7280", mt: 1, display: "block" }}
+                >
+                  Para escolher uma lista específica, desative a opção acima.
+                </Typography>
+              </Paper>
+            ) : c.additionals.length === 0 ? (
+              <Paper
+                elevation={0}
+                sx={{ p: 1.5, border: "1px solid #E5E7EB", borderRadius: 2 }}
+              >
+                <Typography sx={{ color: "#64748B", fontSize: "0.9rem" }}>
+                  Nenhum adicional cadastrado. Cadastre os adicionais na aba Adicionais.
+                </Typography>
+              </Paper>
+            ) : (
+              <Paper
+                elevation={0}
+                sx={{
+                  p: 1,
+                  border: "1px solid #E5E7EB",
+                  borderRadius: 2,
+                  maxHeight: 260,
+                  overflowY: "auto",
+                }}
+              >
+                <Stack spacing={0.5}>
+                  {c.additionals.map((additional) => (
+                    <FormControlLabel
+                      key={additional.id}
+                      control={
+                        <Checkbox
+                          checked={c.selectedAdditionalIds.includes(additional.id)}
+                          onChange={() => c.toggleAdditional(additional.id)}
+                          disabled={c.isBusy}
+                        />
+                      }
+                      label={
+                        <Stack
+                          direction={{ xs: "column", sm: "row" }}
+                          spacing={{ xs: 0, sm: 1 }}
+                          sx={{ alignItems: { xs: "flex-start", sm: "center" } }}
+                        >
+                          <Typography sx={{ fontWeight: 600, fontSize: "0.9rem" }}>
+                            {additional.additionalName}
+                          </Typography>
+                          <Typography sx={{ color: "#6b7280", fontSize: "0.8rem" }}>
+                            {additional.category?.categoryName ?? "Sem categoria"}
+                          </Typography>
+                          <Typography sx={{ color: "success.main", fontSize: "0.8rem", fontWeight: 700 }}>
+                            {moneyMask(Number(additional.additionalPrice))}
+                          </Typography>
+                        </Stack>
+                      }
+                      sx={{ mx: 0, width: "100%" }}
+                    />
+                  ))}
+                </Stack>
+              </Paper>
+            )}
+
+            {!c.useCategoryAdditionals && (
+              <Typography variant="caption" sx={{ color: "#6b7280", mt: 1, display: "block" }}>
+                {c.selectedAdditionalIds.length} adicional(is) selecionado(s).
+              </Typography>
+            )}
           </Box>
         </Stack>
       </DialogContent>

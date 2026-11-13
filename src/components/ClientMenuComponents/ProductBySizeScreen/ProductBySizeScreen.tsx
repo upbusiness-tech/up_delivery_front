@@ -4,7 +4,6 @@ import {
   Button,
   Card,
   CardActionArea,
-  CardMedia,
   Checkbox,
   Chip,
   IconButton,
@@ -23,6 +22,7 @@ import type { Additionals, Product, ProductCategory, Size } from "../../../types
 import type { OrderItemBag } from "../../../types/Order.type";
 import { UseProductBySizeScreenController } from "./UseProductBySizeScreenController";
 import { UseProductSearch } from "../../../hooks/useProductSearch";
+import ProductImage from "../../Common/ProductImage";
 import { moneyMask } from "../../../utils/masks/mask";
 
 interface ProductBySizeScreenProps {
@@ -419,9 +419,8 @@ export default function ProductBySizeScreen({
                         bgcolor: "grey.100",
                       }}
                     >
-                      <CardMedia
-                        component="img"
-                        image={product.image}
+                      <ProductImage
+                        src={product.image}
                         alt={product.productName}
                         sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                       />

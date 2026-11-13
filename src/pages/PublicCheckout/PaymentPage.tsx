@@ -22,6 +22,14 @@ export default function PaymentPage() {
   async function handleCreateOrder() {
     // Não cria o pedido antes de saber se entrega/retirada estão liberadas.
     if (submitting.current || checkout.settingsLoading) return;
+
+    if (!checkout.allowDelivery && !checkout.allowPickup) {
+      setError(
+        "O restaurante não está aceitando entregas nem retiradas no momento.",
+      );
+      return;
+    }
+
     submitting.current = true;
     setError(null);
     setIsCreatingOrder(true);
@@ -64,8 +72,12 @@ export default function PaymentPage() {
           ? createdOrder.restaurant
           : { id: restaurant.id },
       });
-    } catch {
-      setError("Não foi possível criar o pedido. Tente novamente.");
+    } catch (createError) {
+      setError(
+        createError instanceof Error && createError.message.trim()
+          ? createError.message
+          : "Não foi possível criar o pedido. Tente novamente.",
+      );
     } finally {
       submitting.current = false;
       setIsCreatingOrder(false);

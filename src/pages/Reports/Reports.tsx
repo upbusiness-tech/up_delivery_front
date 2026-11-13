@@ -869,11 +869,13 @@ function ReportsDashboard() {
                 onChange={(event) => updateFilter("status", event.target.value)}
               >
                 <MenuItem value="">Todos</MenuItem>
-                {Object.values(STATUS).map((status) => (
-                  <MenuItem key={status} value={status}>
-                    {STATUS_LABEL[status]}
-                  </MenuItem>
-                ))}
+                {Object.values(STATUS)
+                  .filter((status) => status !== STATUS.CANCELADO)
+                  .map((status) => (
+                    <MenuItem key={status} value={status}>
+                      {STATUS_LABEL[status]}
+                    </MenuItem>
+                  ))}
               </Select>
             </FormControl>
 

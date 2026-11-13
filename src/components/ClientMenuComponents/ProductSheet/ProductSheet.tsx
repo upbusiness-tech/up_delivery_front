@@ -6,6 +6,7 @@ import { moneyMask } from "../../../utils/masks/mask";
 import { useCheckout } from "../../../checkout/CheckoutContext";
 import { useEffect, useRef } from "react";
 import type { OrderItemBag } from "../../../types/Order.type";
+import ProductImage from "../../Common/ProductImage";
 interface ProductSheetProps {
   item: Product | undefined;
   initialItem?: OrderItemBag;
@@ -90,11 +91,12 @@ export default function ProductSheet({ item, initialItem, onClose }: ProductShee
   const body = (
     <Box sx={{ display: "flex", flexDirection: "column", maxHeight: isDesktop ? "85vh" : "92dvh" }}>
       <Box sx={{ position: "relative", flexShrink: 0 }}>
-        <Box
-          component="img"
+        <ProductImage
           src={item.image}
           alt={item.productName}
-          sx={{ width: "100%", height: { xs: 180, sm: 240 }, objectFit: "cover", display: "block" }}
+          variant="full"
+          lazy={false}
+          sx={{ width: "100%", height: { xs: 180, sm: 240 }, objectFit: "cover" }}
         />
         <IconButton
           onClick={closeSheet}

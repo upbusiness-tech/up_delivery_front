@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { OrderService } from "../../api/services/order.service";
 import type { Order } from "../../types/Order.type";
 import type { OrderReportFilters } from "../../types/Report.type";
+import { STATUS } from "../../utils/texts/status.enum";
 import { queryKeys } from "./queryKeys";
 
 const ORDERS_STALE_TIME = 15_000;
@@ -55,6 +56,13 @@ export function useUpdateOrderStatus() {
     onError: (_error, _variables, context) => {
       if (context?.previousOrders) {
         queryClient.setQueryData(ordersKey, context.previousOrders);
+      }
+    },
+    onSuccess: (_data, variables) => {
+      if (variables.status === STATUS.CANCELADO) {
+        void queryClient.invalidateQueries({
+          queryKey: queryKeys.orders.reports(),
+        });
       }
     },
     // O backend só altera `status` nessa rota. O cache otimista já contém o

@@ -1,13 +1,15 @@
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, MenuItem, Select, Stack, TextField, Typography } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import UseRegisterAdditionalModalController from "./UseRegisterAdditionalModalController";
+import type { Additionals } from "../../../types/Product.type";
 
 interface props {
   open: boolean;
   onClose: () => void;
+  additional?: Additionals | null;
 }
 
-export default function RegisterAdditionalModal({ open, onClose }: props) {
+export default function RegisterAdditionalModal({ open, onClose, additional }: props) {
   const {
     CATEGORIES,
     additionalName,
@@ -22,7 +24,8 @@ export default function RegisterAdditionalModal({ open, onClose }: props) {
     closeAndReset,
     isCreating,
     formError,
-  } = UseRegisterAdditionalModalController({ onClose });
+    isEditing,
+  } = UseRegisterAdditionalModalController({ onClose, additional });
 
   return (
     <Dialog
@@ -34,7 +37,9 @@ export default function RegisterAdditionalModal({ open, onClose }: props) {
       <DialogTitle>
         <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between" }}>
           <Box>
-            <Typography variant="body1">Cadastro de Adicional</Typography>
+            <Typography variant="body1">
+              {isEditing ? "Editar adicional" : "Cadastro de Adicional"}
+            </Typography>
           </Box>
         </Stack>
         <IconButton
@@ -177,7 +182,11 @@ export default function RegisterAdditionalModal({ open, onClose }: props) {
               !additionalPrice.trim()
             }
           >
-            {isCreating ? "Salvando..." : "Salvar Adicional"}
+            {isCreating
+              ? "Salvando..."
+              : isEditing
+                ? "Salvar alterações"
+                : "Salvar Adicional"}
           </Button>
         </Stack>
       </DialogActions>

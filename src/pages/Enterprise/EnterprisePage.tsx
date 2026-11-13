@@ -9,10 +9,18 @@ import {
   Alert,
 } from "@mui/material";
 import PaymentIcon from "@mui/icons-material/Payment";
+import EditIcon from "@mui/icons-material/Edit";
 import UseEnterpriseController from "./UseEnterpriseController";
 import NeighborhoodsTab from "../../components/EnterpriseComponents/Neighborhoods/NeighborhoodsTab";
-import { DAYS_LABEL, DAYS_ORDER } from "../../types/Restaurant.type";
+import BusinessHoursDialog from "../../components/EnterpriseComponents/BusinessHours/BusinessHoursDialog";
+import {
+  DAYS_LABEL,
+  DAYS_ORDER,
+  type BusinessHours,
+  type OrderModeCutoffs,
+} from "../../types/Restaurant.type";
 import { useRestaurantSettings } from "../../hooks/useRestaurantSettings";
+import { useRestaurantOpenToggle } from "../../hooks/queries/useRestaurantQueries";
 import AssuredWorkloadIcon from '@mui/icons-material/AssuredWorkload';
 import { phoneMask } from "../../utils/masks/mask";
 import StorefrontIcon from '@mui/icons-material/Storefront';
@@ -41,6 +49,7 @@ export function EnterprisePage() {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [tab, setTab] = useState<number>(TABS.GENERAL);
+  const [businessHoursOpen, setBusinessHoursOpen] = useState(false);
 
   const {
     restaurantInfos,
@@ -49,11 +58,34 @@ export function EnterprisePage() {
     refetch,
     connectRestaurant,
     isConnecting,
+    updateBusinessHours,
+    isUpdatingBusinessHours,
   } = UseEnterpriseController();
+  const {
+    isOpen: restaurantIsOpen,
+    isToggling: isTogglingRestaurant,
+    error: toggleRestaurantError,
+    toggle: toggleRestaurant,
+  } = useRestaurantOpenToggle();
   const { 
-    allowDelivery, allowPickup, paymentsPlatform, separetePayments, toggleSetting, togglePaymentMode,
-    allowCardPayment, allowPixPayment, isToggling,
+    manualAllowDelivery: allowDelivery,
+    manualAllowPickup: allowPickup,
+    paymentsPlatform,
+    separetePayments,
+    toggleSetting,
+    togglePaymentMode,
+    allowCardPayment,
+    allowPixPayment,
+    isToggling,
    } = useRestaurantSettings(restaurantInfos?.id ?? "");
+
+  async function handleSaveBusinessHours(
+    hours: BusinessHours,
+    cutoffs: OrderModeCutoffs,
+  ) {
+    await updateBusinessHours({ businessHours: hours, ...cutoffs });
+    setBusinessHoursOpen(false);
+  }
 
   if (isLoading) { return <Typography>Carregando...</Typography>; }
   if (error) {
@@ -141,7 +173,39 @@ export function EnterprisePage() {
           <Paper sx={{ p: { xs: 2, md: 3 } }}>
             <Stack direction={{ xs: "column", sm: "row" }} sx={{ justifyContent: "space-between", alignItems: { sm: "center" }, mb: 1, gap: 1 }}>
               <Typography variant="subtitle1">Horários de funcionamento</Typography>
+
+              <Stack direction="row" spacing={1} sx={{ alignItems: "center", flexWrap: "wrap", gap: 1 }}>
+                <FormControlLabel
+                  sx={{ m: 0 }}
+                  control={
+                    <Switch
+                      checked={restaurantIsOpen}
+                      disabled={isTogglingRestaurant}
+                      onChange={() => void toggleRestaurant()}
+                    />
+                  }
+                  label={restaurantIsOpen ? "Aberto agora" : "Fechado agora"}
+                />
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<EditIcon />}
+                  onClick={() => setBusinessHoursOpen(true)}
+                  sx={{ textTransform: "none" }}
+                >
+                  Editar horários e modalidades
+                </Button>
+              </Stack>
             </Stack>
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", mb: 1 }}>
+              O controle manual abre ou fecha fora do horário e volta ao normal no próximo horário programado.
+            </Typography>
+            {toggleRestaurantError && (
+              <Alert severity="error" sx={{ mb: 1 }}>
+                Não foi possível alterar o status do restaurante.
+              </Alert>
+            )}
             <Divider sx={{ mb: 1 }} />
 
             {isDesktop ? (
@@ -193,6 +257,29 @@ export function EnterprisePage() {
                 ))}
               </Stack>
             )}
+
+            <Divider sx={{ my: 2 }} />
+            <Typography variant="subtitle2" sx={{ mb: 1 }}>
+              Encerramento automático das modalidades
+            </Typography>
+            <Stack direction="row" spacing={1} sx={{ flexWrap: "wrap", gap: 1 }}>
+              <Chip
+                color={restaurantInfos.deliveryCutoffTime ? "warning" : "default"}
+                label={
+                  restaurantInfos.deliveryCutoffTime
+                    ? `Entregas encerram às ${restaurantInfos.deliveryCutoffTime}`
+                    : "Entregas sem encerramento automático"
+                }
+              />
+              <Chip
+                color={restaurantInfos.pickupCutoffTime ? "warning" : "default"}
+                label={
+                  restaurantInfos.pickupCutoffTime
+                    ? `Retiradas encerram às ${restaurantInfos.pickupCutoffTime}`
+                    : "Retiradas sem encerramento automático"
+                }
+              />
+            </Stack>
           </Paper>
         </Stack>
       </TabPanel>
@@ -286,8 +373,22 @@ export function EnterprisePage() {
             <FormControlLabel control={<Switch disabled={isToggling} checked={allowDelivery} onChange={() => toggleSetting("allow_delivery")} />} label="Permitir delivery" />
             <FormControlLabel control={<Switch disabled={isToggling} checked={allowPickup} onChange={() => toggleSetting("allow_pickup")} />} label="Permitir retirada" />
           </FormControl>
+          <Typography variant="caption" color="text.secondary" sx={{ display: "block", mt: 1.5 }}>
+            O encerramento automático configurado em “Horários e modalidades” pode
+            desativar a modalidade mesmo com a opção acima ativa.
+          </Typography>
         </Paper>
       </TabPanel>
+
+      <BusinessHoursDialog
+        open={businessHoursOpen}
+        initialHours={restaurantInfos.businessHours}
+        initialDeliveryCutoffTime={restaurantInfos.deliveryCutoffTime}
+        initialPickupCutoffTime={restaurantInfos.pickupCutoffTime}
+        isSaving={isUpdatingBusinessHours}
+        onClose={() => setBusinessHoursOpen(false)}
+        onSave={handleSaveBusinessHours}
+      />
     </Stack>
   );
 }

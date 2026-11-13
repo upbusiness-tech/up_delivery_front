@@ -1,8 +1,9 @@
-import { Box, Card, CardActionArea, CardMedia, Chip, Stack, Typography } from "@mui/material";
+import { Box, Card, CardActionArea, Chip, Stack, Typography } from "@mui/material";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import genericImage from "../../../assets/capa.jpg";
 import type { Size } from "../../../types/Product.type";
 import { moneyMask } from "../../../utils/masks/mask";
+import ProductImage from "../../Common/ProductImage";
 
 interface SizeCardProps {
   size: Size;
@@ -54,11 +55,11 @@ export default function SizeCard({ size, categoryName, priceFrom, image, onClick
         </Box>
 
         <Box sx={{ position: "relative", width: { xs: 110, sm: 140 }, flexShrink: 0 }}>
-          <CardMedia
-            component="img"
-            image={image || genericImage}
+          <ProductImage
+            src={image}
+            fallbackSrc={genericImage}
             alt={`${categoryName} ${size.name}`}
-            sx={{ height: "100%", minHeight: 112, objectFit: "cover" }}
+            sx={{ width: "100%", height: "100%", minHeight: 112, objectFit: "cover" }}
           />
           <ChevronRightIcon
             sx={{

@@ -3,12 +3,6 @@ import { io, Socket } from 'socket.io-client';
 
 const SOCKET_URL = import.meta.env.VITE_DELIVERY_API_URL;
 
-export const createSocket = (restaurantId: string) => {
-  return io(SOCKET_URL, {
-    query: { restaurantId },
-  });
-};
-
 export function usePaymentSocket(orderId: string | null) {
   const [status, setStatus] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState(false);

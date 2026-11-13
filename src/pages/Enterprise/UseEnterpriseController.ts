@@ -1,7 +1,9 @@
 import {
   useConnectMercadoPago,
   useRestaurantMe,
+  useUpdateBusinessHours,
 } from "../../hooks/queries/useRestaurantQueries";
+import type { UpdateBusinessHoursPayload } from "../../types/Restaurant.type";
 
 export default function UseEnterpriseController() {
 
@@ -12,6 +14,7 @@ export default function UseEnterpriseController() {
     refetch,
   } = useRestaurantMe();
   const connectMercadoPagoMutation = useConnectMercadoPago();
+  const updateBusinessHoursMutation = useUpdateBusinessHours();
 
   async function connectRestaurant() {
     try {
@@ -22,6 +25,10 @@ export default function UseEnterpriseController() {
     }
   }
 
+  async function updateBusinessHours(payload: UpdateBusinessHoursPayload) {
+    return updateBusinessHoursMutation.mutateAsync(payload);
+  }
+
   return {
     restaurantInfos,
     isLoading: isPending,
@@ -29,5 +36,7 @@ export default function UseEnterpriseController() {
     refetch,
     connectRestaurant,
     isConnecting: connectMercadoPagoMutation.isPending,
+    updateBusinessHours,
+    isUpdatingBusinessHours: updateBusinessHoursMutation.isPending,
   }
 }

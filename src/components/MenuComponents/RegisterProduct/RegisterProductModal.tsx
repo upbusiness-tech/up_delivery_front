@@ -2,6 +2,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import CloseIcon from "@mui/icons-material/Close";
 import imagemGenerica from '../../../assets/imgNull.png'
 import UseModalRegisterProduct from "./UseModalRegisterProduct";
+import { PRODUCT_IMAGE_ACCEPT } from "../../../lib/firebaseStorage";
 
 
 interface props {
@@ -82,7 +83,7 @@ export default function RegisterProductModal({open, onClose }: props) {
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
               <input
                 type="file"
-                accept="image/*"
+                accept={PRODUCT_IMAGE_ACCEPT}
                 ref={fileInputRef}
                 onChange={handleImageChange}
                 style={{ display: "none" }}

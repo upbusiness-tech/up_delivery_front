@@ -1,9 +1,14 @@
-import { useState } from "react";
-import { useCategories, useCreateAdditional } from "../../../hooks/queries/useMenuQueries";
-import type { AdditionalDTO } from "../../../types/Product.type";
+import { useEffect, useState } from "react";
+import {
+  useCategories,
+  useCreateAdditional,
+  useUpdateAdditional,
+} from "../../../hooks/queries/useMenuQueries";
+import type { AdditionalDTO, Additionals } from "../../../types/Product.type";
 
 interface props {
   onClose?: () => void;
+  additional?: Additionals | null;
 }
 
 function parsePrice(value: string) {
@@ -12,9 +17,13 @@ function parsePrice(value: string) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-export default function UseRegisterAdditionalModalController({ onClose }: props = {}) {
+export default function UseRegisterAdditionalModalController({
+  onClose,
+  additional,
+}: props = {}) {
   const { data: categories = [] } = useCategories();
   const createAdditionalMutation = useCreateAdditional();
+  const updateAdditionalMutation = useUpdateAdditional();
 
   const [additionalName, setAdditionalName] = useState("");
   const [additionalPrice, setAdditionalPrice] = useState("");
@@ -22,6 +31,21 @@ export default function UseRegisterAdditionalModalController({ onClose }: props 
   const [additionalType, setAdditionalType] =
     useState<AdditionalDTO["additionalType"]>("multiple");
   const [formError, setFormError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (additional) {
+      setAdditionalName(additional.additionalName);
+      setAdditionalPrice(String(additional.additionalPrice).replace(".", ","));
+      setCategoryId(additional.category?.id ?? "");
+      setAdditionalType(additional.additionalType);
+    } else {
+      setAdditionalName("");
+      setAdditionalPrice("");
+      setCategoryId("");
+      setAdditionalType("multiple");
+    }
+    setFormError(null);
+  }, [additional?.id]);
 
   const resetForm = () => {
     setAdditionalName("");
@@ -36,7 +60,7 @@ export default function UseRegisterAdditionalModalController({ onClose }: props 
     onClose?.();
   };
 
-  async function createAdditional() {
+  async function saveAdditional() {
     const name = additionalName.trim();
     const price = parsePrice(additionalPrice);
 
@@ -52,21 +76,38 @@ export default function UseRegisterAdditionalModalController({ onClose }: props 
       setFormError("Informe um preço válido.");
       return;
     }
-    if (createAdditionalMutation.isPending) return;
+    if (createAdditionalMutation.isPending || updateAdditionalMutation.isPending) {
+      return;
+    }
 
     setFormError(null);
 
     try {
-      await createAdditionalMutation.mutateAsync({
-        additionalName: name,
-        additionalPrice: price,
-        categoryId,
-        additionalType,
-      });
+      if (additional) {
+        await updateAdditionalMutation.mutateAsync({
+          additionalId: additional.id,
+          body: {
+            additionalName: name,
+            additionalPrice: price,
+            categoryId,
+            additionalType,
+          },
+        });
+      } else {
+        await createAdditionalMutation.mutateAsync({
+          additionalName: name,
+          additionalPrice: price,
+          categoryId,
+          additionalType,
+        });
+      }
+
       resetForm();
       onClose?.();
     } catch {
-      setFormError("Não foi possível salvar o adicional. Confira os dados e tente novamente.");
+      setFormError(
+        "Não foi possível salvar o adicional. Confira os dados e tente novamente.",
+      );
     }
   }
 
@@ -80,9 +121,10 @@ export default function UseRegisterAdditionalModalController({ onClose }: props 
     setCategoryId,
     additionalType,
     setAdditionalType,
-    createAdditional,
+    createAdditional: saveAdditional,
     closeAndReset,
-    isCreating: createAdditionalMutation.isPending,
+    isCreating: createAdditionalMutation.isPending || updateAdditionalMutation.isPending,
     formError,
+    isEditing: Boolean(additional),
   };
 }

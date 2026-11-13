@@ -155,7 +155,7 @@ export function CheckoutProvider({ children }: { children: ReactNode }) {
     allowPickup,
     allowPixPayment,
     loading: settingsLoading,
-  } = useRestaurantSettings(restaurant.id);
+  } = useRestaurantSettings(restaurant.id, restaurant);
   const storageKey = `${STORAGE_PREFIX}:${slug}`;
   const deliveryStorageKey = `${DELIVERY_STORAGE_PREFIX}:${slug}`;
 

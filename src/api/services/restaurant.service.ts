@@ -2,7 +2,7 @@ import { type CreateOrder } from './../../types/Order.type';
 import axios from "axios";
 import { api } from "../axios"
 import type { Additionals, Product, ProductCategory, Size } from "../../types/Product.type";
-import type { Neighborhood, NeighborhoodDTO, Restaurant } from '../../types/Restaurant.type';
+import type { Neighborhood, NeighborhoodDTO, Restaurant, UpdateBusinessHoursPayload } from '../../types/Restaurant.type';
 
 export const RestaurantService = {
   
@@ -31,7 +31,24 @@ export const RestaurantService = {
     }catch(error){
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
+
+        const responseData = error.response?.data as { message?: unknown } | undefined;
+        const rawMessage = responseData?.message;
+        const message = Array.isArray(rawMessage)
+          ? rawMessage.find(
+              (item): item is string =>
+                typeof item === "string" && item.trim().length > 0,
+            )
+          : typeof rawMessage === "string" && rawMessage.trim().length > 0
+            ? rawMessage
+            : null;
+
+        throw new Error(
+          message ?? "Não foi possível criar o pedido. Tente novamente.",
+        );
       }
+
+      throw error;
     }
   },
  
@@ -40,6 +57,36 @@ export const RestaurantService = {
       const { data } = await api.get<boolean>(`/restaurant/restaurant-isopen`);
       return data
     }catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async setRestaurantOpen(isOpen: boolean) {
+    try {
+      const { data } = await api.patch<{
+        isOpen: boolean;
+        isOpenOverrideUntil: string | null;
+      }>(`/restaurant/toggle-open`, { isOpen });
+      return data;
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.log(error.response?.data.message);
+      }
+      throw error;
+    }
+  },
+
+  async updateBusinessHours(payload: UpdateBusinessHoursPayload) {
+    try {
+      const { data } = await api.patch<Restaurant>(
+        `/restaurant/me/business-hours`,
+        payload,
+      );
+      return data;
+    } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }

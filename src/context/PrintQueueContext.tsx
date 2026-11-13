@@ -9,12 +9,15 @@ import {
 } from "react";
 import { flushSync } from "react-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { onValue, ref as firebaseRef } from "firebase/database";
+import { database } from "../api/firebase";
 import { OrderService } from "../api/services/order.service";
-import { createSocket } from "../api/services/socket";
 import { useNotificationSound } from "../hooks/useNotificationSound";
 import { queryKeys } from "../hooks/queries/queryKeys";
 import { useRestaurantMe } from "../hooks/queries/useRestaurantQueries";
+import { useRestaurantOpenStatus } from "../hooks/useRestaurantOpenStatus";
 import type { Order } from "../types/Order.type";
+import { STATUS } from "../utils/texts/status.enum";
 import PrintOrder from "../utils/print/PrintOrder";
 
 interface PrintQueueContextValue {
@@ -28,6 +31,8 @@ const PrintQueueContext = createContext<PrintQueueContextValue | undefined>(unde
 
 const PRINT_DIALOG_BLOCKING_THRESHOLD_MS = 500;
 const PRINT_DIALOG_FALLBACK_MS = 60_000;
+const NEW_ORDER_SYNC_DEBOUNCE_MS = 700;
+const PENDING_ORDERS_FALLBACK_SYNC_MS = 120_000;
 
 function getOrderTimestamp(order: Order) {
   if (!order.created_at) return 0;
@@ -109,6 +114,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { data: restaurant } = useRestaurantMe();
   const restaurantId = restaurant?.id;
+  const restaurantIsOpen = useRestaurantOpenStatus(restaurant);
   const { play: playNotificationSound } = useNotificationSound();
 
   const [queue, setQueue] = useState<Order[]>([]);
@@ -120,12 +126,14 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   const forcedPrintIdsRef = useRef(new Set<string>());
   const printInProgressRef = useRef(false);
   const printStartedRef = useRef(false);
+  const pendingSyncTimeoutRef = useRef<number | null>(null);
+  const pendingSyncNotifyRef = useRef(false);
 
   const mergeOrdersIntoCache = useCallback(
     (orders: Order[]) => {
       if (orders.length === 0) return;
 
-      // Não crie a lista de pedidos a partir de um único evento de socket.
+      // Não crie a lista de pedidos a partir de um único sinal de novo pedido.
       // Isso faria a página /orders abrir com uma lista parcial e considerá-la
       // "fresca" pelo staleTime. Se a lista ainda não foi carregada, a própria
       // página busca todos os pedidos.
@@ -157,8 +165,8 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
   );
 
   const enqueueOrders = useCallback(
-    (orders: Order[]) => {
-      if (orders.length === 0) return;
+    (orders: Order[]): Order[] => {
+      if (orders.length === 0) return [];
 
       const cachedOrders = queryClient.getQueryData<Order[]>(queryKeys.orders.list()) ?? [];
       const cachedPrintedIds = new Set(
@@ -168,6 +176,7 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
       const additions: Order[] = [];
 
       orders.forEach((order) => {
+        if (order.status === STATUS.CANCELADO) return;
         if (order.printed) return;
         if (cachedPrintedIds.has(order.id)) return;
         if (handledIdsRef.current.has(order.id)) return;
@@ -177,28 +186,58 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
         additions.push(order);
       });
 
-      if (additions.length === 0) return;
+      if (additions.length === 0) return [];
 
       const nextQueue = sortByOldestFirst([...queueRef.current, ...additions]);
 
       queueRef.current = nextQueue;
       setQueue(nextQueue);
+
+      return additions;
     },
     [queryClient],
   );
 
-  const syncPendingOrders = useCallback(async () => {
-    // Sempre faz uma consulta nova. O enqueue deduplica por ID, então uma
-    // resposta atrasada (ou uma reconexão do socket) não imprime em dobro.
-    try {
-      const pendingOrders = await OrderService.getFullPendingOrders();
+  const syncPendingOrders = useCallback(
+    async (options: { notify?: boolean } = {}) => {
+      // Sempre faz uma consulta nova. O enqueue deduplica por ID, então uma
+      // resposta atrasada (ou uma reconexão do Firebase) não imprime em dobro.
+      try {
+        const pendingOrders = await OrderService.getFullPendingOrders();
 
-      mergeOrdersIntoCache(pendingOrders);
-      enqueueOrders(pendingOrders);
-    } catch (error) {
-      console.error("Erro ao buscar pedidos pendentes para impressão:", error);
-    }
-  }, [enqueueOrders, mergeOrdersIntoCache]);
+        mergeOrdersIntoCache(pendingOrders);
+        const additions = enqueueOrders(pendingOrders);
+
+        if (options.notify && additions.length > 0) {
+          playNotificationSound();
+        }
+      } catch (error) {
+        console.error("Erro ao buscar pedidos pendentes para impressão:", error);
+      }
+    },
+    [enqueueOrders, mergeOrdersIntoCache, playNotificationSound],
+  );
+
+  const schedulePendingSync = useCallback(
+    (notify: boolean) => {
+      if (notify) {
+        pendingSyncNotifyRef.current = true;
+      }
+
+      if (pendingSyncTimeoutRef.current !== null) {
+        window.clearTimeout(pendingSyncTimeoutRef.current);
+      }
+
+      pendingSyncTimeoutRef.current = window.setTimeout(() => {
+        const shouldNotify = pendingSyncNotifyRef.current;
+        pendingSyncNotifyRef.current = false;
+        pendingSyncTimeoutRef.current = null;
+
+        void syncPendingOrders({ notify: shouldNotify });
+      }, NEW_ORDER_SYNC_DEBOUNCE_MS);
+    },
+    [syncPendingOrders],
+  );
 
   const markOrderAsPrinted = useCallback(
     async (orderId: string) => {
@@ -249,10 +288,10 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
       setQueue(nextQueue);
       setActiveOrder(null);
 
-      // O socket pode ter perdido eventos enquanto a janela de impressão
+      // A notificação pode ter sido perdida enquanto a janela de impressão
       // bloqueava o navegador. Ao esvaziar a fila, buscamos o que ficou para trás.
       if (nextQueue.length === 0) {
-        void syncPendingOrders();
+        void syncPendingOrders({ notify: false });
       }
     },
     [syncPendingOrders],
@@ -340,6 +379,12 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
     // porém, deve funcionar como reimpressão.
     const isForcedManualPrint = forcedPrintIdsRef.current.has(activeOrder.id);
 
+    if (cachedOrder?.status === STATUS.CANCELADO && !isForcedManualPrint) {
+      handledIdsRef.current.add(activeOrder.id);
+      removeFromQueue(activeOrder.id);
+      return;
+    }
+
     if (cachedOrder?.printed && !isForcedManualPrint) {
       handledIdsRef.current.add(activeOrder.id);
       removeFromQueue(activeOrder.id);
@@ -377,42 +422,109 @@ export function PrintQueueProvider({ children }: { children: ReactNode }) {
     };
   }, [activeOrder, finishPrint, queryClient, removeFromQueue]);
 
-  // Socket global do painel. Fica no Layout protegido, então não afeta o
-  // cardápio público e é encerrado junto com a sessão.
+  // Escuta global do painel. Fica no Layout protegido, então não afeta o
+  // cardápio público e é encerrada junto com a sessão. O Firebase guarda apenas
+  // um sinal mínimo; a lista de pendentes da API continua sendo a fonte da
+  // verdade. Com o restaurante fechado não há como entrar pedido novo, então
+  // mantemos a escuta desligada.
   useEffect(() => {
-    if (!restaurantId) return;
+    if (!restaurantId || !restaurantIsOpen) return;
 
-    const socket = createSocket(restaurantId);
-    let hasConnected = false;
+    const newOrdersRef = firebaseRef(
+      database,
+      `restaurants/${restaurantId}/newOrders`,
+    );
+    const connectedRef = firebaseRef(database, ".info/connected");
 
-    const handleConnect = () => {
-      // Ao reconectar depois de uma impressão longa, recupera os eventos perdidos.
-      if (hasConnected) {
-        void syncPendingOrders();
+    let knownSignalKeys = new Set<string>();
+    let hasReceivedInitialSnapshot = false;
+    let hasConnectedOnce = false;
+    let isCancelled = false;
+
+    // Recupera pedidos que já estavam pendentes quando a tela abriu. Esse
+    // primeiro sync é silencioso para não tocar som de pedidos antigos.
+    void syncPendingOrders({ notify: false });
+
+    const unsubscribeNewOrders = onValue(
+      newOrdersRef,
+      (snapshot) => {
+        if (isCancelled) return;
+
+        const currentKeys = new Set<string>();
+        snapshot.forEach((child) => {
+          if (child.key) {
+            currentKeys.add(child.key);
+          }
+        });
+
+        if (!hasReceivedInitialSnapshot) {
+          hasReceivedInitialSnapshot = true;
+          knownSignalKeys = currentKeys;
+          return;
+        }
+
+        const hasNewSignal = Array.from(currentKeys).some(
+          (key) => !knownSignalKeys.has(key),
+        );
+        knownSignalKeys = currentKeys;
+
+        if (hasNewSignal) {
+          schedulePendingSync(true);
+        }
+      },
+      (error) => {
+        console.error("Erro ao escutar novos pedidos no Firebase:", error);
+      },
+    );
+
+    const unsubscribeConnection = onValue(
+      connectedRef,
+      (snapshot) => {
+        if (snapshot.val() !== true) return;
+
+        // Ao reconectar, recupera o que possa ter ficado para trás.
+        if (hasConnectedOnce) {
+          schedulePendingSync(false);
+        }
+
+        hasConnectedOnce = true;
+      },
+      (error) => {
+        console.error("Erro ao monitorar a conexão com o Firebase:", error);
+      },
+    );
+
+    // Fallback para o caso de o sinal ser perdido ou a API falhar ao gravar.
+    const fallbackSyncId = window.setInterval(() => {
+      schedulePendingSync(false);
+    }, PENDING_ORDERS_FALLBACK_SYNC_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        schedulePendingSync(false);
       }
-
-      hasConnected = true;
     };
 
-    const handleNewOrder = (newOrder: Order) => {
-      mergeOrdersIntoCache([newOrder]);
-      enqueueOrders([newOrder]);
-      playNotificationSound();
-    };
-
-    socket.on("connect", handleConnect);
-    socket.on("newOrder", handleNewOrder);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("newOrder", handleNewOrder);
-      socket.disconnect();
+      isCancelled = true;
+      unsubscribeNewOrders();
+      unsubscribeConnection();
+      window.clearInterval(fallbackSyncId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+
+      if (pendingSyncTimeoutRef.current !== null) {
+        window.clearTimeout(pendingSyncTimeoutRef.current);
+        pendingSyncTimeoutRef.current = null;
+      }
+
+      pendingSyncNotifyRef.current = false;
     };
   }, [
-    enqueueOrders,
-    mergeOrdersIntoCache,
-    playNotificationSound,
     restaurantId,
+    restaurantIsOpen,
+    schedulePendingSync,
     syncPendingOrders,
   ]);
 

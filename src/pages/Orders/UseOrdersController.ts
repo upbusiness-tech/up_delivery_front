@@ -3,6 +3,9 @@ import { useMediaQuery, useTheme } from "@mui/material";
 import type { Order } from "../../types/Order.type";
 import { useOrders } from "../../hooks/queries/useOrdersQueries";
 import { normalizeSearchText, onlyDigits } from "../../utils/search/search";
+import { STATUS } from "../../utils/texts/status.enum";
+
+export type OrderStatusFilter = "ALL" | STATUS;
 
 export default function UseOrdersController(){
 
@@ -10,6 +13,7 @@ export default function UseOrdersController(){
   const isDesktop = useMediaQuery(theme.breakpoints.up("md"));
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<OrderStatusFilter>("ALL");
 
   const {
     data: orders = [],
@@ -19,14 +23,20 @@ export default function UseOrdersController(){
   } = useOrders();
 
   const hasSearch = searchTerm.trim().length > 0;
+  const hasStatusFilter = statusFilter !== "ALL";
+  const hasActiveFilters = hasSearch || hasStatusFilter;
 
   const filteredOrders = useMemo(() => {
-    if (!hasSearch) return orders;
-
-    const normalizedQuery = normalizeSearchText(searchTerm);
-    const phoneQuery = onlyDigits(searchTerm);
+    const normalizedQuery = hasSearch ? normalizeSearchText(searchTerm) : "";
+    const phoneQuery = hasSearch ? onlyDigits(searchTerm) : "";
 
     return orders.filter((order) => {
+      if (hasStatusFilter && order.status !== statusFilter) {
+        return false;
+      }
+
+      if (!hasSearch) return true;
+
       const matchesName =
         normalizedQuery.length > 0 &&
         normalizeSearchText(order.costumerName).includes(normalizedQuery);
@@ -37,7 +47,7 @@ export default function UseOrdersController(){
 
       return matchesName || matchesPhone;
     });
-  }, [hasSearch, orders, searchTerm]);
+  }, [hasSearch, hasStatusFilter, orders, searchTerm, statusFilter]);
 
   const selectedOrder = orders.find((order) => order.id === selectedOrderId) ?? null;
   function openOrderDetail(order: Order) { setSelectedOrderId(order.id) }
@@ -56,6 +66,9 @@ export default function UseOrdersController(){
     searchTerm,
     setSearchTerm,
     hasSearch,
+    statusFilter,
+    setStatusFilter,
+    hasActiveFilters,
     isLoading: isPending,
     error,
     refetch,

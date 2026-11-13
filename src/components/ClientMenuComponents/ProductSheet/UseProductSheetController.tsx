@@ -30,8 +30,16 @@ export default function UseProductSheetController(
     setCheckedAdditionals(initialItem?.additionals ?? []);
   }, [item?.id, initialItem?.id]);
 
+  const categoryAdditionals = ADDITIONALS.filter(
+    (additional) => additional.category.id === item?.productCategory.id,
+  );
+  const availableAdditionals =
+    item?.useCategoryAdditionals === false
+      ? (item.additionals ?? [])
+      : categoryAdditionals;
+
   function additionalsByCategory() {
-    return ADDITIONALS.filter((a) => a.category.id === item?.productCategory.id);
+    return availableAdditionals;
   }
 
   const additionalsByType = (type: Additionals['additionalType']) => additionalsByCategory().filter((a) => a.additionalType === type);

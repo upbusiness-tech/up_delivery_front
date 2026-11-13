@@ -9,6 +9,7 @@ const additionalsRoot = [QueryCacheName.ADDITIONALS] as const;
 const sizesRoot = [QueryCacheName.SIZES] as const;
 const neighborhoodsRoot = [QueryCacheName.NEIGHBORHOODS] as const;
 const settingsRoot = [QueryCacheName.SETTINGS] as const;
+const publicRestaurantRoot = [QueryCacheName.RESTAURANT_PUBLIC_INFOS] as const;
 
 /**
  * Chaves centralizadas das consultas do painel.
@@ -20,6 +21,7 @@ export const queryKeys = {
   orders: {
     all: ordersRoot,
     list: () => [...ordersRoot, "list"] as const,
+    reports: () => [...ordersRoot, "report"] as const,
     report: (filters: OrderReportFilters) =>
       [...ordersRoot, "report", filters] as const,
   },
@@ -27,6 +29,8 @@ export const queryKeys = {
     all: restaurantRoot,
     me: () => [...restaurantRoot, "me"] as const,
     isOpen: () => [QueryCacheName.RESTAURANT_ISOPEN] as const,
+    publicAll: publicRestaurantRoot,
+    public: (slug: string) => [...publicRestaurantRoot, slug] as const,
   },
   products: {
     all: productsRoot,

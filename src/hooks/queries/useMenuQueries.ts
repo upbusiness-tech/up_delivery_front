@@ -1,6 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { ProductService } from "../../api/services/product.service";
 import { RestaurantService } from "../../api/services/restaurant.service";
+import { SizeService } from "../../api/services/size.service";
 import type {
   AdditionalDTO,
   Additionals,
@@ -8,11 +9,24 @@ import type {
   Product,
   ProductCategory,
   ProductDTO,
+  Size,
+  SizeDTO,
+  UpdateAdditionalDTO,
+  UpdateProductDetailsDTO,
 } from "../../types/Product.type";
 import { QueryCacheName } from "../useRestaurantData";
 import { queryKeys } from "./queryKeys";
 
 const MENU_STALE_TIME = 5 * 60 * 1000;
+
+function invalidatePublicMenu(queryClient: QueryClient) {
+  void queryClient.invalidateQueries({
+    queryKey: [QueryCacheName.PRODUCTS_PUBLIC],
+  });
+  void queryClient.invalidateQueries({
+    queryKey: [QueryCacheName.ADDITIONALS_PUBLIC],
+  });
+}
 
 export function useProducts() {
   return useQuery({
@@ -59,6 +73,7 @@ export function useCreateProduct() {
       ProductService.createProduct(product, imageFile),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
@@ -84,6 +99,85 @@ export function useCreateAdditional() {
       ProductService.createAdditional(body) as Promise<Additionals>,
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.additionals.all });
+      invalidatePublicMenu(queryClient);
+    },
+  });
+}
+
+type UpdateAdditionalVariables = {
+  additionalId: string;
+  body: UpdateAdditionalDTO;
+};
+
+export function useUpdateAdditional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ additionalId, body }: UpdateAdditionalVariables) =>
+      ProductService.updateAdditional(additionalId, body) as Promise<Additionals>,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.additionals.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
+    },
+  });
+}
+
+export function useDeleteAdditional() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (additionalId: string) =>
+      ProductService.deleteAdditional(additionalId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.additionals.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
+    },
+  });
+}
+
+export function useCreateSize() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (body: SizeDTO) => SizeService.createSize(body) as Promise<Size>,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sizes.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
+    },
+  });
+}
+
+type UpdateSizeVariables = {
+  sizeId: string;
+  body: Partial<SizeDTO>;
+};
+
+export function useUpdateSize() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ sizeId, body }: UpdateSizeVariables) =>
+      SizeService.updateSize(sizeId, body),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sizes.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
+    },
+  });
+}
+
+export function useDeleteSize() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (sizeId: string) => SizeService.deleteSize(sizeId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.sizes.all });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
@@ -162,10 +256,10 @@ export function useUpdateProductFeatured() {
 
 type UpdateProductVariables = {
   productId: string;
-  body: {
-    productName: string;
-    productDescription: string;
-  };
+  body: UpdateProductDetailsDTO;
+  imageFile?: File;
+  /** Imagem atual do produto, removida do Storage após a troca. */
+  previousImage?: string;
 };
 
 export function useUpdateProduct() {
@@ -173,28 +267,40 @@ export function useUpdateProduct() {
   const productsKey = queryKeys.products.list();
 
   return useMutation({
-    mutationFn: ({ productId, body }: UpdateProductVariables) =>
-      ProductService.updateProduct(productId, body),
+    mutationFn: ({ productId, body, imageFile, previousImage }: UpdateProductVariables) =>
+      ProductService.updateProduct(productId, body, imageFile, previousImage),
     onSuccess: (_data, variables) => {
+      const fields = { ...variables.body };
+      delete fields.additionalIds;
+
       queryClient.setQueryData<Product[]>(productsKey, (products) =>
         products?.map((product) =>
           product.id === variables.productId
-            ? { ...product, ...variables.body }
+            ? { ...product, ...fields }
             : product,
         ),
       );
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
+
+type DeleteProductVariables = {
+  productId: string;
+  /** Imagem do produto, removida do Storage após a exclusão. */
+  image?: string;
+};
 
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (productId: string) => ProductService.deleteProduct(productId),
+    mutationFn: ({ productId, image }: DeleteProductVariables) =>
+      ProductService.deleteProduct(productId, image),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
@@ -214,6 +320,7 @@ export function useAddProductSizes() {
       ),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
@@ -234,6 +341,7 @@ export function useUpdateProductSize() {
       ProductService.updateProductSize(productSizeId, body),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }
@@ -251,6 +359,7 @@ export function useDeleteProductSize() {
       ProductService.deleteProductSize(productId, productSizeId),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
+      invalidatePublicMenu(queryClient);
     },
   });
 }

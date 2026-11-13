@@ -8,6 +8,7 @@ import { moneyMask } from "../../../../utils/masks/mask";
 import type { Product } from "../../../../types/Product.type";
 import ProductDetail from "../ProductDetailModal/ProductDetail";
 import UseProductsTablesController from "./UseProductsTablesController";
+import ProductImage from "../../../Common/ProductImage";
 
 interface ProductsTableProps {
   onCreateProduct?: () => void;
@@ -176,8 +177,7 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                         }}
                       >
                         <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
-                          <Box
-                            component="img"
+                          <ProductImage
                             src={p.image}
                             alt={p.productName}
                             sx={{
@@ -267,8 +267,7 @@ export default function ProductsTable({ onCreateProduct }: ProductsTableProps){
                           >
                           <TableCell sx={{ py: 2 }}>
                             <Stack direction='row' spacing={2} sx={{alignItems:'center'}}>
-                              <Box
-                                component='img'
+                              <ProductImage
                                 src={p.image}
                                 alt={p.productName}
                                 sx={{
