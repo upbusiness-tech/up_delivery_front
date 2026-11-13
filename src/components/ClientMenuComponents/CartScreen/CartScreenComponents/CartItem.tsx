@@ -6,6 +6,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import type { OrderItemBag } from "../../../../types/Order.type";
 import { moneyMask } from "../../../../utils/masks/mask";
 import { useCheckout } from "../../../../checkout/CheckoutContext";
+import ProductImage from "../../../Common/ProductImage";
 
 interface Props {
   item: OrderItemBag;
@@ -44,11 +45,10 @@ export function CartItem({ item, remove, onEdit }: Props) {
       }}
     >
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.25 }}>
-        <Box
-          component="img"
+        <ProductImage
           src={item.image}
           alt={item.name}
-          sx={{ width: 56, height: 56, borderRadius: 2, objectFit: "cover", flexShrink: 0, display: "block" }}
+          sx={{ width: 56, height: 56, borderRadius: 2, objectFit: "cover", flexShrink: 0 }}
         />
 
         <Box sx={{ flex: 1, minWidth: 0 }}>

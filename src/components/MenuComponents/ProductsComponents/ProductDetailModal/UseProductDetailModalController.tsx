@@ -5,6 +5,7 @@ import {
   useDeleteProduct,
   useUpdateProduct,
 } from "../../../../hooks/queries/useMenuQueries";
+import { getProductImageError } from "../../../../lib/firebaseStorage";
 
 interface props {
   product: Product;
@@ -84,8 +85,11 @@ export default function UseProductDetailModalController({ product, onClose }: pr
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setImageError("Selecione um arquivo de imagem.");
+    const error = getProductImageError(file);
+
+    if (error) {
+      setImageError(error);
+      event.target.value = "";
       return;
     }
 
@@ -126,7 +130,10 @@ export default function UseProductDetailModalController({ product, onClose }: pr
     if (!confirmed) return;
 
     try {
-      await deleteProductMutation.mutateAsync(product.id);
+      await deleteProductMutation.mutateAsync({
+        productId: product.id,
+        image: product.image,
+      });
       onClose();
     } catch {
       return;
@@ -148,6 +155,7 @@ export default function UseProductDetailModalController({ product, onClose }: pr
             : selectedAdditionalIds,
         },
         imageFile: imageFile ?? undefined,
+        previousImage: product.image,
       });
 
       setImageFile(null);

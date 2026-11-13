@@ -12,6 +12,7 @@ import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import StarIcon from "@mui/icons-material/Star";
 import type { Product } from "../../../types/Product.type";
 import { moneyMask } from "../../../utils/masks/mask";
+import ProductImage from "../../Common/ProductImage";
 
 interface FeaturedProductsCarouselProps {
   products: Product[];
@@ -151,10 +152,10 @@ export default function FeaturedProductsCarousel({
               }}
             >
               {product.image ? (
-                <Box
-                  component="img"
+                <ProductImage
                   src={product.image}
                   alt={product.productName}
+                  variant="full"
                   sx={{
                     position: "absolute",
                     inset: 0,

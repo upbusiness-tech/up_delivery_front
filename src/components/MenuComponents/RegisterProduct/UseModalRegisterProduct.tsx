@@ -5,6 +5,7 @@ import {
   useCreateProduct,
   useSizes,
 } from "../../../hooks/queries/useMenuQueries";
+import { getProductImageError } from "../../../lib/firebaseStorage";
 
 const COMUM_SIZE_ID = "0146a23d-5554-47b4-aa76-e16c0244597f";
 
@@ -47,10 +48,19 @@ export default function UseModalRegisterProduct({ onClose }: props = {}){
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+    if (!file) return;
+
+    const error = getProductImageError(file);
+
+    if (error) {
+      setFormError(error);
+      event.target.value = "";
+      return;
     }
+
+    setFormError(null);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   };
 
   useEffect(() => {

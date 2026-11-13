@@ -1,6 +1,7 @@
-import { Box, Card, CardContent, CardMedia, IconButton, Typography } from "@mui/material";
+import { Box, Card, CardContent, IconButton, Typography } from "@mui/material";
 import { Add } from "@mui/icons-material";
 import type {Product } from "../../../types/Product.type";
+import ProductImage from "../../Common/ProductImage";
 
 interface props {
   product: Product;
@@ -33,7 +34,7 @@ export default function ProductCard({ product, onClick, unavailable }: props) {
           <Typography variant="caption" sx={{ lineHeight: 1.2, ...dim }}>{product.productDescription}</Typography>
         </CardContent>
         <Box sx={{ position: "relative", width: { xs: 110, sm: 140 }, flexShrink: 0 }}>
-          <CardMedia component="img" image={product.image} alt={product.productName} sx={{ height: "100%", objectFit: "cover", ...dim }} />
+          <ProductImage src={product.image} alt={product.productName} sx={{ width: "100%", height: "100%", objectFit: "cover", ...dim }} />
           {!unavailable && (
             <IconButton size="small" sx={{ position: "absolute", right: 6, bottom: 6, bgcolor: "primary.main", color: "#fff", "&:hover": { bgcolor: "primary.dark" }, boxShadow: 2 }}>
               <Add fontSize="small" />

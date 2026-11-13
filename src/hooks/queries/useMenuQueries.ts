@@ -258,6 +258,8 @@ type UpdateProductVariables = {
   productId: string;
   body: UpdateProductDetailsDTO;
   imageFile?: File;
+  /** Imagem atual do produto, removida do Storage após a troca. */
+  previousImage?: string;
 };
 
 export function useUpdateProduct() {
@@ -265,8 +267,8 @@ export function useUpdateProduct() {
   const productsKey = queryKeys.products.list();
 
   return useMutation({
-    mutationFn: ({ productId, body, imageFile }: UpdateProductVariables) =>
-      ProductService.updateProduct(productId, body, imageFile),
+    mutationFn: ({ productId, body, imageFile, previousImage }: UpdateProductVariables) =>
+      ProductService.updateProduct(productId, body, imageFile, previousImage),
     onSuccess: (_data, variables) => {
       const fields = { ...variables.body };
       delete fields.additionalIds;
@@ -284,11 +286,18 @@ export function useUpdateProduct() {
   });
 }
 
+type DeleteProductVariables = {
+  productId: string;
+  /** Imagem do produto, removida do Storage após a exclusão. */
+  image?: string;
+};
+
 export function useDeleteProduct() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (productId: string) => ProductService.deleteProduct(productId),
+    mutationFn: ({ productId, image }: DeleteProductVariables) =>
+      ProductService.deleteProduct(productId, image),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.products.all });
       invalidatePublicMenu(queryClient);
