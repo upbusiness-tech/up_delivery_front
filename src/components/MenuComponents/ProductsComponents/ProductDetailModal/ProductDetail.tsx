@@ -27,6 +27,8 @@ import UseProductDetailModalController from "./UseProductDetailModalController";
 import RegisterProductSizetModal from "../RegisterProductSize.tsx/RegisterProductSizeModal";
 import ProductsSizesTable from "../SizesTable/ProductsSizesTable";
 import { moneyMask } from "../../../../utils/masks/mask";
+import ProductImage from "../../../Common/ProductImage";
+import { PRODUCT_IMAGE_ACCEPT } from "../../../../lib/firebaseStorage";
 
 interface props {
   product: Product | null;
@@ -94,10 +96,11 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
 
           <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
             <Stack spacing={1} sx={{ width: { xs: "100%", sm: 150 }, flexShrink: 0 }}>
-              <Box
-                component="img"
-                src={c.imagePreview || product.image || imagemGenerica}
+              <ProductImage
+                src={c.imagePreview || product.image}
+                fallbackSrc={imagemGenerica}
                 alt={product.productName}
+                lazy={false}
                 sx={{
                   width: "100%",
                   height: { xs: 180, sm: 150 },
@@ -109,7 +112,7 @@ function ProductDetailContent({ product, onClose }: { product: Product; onClose:
               <input
                 ref={c.fileInputRef}
                 type="file"
-                accept="image/*"
+                accept={PRODUCT_IMAGE_ACCEPT}
                 hidden
                 onChange={c.handleImageChange}
               />

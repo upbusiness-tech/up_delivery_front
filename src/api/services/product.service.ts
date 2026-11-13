@@ -1,20 +1,27 @@
 import axios from "axios";
 import { api } from "../axios"
 import type { ProductDTO, Product, ProductCategory, ProducSizeDTO, AdditionalDTO, UpdateAdditionalDTO, UpdateProductDetailsDTO } from "../../types/Product.type";
-import { uploadToCloudinary } from "../../lib/claudinary";
+import { deleteProductImage, uploadProductImage } from "../../lib/firebaseStorage";
 
 export const ProductService = {
 
   async createProduct(body: ProductDTO, productImage?: File) {
+    let uploadedImage: string | undefined;
+
     try {
       if (productImage) {
-        const imageUrl = await uploadToCloudinary(productImage);
-        body.image = imageUrl;
+        uploadedImage = await uploadProductImage(productImage);
+        body.image = uploadedImage;
       }
 
       const { data } = await api.post<Product>("/product/create-product", body);
       return data;
     } catch (error) {
+      // Falha ao criar o produto: não deixa a imagem enviada como órfã.
+      if (uploadedImage) {
+        void deleteProductImage(uploadedImage);
+      }
+
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
@@ -35,9 +42,15 @@ export const ProductService = {
     }
   },
 
-  async deleteProduct(productId: string){
+  async deleteProduct(productId: string, image?: string){
     try {
       const { data } = await api.delete(`/product/delete-product/${productId}`);
+
+      // A imagem sai do Storage só depois que o produto foi removido do banco.
+      if (image) {
+        void deleteProductImage(image);
+      }
+
       return data;
     } catch (error) {
       if (axios.isAxiosError(error)) {
@@ -95,15 +108,34 @@ export const ProductService = {
     }
   },
 
-  async updateProduct(productId: string, body: UpdateProductDetailsDTO, imageFile?: File){
+  async updateProduct(
+    productId: string,
+    body: UpdateProductDetailsDTO,
+    imageFile?: File,
+    previousImage?: string,
+  ){
+    let uploadedImage: string | undefined;
+
     try {
       if (imageFile) {
-        body.image = await uploadToCloudinary(imageFile);
+        uploadedImage = await uploadProductImage(imageFile);
+        body.image = uploadedImage;
       }
 
       const { data } = await api.patch(`/product/update-product/${productId}`, body)
+
+      // Troca concluída: a imagem antiga deixa de ser referenciada.
+      if (uploadedImage && previousImage && previousImage !== uploadedImage) {
+        void deleteProductImage(previousImage);
+      }
+
       return data as Product
     } catch (error) {
+      // Falha no PATCH: não deixa a imagem recém-enviada como órfã.
+      if (uploadedImage) {
+        void deleteProductImage(uploadedImage);
+      }
+
       if (axios.isAxiosError(error)) {
         console.log(error.response?.data.message);
       }
