@@ -12,9 +12,10 @@ export function useOrders() {
     queryKey: queryKeys.orders.list(),
     queryFn: () => OrderService.listOrders(),
     staleTime: ORDERS_STALE_TIME,
-    // A lista é mantida pelo socket `newOrder` e pelas mutações otimistas.
-    // Evitamos polling da lista completa para não sobrecarregar a API em
-    // restaurantes com muitos pedidos.
+    // A lista é atualizada pelas mutações otimistas e pelo refetch ao focar a
+    // janela. O aviso de novo pedido chega pelo sinal `newOrders` do Firebase
+    // (tratado no PrintQueueContext). Evitamos polling da lista completa para
+    // não sobrecarregar a API em restaurantes com muitos pedidos.
     refetchInterval: false,
   });
 }
